@@ -12,24 +12,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static pt.up.fe.comp2024.ast.Kind.METHOD_DECL;
-import static pt.up.fe.comp2024.ast.Kind.VAR_DECL;
+import static pt.up.fe.comp2024.ast.Kind.*;
 
 public class JmmSymbolTableBuilder {
 
 
     public static JmmSymbolTable build(JmmNode root) {
 
-        var classDecl = root.getJmmChild(0);
+        var imports = buildImports(root);
+
+        var classDecl = root.getObject("classD", JmmNode.class);
         SpecsCheck.checkArgument(Kind.CLASS_DECL.check(classDecl), () -> "Expected a class declaration: " + classDecl);
         String className = classDecl.get("name");
 
+        //var fields = buildFields(classDecl);
         var methods = buildMethods(classDecl);
         var returnTypes = buildReturnTypes(classDecl);
         var params = buildParams(classDecl);
         var locals = buildLocals(classDecl);
 
-        return new JmmSymbolTable(className, methods, returnTypes, params, locals);
+        return new JmmSymbolTable(className, imports, methods, returnTypes, params, locals);
+        //return new JmmSymbolTable(className, imports, fields, methods, returnTypes, params, locals);
     }
 
     private static Map<String, Type> buildReturnTypes(JmmNode classDecl) {
@@ -56,6 +59,13 @@ public class JmmSymbolTableBuilder {
         return map;
     }
 
+
+    /*private static List<Symbol> buildFields(JmmNode classDecl) {
+        classDecl.getChildren(METHOD_DECL).stream()
+                .forEach(new Symbol()).toList();;
+    }*/
+
+
     private static Map<String, List<Symbol>> buildLocals(JmmNode classDecl) {
         // TODO: Simple implementation that needs to be expanded
 
@@ -68,6 +78,11 @@ public class JmmSymbolTableBuilder {
         return map;
     }
 
+    private static List<String> buildImports(JmmNode root) {
+        return root.getChildren(IMPORT_DECL).stream()
+                .map(method -> method.get("name"))
+                .toList();
+    }
     private static List<String> buildMethods(JmmNode classDecl) {
 
         return classDecl.getChildren(METHOD_DECL).stream()
