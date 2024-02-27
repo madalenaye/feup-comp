@@ -35,9 +35,8 @@ MULTI_COMMENT : '/*' .*? '*/' -> skip ;
 WS : [\t\n\r\f ]+ -> skip ;
 
 program
-    : importDecl* |classD=classDecl EOF
+    : importDecl* classD=classDecl EOF
     ;
-
 
 importDecl
     : IMPORT name+=ID ('.' name+=ID)* ';'
@@ -45,7 +44,7 @@ importDecl
 
 classDecl
     : CLASS name=ID
-        (EXTENDS ID)?
+        (EXTENDS hyper=ID)?
         '{'
             varDecl*
             methodDecl*
@@ -72,13 +71,13 @@ methodDecl locals[boolean isPublic=false]
             varDecl*
             stmt*
             RETURN expr ';'
-        '}' #ClassMethod
+        '}'
     | (PUBLIC {$isPublic=true;})?
          STATIC VOID MAIN '(' STRING '[' ']' name=ID ')'
          '{'
             varDecl*
             stmt*
-         '}' #MainMethod
+         '}'
     ;
 
 param
