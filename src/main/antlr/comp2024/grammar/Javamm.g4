@@ -4,65 +4,114 @@ grammar Javamm;
     package pt.up.fe.comp2024;
 }
 
-EQUALS : '=';
-SEMI : ';' ;
-LCURLY : '{' ;
-RCURLY : '}' ;
-LPAREN : '(' ;
-RPAREN : ')' ;
 MUL : '*' ;
 ADD : '+' ;
+SUB : '-';
+DIV : '/' ;
+AND : '&&' ;
+LESS : '<' ;
+NEG : '!' ;
 
+RETURN : 'return' ;
 CLASS : 'class' ;
 INT : 'int' ;
 PUBLIC : 'public' ;
-RETURN : 'return' ;
+NEW : 'new' ;
+IMPORT : 'import' ;
+EXTENDS : 'extends' ;
+STATIC : 'static' ;
+VOID : 'void' ;
+MAIN : 'main' ;
+STRING : 'String' ;
+LENGTH : 'length' ;
+THIS : 'this' ;
 
-INTEGER : [0-9] ;
-ID : [a-zA-Z]+ ;
+BOOLEAN : 'true' | 'false' ;
+INTEGER : [0-9]+;
+ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 
-WS : [ \t\n\r\f]+ -> skip ;
+SINGLE_COMMENT : '//' .*? '\n' -> skip ;
+MULTI_COMMENT : '/*' .*? '*/' -> skip ;
+WS : [\t\n\r\f ]+ -> skip ;
 
 program
-    : classDecl EOF
+    : importDecl* |classD=classDecl EOF
     ;
 
+
+importDecl
+    : IMPORT name+=ID ('.' name+=ID)* ';'
+    ;
 
 classDecl
     : CLASS name=ID
-        LCURLY
-        methodDecl*
-        RCURLY
+        (EXTENDS ID)?
+        '{'
+            varDecl*
+            methodDecl*
+        '}'
     ;
 
 varDecl
-    : type name=ID SEMI
+    : type name=ID ';'
     ;
 
 type
-    : name= INT ;
+    : name=INT #IntType
+    | name=INT '[' ']' #ArrayType
+    | name=BOOLEAN #BoolType
+    | name=INT '...' #VarargType
+    | name=STRING #StringType
+    | name=ID #ObjectType;
 
 methodDecl locals[boolean isPublic=false]
     : (PUBLIC {$isPublic=true;})?
         type name=ID
-        LPAREN param RPAREN
-        LCURLY varDecl* stmt* RCURLY
+        '(' param ')'
+        '{'
+            varDecl*
+            stmt*
+            RETURN expr ';'
+        '}' #ClassMethod
+    | (PUBLIC {$isPublic=true;})?
+         STATIC VOID MAIN '(' STRING '[' ']' name=ID ')'
+         '{'
+            varDecl*
+            stmt*
+         '}' #MainMethod
     ;
 
 param
-    : type name=ID
+    : (type name+=ID (',' type name+=ID)*)?
     ;
 
 stmt
-    : expr EQUALS expr SEMI #AssignStmt //
-    | RETURN expr SEMI #ReturnStmt
+    : '{' stmt* '}' #Stms
+    | name=ID '=' expr ';' #AssignStmt
+    | RETURN expr ';' #ReturnStmt
+    | 'if' '(' expr ')' stmt 'else' stmt #IfStmt
+    | 'while' '(' expr ')' stmt #WhileStmt
+    | expr ';' #PrintStmt
+    | name=ID '[' expr ']' '=' expr ';' #ArrayAssignStmt
     ;
 
 expr
-    : expr op= MUL expr #BinaryExpr //
-    | expr op= ADD expr #BinaryExpr //
-    | value=INTEGER #IntegerLiteral //
-    | name=ID #VarRefExpr //
+    : '(' expr ')' #ParensExpr
+    | expr '.' LENGTH #LenExpr
+    | expr '[' expr ']' #ArrayElemExpr
+    | '[' (expr (',' expr)*)? ']' #ArrayExpr
+    | expr '.' name=ID '(' (expr (',' expr)*)? ')' #MethodExpr
+    | NEW INT '[' expr ']' #NewArrayExpr
+    | NEW name=ID '(' ')' #NewObjectExpr
+    | op=NEG expr #NegExpr
+    | expr op=(MUL | DIV) expr #BinaryExpr
+    | expr op=(ADD | SUB) expr #BinaryExpr
+    | expr op=LESS expr #BinaryExpr
+    | expr op=AND expr #BinaryExpr
+    | value=INTEGER #IntegerLiteral
+    | value=BOOLEAN #BooleanLiteral
+    | name=THIS #ThisExpr
+    | name=ID #VarRefExpr
     ;
 
 
