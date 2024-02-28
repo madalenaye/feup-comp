@@ -22,10 +22,7 @@ public class JmmSymbolTableBuilder {
         var classDecl = root.getObject("classD", JmmNode.class);
         SpecsCheck.checkArgument(Kind.CLASS_DECL.check(classDecl), () -> "Expected a class declaration: " + classDecl);
         String className = classDecl.get("name");
-        String superclass = "";
-        if (classDecl.hasAttribute("hyper")){
-           superclass = classDecl.get("hyper");
-        }
+        String superclass = classDecl.hasAttribute("hyper") ? classDecl.get("hyper") : "";
 
         var fields = buildFields(classDecl);
         var methods = buildMethods(classDecl);
@@ -41,24 +38,35 @@ public class JmmSymbolTableBuilder {
 
         Map<String, Type> map = new HashMap<>();
 
-        classDecl.getChildren(METHOD_DECL).stream()
-                .forEach(method -> map.put(method.get("name"), new Type(TypeUtils.getIntTypeName(), false)));
-
+        var methods = classDecl.getChildren(METHOD_DECL);
+        for ( JmmNode method : methods) {
+                String methodName = method.get("name");
+                JmmNode type = method.getJmmChild(0);
+                String typeName = type.get("name");
+                boolean isArray = Boolean.parseBoolean(type.get("isArray"));
+                map.put(methodName, new Type(typeName, isArray));
+        }
         return map;
     }
 
     private static Map<String, List<Symbol>> buildParams(JmmNode classDecl) {
-        // TODO: Simple implementation that needs to be expanded
 
         Map<String, List<Symbol>> map = new HashMap<>();
+        var methods = classDecl.getChildren(METHOD_DECL);
+
+        for (JmmNode method : methods) {
+            List<Symbol> list = new ArrayList<>();
+            String methodName = method.get("name");
+            var params = method.getChildren(PARAM);
+            for (JmmNode param : params) {
+                String paramName = param.get("name");
+                JmmNode type = param.getJmmChild(0);
+                String typeName = type.get("name");
+                list.add(new Symbol(new Type(typeName, false), paramName));
+            }
+            map.put(methodName, list);
+        }
         return map;
-        /*
-        var intType = new Type(TypeUtils.getIntTypeName(), false);
-
-        classDecl.getChildren(METHOD_DECL).stream()
-                .forEach(method -> map.put(method.get("name"), Arrays.asList(new Symbol(intType, method.getJmmChild(1).get("name")))));
-
-        return map;*/
     }
 
 
@@ -66,11 +74,19 @@ public class JmmSymbolTableBuilder {
         // TODO: Simple implementation that needs to be expanded
 
         Map<String, List<Symbol>> map = new HashMap<>();
-
-
-        classDecl.getChildren(METHOD_DECL).stream()
-                .forEach(method -> map.put(method.get("name"), getLocalsList(method)));
-
+        var methods = classDecl.getChildren(METHOD_DECL);
+        for (JmmNode method : methods){
+            List<Symbol> list = new ArrayList<>();
+            String methodName = method.get("name");
+            var localVars = method.getChildren(VAR_DECL);
+            for (JmmNode localVar : localVars){
+                String localVarName = localVar.get("name");
+                var type = localVar.getJmmChild(0);
+                String typeName = type.get("name");
+                list.add(new Symbol(new Type(typeName, false), localVarName));
+            }
+            map.put(methodName, list);
+        }
         return map;
     }
 
@@ -86,16 +102,9 @@ public class JmmSymbolTableBuilder {
     }
 
     private static List<Symbol> getLocalsList(JmmNode methodDecl) {
-        // TODO: Simple implementation that needs to be expanded
 
-        var intType = new Type(TypeUtils.getIntTypeName(), false);
-
-        return methodDecl.getChildren(VAR_DECL).stream()
-                .map(varDecl -> new Symbol(intType, varDecl.get("name")))
-                .toList();
     }
-
-
+    
     private static List<Symbol> buildFields(JmmNode classDecl) {
         var fieldNodes = classDecl.getChildren(VAR_DECL);
         List<Symbol> list = new ArrayList<>();

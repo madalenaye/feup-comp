@@ -21,8 +21,6 @@ IMPORT : 'import' ;
 EXTENDS : 'extends' ;
 STATIC : 'static' ;
 VOID : 'void' ;
-MAIN : 'main' ;
-STRING : 'String' ;
 LENGTH : 'length' ;
 THIS : 'this' ;
 
@@ -55,25 +53,26 @@ varDecl
     : type name=ID ';'
     ;
 
-type
+type locals[boolean isArray=false]
     : name=INT #IntType
-    | name=INT '[' ']' #ArrayType
+    | name=INT '[' ']' {$isArray=true;} #ArrayType
     | name=BOOLEAN #BoolType
     | name=INT '...' #VarargType
-    | name=STRING #StringType
-    | name=ID #ObjectType;
+    | name=VOID #VoidType
+    | name=ID #ObjectType
+    ;
 
 methodDecl locals[boolean isPublic=false]
     : (PUBLIC {$isPublic=true;})?
         type name=ID
-        '(' param ')'
+        '(' (param (',' param)*)? ')'
         '{'
             varDecl*
             stmt*
             RETURN expr ';'
         '}'
     | (PUBLIC {$isPublic=true;})?
-         STATIC VOID MAIN '(' STRING '[' ']' name=ID ')'
+         STATIC type name=ID '(' ID '[' ']' ID ')'
          '{'
             varDecl*
             stmt*
@@ -81,7 +80,7 @@ methodDecl locals[boolean isPublic=false]
     ;
 
 param
-    : (type name+=ID (',' type name+=ID)*)?
+    : type name=ID
     ;
 
 stmt
