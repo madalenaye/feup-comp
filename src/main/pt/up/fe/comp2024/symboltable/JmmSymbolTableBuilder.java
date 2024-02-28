@@ -34,8 +34,6 @@ public class JmmSymbolTableBuilder {
     }
 
     private static Map<String, Type> buildReturnTypes(JmmNode classDecl) {
-        // TODO: Simple implementation that needs to be expanded
-
         Map<String, Type> map = new HashMap<>();
 
         var methods = classDecl.getChildren(METHOD_DECL);
@@ -43,8 +41,7 @@ public class JmmSymbolTableBuilder {
                 String methodName = method.get("name");
                 JmmNode type = method.getJmmChild(0);
                 String typeName = type.get("name");
-                boolean isArray = Boolean.parseBoolean(type.get("isArray"));
-                map.put(methodName, new Type(typeName, isArray));
+                map.put(methodName, new Type(typeName, isArray(type.get("isArray"))));
         }
         return map;
     }
@@ -55,15 +52,9 @@ public class JmmSymbolTableBuilder {
         var methods = classDecl.getChildren(METHOD_DECL);
 
         for (JmmNode method : methods) {
-            List<Symbol> list = new ArrayList<>();
             String methodName = method.get("name");
             var params = method.getChildren(PARAM);
-            for (JmmNode param : params) {
-                String paramName = param.get("name");
-                JmmNode type = param.getJmmChild(0);
-                String typeName = type.get("name");
-                list.add(new Symbol(new Type(typeName, false), paramName));
-            }
+            List<Symbol> list = getList(params);
             map.put(methodName, list);
         }
         return map;
@@ -71,20 +62,13 @@ public class JmmSymbolTableBuilder {
 
 
     private static Map<String, List<Symbol>> buildLocals(JmmNode classDecl) {
-        // TODO: Simple implementation that needs to be expanded
 
         Map<String, List<Symbol>> map = new HashMap<>();
         var methods = classDecl.getChildren(METHOD_DECL);
         for (JmmNode method : methods){
-            List<Symbol> list = new ArrayList<>();
             String methodName = method.get("name");
             var localVars = method.getChildren(VAR_DECL);
-            for (JmmNode localVar : localVars){
-                String localVarName = localVar.get("name");
-                var type = localVar.getJmmChild(0);
-                String typeName = type.get("name");
-                list.add(new Symbol(new Type(typeName, false), localVarName));
-            }
+            List<Symbol> list = getList(localVars);
             map.put(methodName, list);
         }
         return map;
@@ -101,21 +85,25 @@ public class JmmSymbolTableBuilder {
                 .toList();
     }
 
-    private static List<Symbol> getLocalsList(JmmNode methodDecl) {
-        List<Symbol> list = new ArrayList<>();
-        return list;
-    }
-    
     private static List<Symbol> buildFields(JmmNode classDecl) {
         var fieldNodes = classDecl.getChildren(VAR_DECL);
+        return getList(fieldNodes);
+    }
+
+    // aux functions
+    private static List<Symbol> getList(List<JmmNode> vars) {
         List<Symbol> list = new ArrayList<>();
-        for (JmmNode node : fieldNodes) {
-            String field_name = node.get("name");
-            JmmNode type = node.getJmmChild(0);
-            String type_name = type.get("name");
-            list.add(new Symbol(new Type(type_name, false), field_name));
+        for (JmmNode var : vars){
+            String varName = var.get("name");
+            var type = var.getJmmChild(0);
+            String typeName = type.get("name");
+            list.add(new Symbol(new Type(typeName, isArray(type.get("isArray"))), varName));
         }
         return list;
+    }
+
+    static boolean isArray(String s){
+        return Boolean.parseBoolean(s);
     }
 
 }
