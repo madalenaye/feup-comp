@@ -102,7 +102,8 @@ public class JmmSymbolTableBuilder {
     }
 
     private static List<Symbol> getLocalsList(JmmNode methodDecl) {
-
+        List<Symbol> list = new ArrayList<>();
+        return list;
     }
     
     private static List<Symbol> buildFields(JmmNode classDecl) {
