@@ -54,10 +54,11 @@ varDecl
     ;
 
 type locals[boolean isArray=false]
-    : name=INT #IntType
-    | name=INT '[' ']' {$isArray=true;} #ArrayType
-    | name=BOOLEAN #BoolType
+    :
+      name=INT '[' ']' {$isArray=true;} #ArrayType
     | name=INT '...' #VarargType
+    | name=INT #IntType
+    | name=BOOLEAN #BoolType
     | name=VOID #VoidType
     | name=ID #ObjectType
     ;
