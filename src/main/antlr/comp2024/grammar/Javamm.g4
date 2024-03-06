@@ -62,7 +62,7 @@ type locals[boolean isArray=false]
     | name=ID #ObjectType
     ;
 
-methodDecl locals[boolean isPublic=false]
+methodDecl locals[boolean isPublic=false, boolean isStatic=false]
     : (PUBLIC {$isPublic=true;})?
         type name=ID
         '(' (param (',' param)*)? ')'
@@ -72,7 +72,7 @@ methodDecl locals[boolean isPublic=false]
             RETURN expr ';'
         '}'
     | (PUBLIC {$isPublic=true;})?
-         STATIC type name=ID '(' ID '[' ']' ID ')'
+         (STATIC {$isStatic=true;}) type name=ID '(' ID '[' ']' ID ')'
          '{'
             varDecl*
             stmt*
