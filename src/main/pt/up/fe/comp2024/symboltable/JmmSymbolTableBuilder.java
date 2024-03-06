@@ -9,6 +9,7 @@ import pt.up.fe.comp2024.ast.TypeUtils;
 import pt.up.fe.specs.util.SpecsCheck;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static pt.up.fe.comp2024.ast.Kind.*;
 
@@ -35,7 +36,7 @@ public class JmmSymbolTableBuilder {
 
     private static List<String> buildImports(JmmNode root) {
         return root.getChildren(IMPORT_DECL).stream()
-                .map(_import -> _import.get("name"))
+                .map(_import -> String.join(".", _import.getObjectAsList("name", String.class)))
                 .toList();
     }
 
@@ -88,12 +89,11 @@ public class JmmSymbolTableBuilder {
     }
 
 
-
     // aux functions
     private static List<Symbol> getList(List<JmmNode> vars) {
         List<Symbol> list = new ArrayList<>();
         for (JmmNode var : vars){
-            list.add(buildSymbol(var));
+           list.add(buildSymbol(var));
         }
         return list;
     }
