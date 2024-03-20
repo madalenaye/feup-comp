@@ -24,7 +24,7 @@ VOID : 'void' ;
 LENGTH : 'length' ;
 THIS : 'this' ;
 
-BOOLEAN : 'true' | 'false' ;
+BOOLEAN : 'boolean' ;
 INTEGER : [0] | ([1-9][0-9]*);
 ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 
@@ -87,8 +87,8 @@ stmt
     : '{' stmt* '}' #Stms
     | name=ID '=' expr ';' #AssignStmt
     | RETURN expr ';' #ReturnStmt
-    | 'if' '(' expr ')' stmt 'else' stmt #IfStmt
-    | 'while' '(' expr ')' stmt #WhileStmt
+    | 'if' '(' condition=expr ')' stmt 'else' stmt #IfStmt
+    | 'while' '(' condition=expr ')' stmt #WhileStmt
     | expr ';' #PrintStmt
     | name=ID '[' expr ']' '=' expr ';' #ArrayAssignStmt
     ;
@@ -96,9 +96,9 @@ stmt
 expr
     : '(' expr ')' #ParensExpr
     | expr '.' LENGTH #LenExpr
-    | expr '[' expr ']' #ArrayElemExpr
+    | array=expr '[' index=expr ']' #ArrayElemExpr
     | '[' (expr (',' expr)*)? ']' #ArrayExpr
-    | expr '.' name=ID '(' (expr (',' expr)*)? ')' #MethodExpr
+    | method=expr '.' name=ID '(' (expr (',' expr)*)? ')' #MethodExpr
     | NEW INT '[' expr ']' #NewArrayExpr
     | NEW name=ID '(' ')' #NewObjectExpr
     | op=NEG expr #NegExpr
@@ -107,7 +107,7 @@ expr
     | expr op=LESS expr #BinaryExpr
     | expr op=AND expr #BinaryExpr
     | value=INTEGER #IntegerLiteral
-    | value=BOOLEAN #BooleanLiteral
+    | value=('true' | 'false') #BooleanLiteral
     | name=THIS #ThisExpr
     | name=ID #VarRefExpr
     ;

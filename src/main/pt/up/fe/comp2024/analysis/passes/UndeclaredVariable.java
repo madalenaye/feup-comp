@@ -9,6 +9,7 @@ import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.specs.util.SpecsCheck;
 
+
 /**
  * Checks if the type of the expression in a return statement is compatible with the method return type.
  *
@@ -22,6 +23,7 @@ public class UndeclaredVariable extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.VAR_REF_EXPR, this::visitVarRefExpr);
+        addVisit(Kind.METHOD_EXPR, this::visitMethodExpr);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -29,12 +31,44 @@ public class UndeclaredVariable extends AnalysisVisitor {
         return null;
     }
 
+    private Void visitMethodExpr(JmmNode method, SymbolTable table) {
+        JmmNode m = method.getObject("method", JmmNode.class);
+
+        if (!m.getKind().equals("VarRefExpr")) {
+            String message = "Invalid structure";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(method),
+                    NodeUtils.getColumn(method),
+                    message,
+                    null)
+            );
+        }
+        return null;
+    }
+
+
     private Void visitVarRefExpr(JmmNode varRefExpr, SymbolTable table) {
         SpecsCheck.checkNotNull(currentMethod, () -> "Expected current method to be set");
 
         // Check if exists a parameter or variable declaration with the same name as the variable reference
         var varRefName = varRefExpr.get("name");
 
+        JmmNode parentNode = varRefExpr.getJmmParent();
+        if (parentNode.getKind().equals("MethodExpr")) {
+            if (table.getImports().contains(varRefName)) {
+                return null;
+            }
+            var message = String.format("Import '%s' does not exist.", varRefName);
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(varRefExpr),
+                    NodeUtils.getColumn(varRefExpr),
+                    message,
+                    null)
+            );
+            return null;
+        }
         // Var is a field, return
         if (table.getFields().stream()
                 .anyMatch(param -> param.getName().equals(varRefName))) {
@@ -68,3 +102,4 @@ public class UndeclaredVariable extends AnalysisVisitor {
 
 
 }
+
