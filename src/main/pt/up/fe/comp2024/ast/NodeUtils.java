@@ -2,6 +2,11 @@ package pt.up.fe.comp2024.ast;
 
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static pt.up.fe.comp2024.ast.Kind.STATEMENTS;
+
 public class NodeUtils {
 
     public static int getLine(JmmNode node) {
@@ -23,6 +28,15 @@ public class NodeUtils {
         String line = node.getOptional(attribute).orElse(defaultVal);
         return Boolean.parseBoolean(line);
     }
+
+    public static List<JmmNode> getStmts(JmmNode node) {
+        List<JmmNode> nodes = new ArrayList<>();
+        for (var kind : STATEMENTS) {
+            nodes.addAll(node.getChildren(kind));
+        }
+        return nodes;
+    }
+
 
 
 }

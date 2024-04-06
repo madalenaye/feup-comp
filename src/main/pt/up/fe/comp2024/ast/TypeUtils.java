@@ -16,6 +16,9 @@ public class TypeUtils {
     }
 
 
+    public static boolean isArray(JmmNode type) {
+        return Boolean.parseBoolean(type.get("isArray"));
+    }
     /**
      * Gets the {@link Type} of an arbitrary expression.
      *
@@ -38,6 +41,8 @@ public class TypeUtils {
 
         return type;
     }
+
+
 
     private static Type getBinExprType(JmmNode binaryExpr) {
 

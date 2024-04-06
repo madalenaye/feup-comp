@@ -42,7 +42,7 @@ importDecl
 
 classDecl
     : CLASS name=ID
-        (EXTENDS hyper=ID)?
+        (EXTENDS superClass=ID)?
         '{'
             varDecl*
             methodDecl*
@@ -56,6 +56,7 @@ varDecl
 type locals[boolean isArray=false]
     : name=INT '[' ']' {$isArray=true;} #ArrayType
     | name=INT '...' {$isArray=true;} #VarargType
+    | name=ID '[' ']' {$isArray=true;} #ObjectArrayType
     | name=INT #IntType
     | name=BOOLEAN #BoolType
     | name=VOID #VoidType
@@ -69,10 +70,9 @@ methodDecl locals[boolean isPublic=false, boolean isStatic=false]
         '{'
             varDecl*
             stmt*
-            RETURN expr ';'
         '}'
     | (PUBLIC {$isPublic=true;})?
-         (STATIC {$isStatic=true;}) type name=ID '(' ID '[' ']' ID ')'
+         (STATIC {$isStatic=true;}) type name=ID '(' param ')'
          '{'
             varDecl*
             stmt*
@@ -83,13 +83,14 @@ param
     : type name=ID
     ;
 
+
 stmt
     : '{' stmt* '}' #Stms
     | name=ID '=' expr ';' #AssignStmt
     | RETURN expr ';' #ReturnStmt
     | 'if' '(' condition=expr ')' stmt 'else' stmt #IfStmt
     | 'while' '(' condition=expr ')' stmt #WhileStmt
-    | expr ';' #PrintStmt
+    | expr ';' #ExprStmt
     | name=ID '[' expr ']' '=' expr ';' #ArrayAssignStmt
     ;
 

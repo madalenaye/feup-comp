@@ -23,7 +23,7 @@ public class JmmSymbolTableBuilder {
         JmmNode classDecl = root.getObject("classD", JmmNode.class);
         SpecsCheck.checkArgument(Kind.CLASS_DECL.check(classDecl), () -> "Expected a class declaration: " + classDecl);
         String className = classDecl.get("name");
-        String superclass = classDecl.hasAttribute("hyper") ? classDecl.get("hyper") : "";
+        String superclass = classDecl.getOptional("superClass").orElse("");
 
         List<Symbol> fields = buildFields(classDecl);
         List<String> methods = buildMethods(classDecl);
