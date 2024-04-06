@@ -4,6 +4,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.specs.util.SpecsStrings;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 public enum Kind {
@@ -11,13 +12,12 @@ public enum Kind {
     IMPORT_DECL,
     CLASS_DECL,
     VAR_DECL,
-    TYPE,
     METHOD_DECL,
     PARAM,
     STMTS,
     IF_STMT,
     WHILE_STMT,
-    PRINT_STMT,
+    EXPR_STMT,
     ARRAY_ASSIGN_STMT,
     ASSIGN_STMT,
     RETURN_STMT,
@@ -33,11 +33,20 @@ public enum Kind {
     NEG_EXPR,
     BOOLEAN_LITERAL,
     THIS_EXPR,
-    VAR_REF_EXPR;
+    VAR_REF_EXPR,
+    ARRAY_TYPE,
+    VARARG_TYPE,
+    INT_TYPE,
+    BOOL_TYPE,
+    VOID_TYPE,
+    OBJECT_TYPE,
+
+    OBJECT_ARRAY_TYPE;
 
 
-    private static final Set<Kind> STATEMENTS = Set.of(ASSIGN_STMT, RETURN_STMT);
+    public static final Set<Kind> STATEMENTS = Set.of(ASSIGN_STMT, RETURN_STMT, EXPR_STMT, WHILE_STMT, ARRAY_ASSIGN_STMT, STMTS);
     private static final Set<Kind> EXPRESSIONS = Set.of(BINARY_EXPR, INTEGER_LITERAL, VAR_REF_EXPR);
+    public static final Set<Kind> TYPES = Set.of(ARRAY_TYPE, VARARG_TYPE, INT_TYPE, BOOL_TYPE, VOID_TYPE, OBJECT_ARRAY_TYPE, OBJECT_TYPE);
 
     private final String name;
 
@@ -81,6 +90,7 @@ public enum Kind {
     public boolean isExpr() {
         return EXPRESSIONS.contains(this);
     }
+
 
     /**
      * Tests if the given JmmNode has the same kind as this type.
@@ -137,4 +147,17 @@ public enum Kind {
             throw new RuntimeException("Node '" + node + "' is not any of " + Arrays.asList(kindsToTest));
         }
     }
+
+    public static void checkOrThrow(JmmNode node, Set<Kind> kindsToTest) {
+
+        for (Kind kind : kindsToTest) {
+            if (kind.check(node))
+                return;
+        }
+        throw new RuntimeException("Node '" + node.getKind() + "' is not any of " + kindsToTest);
+
+    }
+
+
+
 }

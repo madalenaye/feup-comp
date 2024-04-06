@@ -7,6 +7,8 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
+import java.util.List;
+
 import static pt.up.fe.comp2024.ast.Kind.*;
 
 /**
@@ -23,12 +25,12 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
 
     private final SymbolTable table;
+    private final OllirStmtGeneratorVisitor stmtVisitor;
 
-    private final OllirExprGeneratorVisitor exprVisitor;
 
     public OllirGeneratorVisitor(SymbolTable table) {
         this.table = table;
-        exprVisitor = new OllirExprGeneratorVisitor(table);
+        stmtVisitor = new OllirStmtGeneratorVisitor(table);
     }
 
 
@@ -39,69 +41,10 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(CLASS_DECL, this::visitClass);
         addVisit(METHOD_DECL, this::visitMethodDecl);
         addVisit(PARAM, this::visitParam);
-        addVisit(RETURN_STMT, this::visitReturn);
-        addVisit(ASSIGN_STMT, this::visitAssignStmt);
 
         setDefaultVisit(this::defaultVisit);
     }
 
-
-    private String visitAssignStmt(JmmNode node, Void unused) {
-
-        var lhs = exprVisitor.visit(node.getJmmChild(0));
-        var rhs = exprVisitor.visit(node.getJmmChild(1));
-
-        StringBuilder code = new StringBuilder();
-
-        // code to compute the children
-        code.append(lhs.getComputation());
-        code.append(rhs.getComputation());
-
-        // code to compute self
-        // statement has type of lhs
-        Type thisType = TypeUtils.getExprType(node.getJmmChild(0), table);
-        String typeString = OptUtils.toOllirType(thisType);
-
-
-        code.append(lhs.getCode());
-        code.append(SPACE);
-
-        code.append(ASSIGN);
-        code.append(typeString);
-        code.append(SPACE);
-
-        code.append(rhs.getCode());
-
-        code.append(END_STMT);
-
-        return code.toString();
-    }
-
-
-    private String visitReturn(JmmNode node, Void unused) {
-
-        String methodName = node.getAncestor(METHOD_DECL).map(method -> method.get("name")).orElseThrow();
-        Type retType = table.getReturnType(methodName);
-
-        StringBuilder code = new StringBuilder();
-
-        var expr = OllirExprResult.EMPTY;
-
-        if (node.getNumChildren() > 0) {
-            expr = exprVisitor.visit(node.getJmmChild(0));
-        }
-
-        code.append(expr.getComputation());
-        code.append("ret");
-        code.append(OptUtils.toOllirType(retType));
-        code.append(SPACE);
-
-        code.append(expr.getCode());
-
-        code.append(END_STMT);
-
-        return code.toString();
-    }
 
 
     private String visitParam(JmmNode node, Void unused) {
@@ -125,27 +68,37 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
             code.append("public ");
         }
 
+        boolean isStatic = NodeUtils.getBooleanAttribute(node, "isStatic", "false");
+
+        if (isStatic) {
+            code.append("static ");
+        }
+
         // name
-        var name = node.get("name");
+        String name = node.get("name");
         code.append(name);
 
-        // param
-        var paramCode = visit(node.getJmmChild(1));
-        code.append("(" + paramCode + ")");
+        // params
+        List<JmmNode> params = node.getChildren(PARAM);
+        code.append("(");
+        for (JmmNode param : params) {
+            String paramCode = visit(param);
+            code.append(paramCode);
+        }
+        code.append(")");
 
         // type
-        var retType = OptUtils.toOllirType(node.getJmmChild(0));
+        String retType = OptUtils.toOllirType(node.getJmmChild(0));
         code.append(retType);
         code.append(L_BRACKET);
 
 
-        // rest of its children stmts
-        var afterParam = 2;
-        for (int i = afterParam; i < node.getNumChildren(); i++) {
-            var child = node.getJmmChild(i);
-            var childCode = visit(child);
-            code.append(childCode);
+        List<JmmNode> stmts = NodeUtils.getStmts(node);
+        for (JmmNode stmt : stmts) {
+            String stmtCode = stmtVisitor.visit(stmt);
+            code.append(stmtCode);
         }
+
 
         code.append(R_BRACKET);
         code.append(NL);

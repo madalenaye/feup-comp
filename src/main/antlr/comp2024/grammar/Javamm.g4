@@ -24,7 +24,7 @@ VOID : 'void' ;
 LENGTH : 'length' ;
 THIS : 'this' ;
 
-BOOLEAN : 'true' | 'false' ;
+BOOLEAN : 'boolean' ;
 INTEGER : [0] | ([1-9][0-9]*);
 ID : [a-zA-Z_$][a-zA-Z_$0-9]* ;
 
@@ -42,7 +42,7 @@ importDecl
 
 classDecl
     : CLASS name=ID
-        (EXTENDS hyper=ID)?
+        (EXTENDS superClass=ID)?
         '{'
             varDecl*
             methodDecl*
@@ -56,6 +56,7 @@ varDecl
 type locals[boolean isArray=false]
     : name=INT '[' ']' {$isArray=true;} #ArrayType
     | name=INT '...' {$isArray=true;} #VarargType
+    | name=ID '[' ']' {$isArray=true;} #ObjectArrayType
     | name=INT #IntType
     | name=BOOLEAN #BoolType
     | name=VOID #VoidType
@@ -63,42 +64,36 @@ type locals[boolean isArray=false]
     ;
 
 methodDecl locals[boolean isPublic=false, boolean isStatic=false]
-    : (PUBLIC {$isPublic=true;})?
+    : (PUBLIC {$isPublic=true;})? (STATIC {$isStatic=true;})?
         type name=ID
         '(' (param (',' param)*)? ')'
         '{'
             varDecl*
             stmt*
-            RETURN expr ';'
         '}'
-    | (PUBLIC {$isPublic=true;})?
-         (STATIC {$isStatic=true;}) type name=ID '(' ID '[' ']' ID ')'
-         '{'
-            varDecl*
-            stmt*
-         '}'
     ;
 
 param
     : type name=ID
     ;
 
+
 stmt
     : '{' stmt* '}' #Stms
     | name=ID '=' expr ';' #AssignStmt
     | RETURN expr ';' #ReturnStmt
-    | 'if' '(' expr ')' stmt 'else' stmt #IfStmt
-    | 'while' '(' expr ')' stmt #WhileStmt
-    | expr ';' #PrintStmt
+    | 'if' '(' condition=expr ')' stmt 'else' stmt #IfStmt
+    | 'while' '(' condition=expr ')' stmt #WhileStmt
+    | expr ';' #ExprStmt
     | name=ID '[' expr ']' '=' expr ';' #ArrayAssignStmt
     ;
 
 expr
     : '(' expr ')' #ParensExpr
     | expr '.' LENGTH #LenExpr
-    | expr '[' expr ']' #ArrayElemExpr
+    | array=expr '[' index=expr ']' #ArrayElemExpr
     | '[' (expr (',' expr)*)? ']' #ArrayExpr
-    | expr '.' name=ID '(' (expr (',' expr)*)? ')' #MethodExpr
+    | method=expr '.' name=ID '(' (expr (',' expr)*)? ')' #MethodExpr
     | NEW INT '[' expr ']' #NewArrayExpr
     | NEW name=ID '(' ')' #NewObjectExpr
     | op=NEG expr #NegExpr
@@ -107,7 +102,7 @@ expr
     | expr op=LESS expr #BinaryExpr
     | expr op=AND expr #BinaryExpr
     | value=INTEGER #IntegerLiteral
-    | value=BOOLEAN #BooleanLiteral
+    | value=('true' | 'false') #BooleanLiteral
     | name=THIS #ThisExpr
     | name=ID #VarRefExpr
     ;
