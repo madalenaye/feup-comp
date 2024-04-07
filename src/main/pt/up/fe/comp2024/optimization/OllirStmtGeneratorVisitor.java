@@ -41,12 +41,24 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
 
         // variable
         String variable = node.get("name");
-        code.append(variable);
 
-        code.append(SPACE + ASSIGN + SPACE);
+        var varSymbolTable = table.getLocalVariables(node.getParent().get("name")).stream()
+                .filter(entry -> entry.getName().equals(variable))
+                .findFirst()
+                .orElse(null);
+
+        Type varType=varSymbolTable.getType();
+        String varOllirType= OptUtils.toOllirType(varType);
 
         // expression
         var expr = exprVisitor.visit(node.getJmmChild(0));
+
+
+        code.append(expr.getComputation());
+        code.append(variable + varOllirType);
+        code.append(SPACE + ASSIGN + varOllirType + SPACE);
+
+
 
         code.append(expr.getCode());
         /*

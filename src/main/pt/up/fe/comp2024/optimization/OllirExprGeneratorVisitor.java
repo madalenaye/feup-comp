@@ -15,6 +15,10 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
     private static final String SPACE = " ";
     private static final String ASSIGN = ":=";
+    private static final String NEW = "new";
+    private static final String INVOKE = "invokespecial";
+
+
     private final String END_STMT = ";\n";
 
     private final SymbolTable table;
@@ -28,6 +32,9 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         addVisit(VAR_REF_EXPR, this::visitVarRef);
         addVisit(BINARY_EXPR, this::visitBinExpr);
         addVisit(INTEGER_LITERAL, this::visitInteger);
+        addVisit(NEW_OBJECT_EXPR, this::visitNewObjExpr);
+        addVisit(METHOD_EXPR,this::visitMethodExpr);
+
 
         setDefaultVisit(this::defaultVisit);
     }
@@ -80,6 +87,32 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         return new OllirExprResult(code);
     }
 
+    private OllirExprResult visitNewObjExpr(JmmNode node, Void unused){
+        StringBuilder computation = new StringBuilder();
+
+        String resType = node.get("name");
+        String resOllirType = "."+resType;
+        String code = OptUtils.getTemp() + resOllirType;
+
+        computation.append(code).append(SPACE)
+                .append(ASSIGN).append(resOllirType).append(SPACE)
+                .append(NEW+"(").append(resType).append(")").append(resOllirType)
+                .append(END_STMT);
+
+        computation.append(INVOKE+"(")
+                .append(code)
+                .append(", \"\").V")
+                .append(END_STMT);
+
+        return new OllirExprResult(code, computation);
+    }
+
+    private OllirExprResult visitMethodExpr(JmmNode node, Void unused){
+        StringBuilder computation = new StringBuilder();
+        String code =node.get("method") + "." + node.get("name");
+
+        return new OllirExprResult(code, computation);
+    }
     /**
      * Default visitor. Visits every child node and return an empty result.
      *
