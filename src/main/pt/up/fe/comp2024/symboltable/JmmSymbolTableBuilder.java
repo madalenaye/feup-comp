@@ -107,8 +107,12 @@ public class JmmSymbolTableBuilder {
     }
 
     private static Type buildType(JmmNode var) {
-        JmmNode type = var.getJmmChild(0);
-        return new Type(type.get("name"), isArray(type.get("isArray")));
+        JmmNode typeNode = var.getJmmChild(0);
+        Type type = new Type(typeNode.get("name"), isArray(typeNode.get("isArray")));
+        if (typeNode.getKind().equals("VarargType")) {
+            type.putObject("isVararg", true);
+        }
+        return type;
     }
 
     private static boolean isArray(String s){

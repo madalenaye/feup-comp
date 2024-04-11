@@ -31,8 +31,8 @@ public class NodeUtils {
 
     public static List<JmmNode> getStmts(JmmNode node) {
         List<JmmNode> nodes = new ArrayList<>();
-        for (var kind : STATEMENTS) {
-            nodes.addAll(node.getChildren(kind));
+        for (JmmNode child : node.getChildren()) {
+        
         }
         return nodes;
     }
