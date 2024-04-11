@@ -25,6 +25,7 @@ public class DeclarationVerifier extends AnalysisVisitor {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.VAR_REF_EXPR, this::visitVarRefExpr);
         addVisit(Kind.METHOD_EXPR, this::visitMethodExpr);
+        addVisit(Kind.NEW_OBJECT_EXPR, this::visitNewObjectExpr);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -149,6 +150,24 @@ public class DeclarationVerifier extends AnalysisVisitor {
         return null;
     }
 
+    private Void visitNewObjectExpr(JmmNode expr, SymbolTable table) {
 
+        Type type = TypeUtils.getExprType(expr, table, currentMethod);
+
+        if (type != null) {
+            return null;
+        }
+
+        String message = String.format("Class '%s' does not exist.", expr.get("name"));
+        addReport(Report.newError(
+                Stage.SEMANTIC,
+                NodeUtils.getLine(expr),
+                NodeUtils.getColumn(expr),
+                message,
+                null)
+        );
+        
+        return null;
+    }
 }
 

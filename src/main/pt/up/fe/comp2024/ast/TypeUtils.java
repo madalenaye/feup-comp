@@ -55,9 +55,10 @@ public class TypeUtils {
         var kind = Kind.fromString(expr.getKind());
 
         Type type = switch (kind) {
-            case INTEGER_LITERAL, ARRAY_ELEM_EXPR -> new Type(INT_TYPE_NAME, false);
+            case INTEGER_LITERAL, ARRAY_ELEM_EXPR, LEN_EXPR -> new Type(INT_TYPE_NAME, false);
             case BOOLEAN_LITERAL, NEG_EXPR -> new Type(BOOL_TYPE_NAME, false);
             case NEW_ARRAY_EXPR, ARRAY_EXPR -> new Type(INT_TYPE_NAME, true);
+            case PARENS_EXPR -> getExprType(expr.getChild(0), table, method);
             case THIS_EXPR -> new Type(table.getClassName(), false);
             case BINARY_EXPR -> getBinExprType(expr);
             case VAR_REF_EXPR -> getVarExprType(expr, table, method);

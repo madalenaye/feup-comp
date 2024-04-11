@@ -24,6 +24,7 @@ public class ArrayVerifier extends AnalysisVisitor {
         addVisit(Kind.ARRAY_ELEM_EXPR, this::visitArrayElemExpr);
         addVisit(Kind.ARRAY_EXPR, this::visitArrayExpr);
         addVisit(Kind.NEW_ARRAY_EXPR, this::arrayIndexCheck);
+        addVisit(Kind.LEN_EXPR, this::visitLenExpr);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -138,6 +139,28 @@ public class ArrayVerifier extends AnalysisVisitor {
                     null)
             );
         }
+        return null;
+    }
+
+    private Void visitLenExpr(JmmNode expr, SymbolTable table) {
+        Type varType = TypeUtils.getExprType(expr.getChild(0), table, currentMethod);
+
+        if (varType == null) {
+            return null;
+        }
+
+        if (varType.isArray()) {
+            return null;
+        }
+
+        String message = String.format("Array length access on '%s' type", varType.getName());
+        addReport(Report.newError(
+                Stage.SEMANTIC,
+                NodeUtils.getLine(expr),
+                NodeUtils.getColumn(expr),
+                message,
+                null)
+        );
         return null;
     }
 }

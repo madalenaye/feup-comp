@@ -266,7 +266,9 @@ public class TypeVerifier extends AnalysisVisitor {
         JmmNode expr = stmt.getChild(0);
         Type assigned = TypeUtils.getExprType(expr, table, currentMethod);
 
-        assert assignee != null;
+        if (assignee == null || assigned == null) {
+            return null;
+        }
 
         // Compatible types
         if (assignee.equals(assigned)) {
