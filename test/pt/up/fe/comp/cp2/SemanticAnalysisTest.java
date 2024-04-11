@@ -18,7 +18,6 @@ public class SemanticAnalysisTest {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/VarNotDeclared.jmm"));
         TestUtils.mustFail(result);
         System.out.println(result.getReports());
-
     }
 
     @Test
@@ -109,6 +108,7 @@ public class SemanticAnalysisTest {
     public void callToUndeclaredMethod() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/CallToUndeclaredMethod.jmm"));
         TestUtils.mustFail(result);
+        System.out.println(result.getReports());
     }
 
     @Test
@@ -116,6 +116,7 @@ public class SemanticAnalysisTest {
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/CallToMethodAssumedInExtends.jmm"));
         TestUtils.noErrors(result);
+        System.out.println(result.getReports());
     }
 
     @Test
