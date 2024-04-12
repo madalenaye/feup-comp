@@ -19,6 +19,7 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
 
     private final SymbolTable table;
     private final OllirExprGeneratorVisitor exprVisitor;
+    private String currMethod;
 
     public OllirStmtGeneratorVisitor(SymbolTable table) {
         this.table = table;
@@ -26,10 +27,16 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
 
     }
 
+    public void setCurrMethod(String methodName) {
+        this.currMethod = methodName;
+        exprVisitor.setCurrMethod(currMethod);
+    }
+
     @Override
     protected void buildVisitor() {
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
+        addVisit(EXPR_STMT, this::visitExprStmt);
 
         setDefaultVisit(this::defaultVisit);
     }
@@ -41,12 +48,24 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
 
         // variable
         String variable = node.get("name");
-        code.append(variable);
 
-        code.append(SPACE + ASSIGN + SPACE);
+        var varSymbolTable = table.getLocalVariables(node.getParent().get("name")).stream()
+                .filter(entry -> entry.getName().equals(variable))
+                .findFirst()
+                .orElse(null);
+
+        Type varType=varSymbolTable.getType();
+        String varOllirType= OptUtils.toOllirType(varType);
 
         // expression
         var expr = exprVisitor.visit(node.getJmmChild(0));
+
+
+        code.append(expr.getComputation());
+        code.append(variable + varOllirType);
+        code.append(SPACE + ASSIGN + varOllirType + SPACE);
+
+
 
         code.append(expr.getCode());
         /*
@@ -75,16 +94,11 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
 
     private String visitReturn(JmmNode node, Void unused) {
 
-        String methodName = node.getAncestor(METHOD_DECL).map(method -> method.get("name")).orElseThrow();
-        Type retType = table.getReturnType(methodName);
+        Type retType = table.getReturnType(currMethod);
 
         StringBuilder code = new StringBuilder();
 
-        var expr = OllirExprResult.EMPTY;
-
-        if (node.getNumChildren() > 0) {
-            expr = exprVisitor.visit(node.getJmmChild(0));
-        }
+        var expr = exprVisitor.visit(node.getJmmChild(0));
 
         code.append(expr.getComputation());
         code.append("ret");
@@ -98,6 +112,15 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
         return code.toString();
     }
 
+    private String visitExprStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        var expr = exprVisitor.visit(node.getJmmChild(0));
+
+        code.append(expr.getCode());
+
+        return code.toString();
+    }
 
     /**
      * Default visitor. Visits every child node and return an empty result.

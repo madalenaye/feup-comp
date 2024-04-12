@@ -26,21 +26,21 @@ public class TypeUtils {
      * @param table
      * @return
      */
-    public static Type getExprType(JmmNode expr, SymbolTable table) {
-
-        Kind kind = Kind.fromString(expr.getKind());
-
-        Type type = switch (kind) {
-            case BINARY_EXPR -> getBinExprType(expr);
-            case VAR_REF_EXPR, NEW_OBJECT_EXPR -> getVarExprType(expr, table);
-            case INTEGER_LITERAL -> new Type(INT_TYPE_NAME, false);
-            case BOOLEAN_LITERAL -> new Type(BOOL_TYPE_NAME, false);
-            case NEW_ARRAY_EXPR -> new Type(INT_TYPE_NAME, true);
-            default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
-        };
-
-        return type;
-    }
+//    public static Type getExprType(JmmNode expr, SymbolTable table) {
+//
+//        Kind kind = Kind.fromString(expr.getKind());
+//
+//        Type type = switch (kind) {
+//            case BINARY_EXPR -> getBinExprType(expr);
+//            case VAR_REF_EXPR, NEW_OBJECT_EXPR -> getVarExprType(expr, table);
+//            case INTEGER_LITERAL -> new Type(INT_TYPE_NAME, false);
+//            case BOOLEAN_LITERAL -> new Type(BOOL_TYPE_NAME, false);
+//            case NEW_ARRAY_EXPR -> new Type(INT_TYPE_NAME, true);
+//            default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
+//        };
+//
+//        return type;
+//    }
 
     public static Type getExprType(JmmNode expr, SymbolTable table, String method) {
 
