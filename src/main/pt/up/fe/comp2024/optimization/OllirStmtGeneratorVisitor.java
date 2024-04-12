@@ -19,11 +19,17 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
 
     private final SymbolTable table;
     private final OllirExprGeneratorVisitor exprVisitor;
+    private String currMethod;
 
     public OllirStmtGeneratorVisitor(SymbolTable table) {
         this.table = table;
         exprVisitor = new OllirExprGeneratorVisitor(table);
 
+    }
+
+    public void setCurrMethod(String methodName) {
+        this.currMethod = methodName;
+        exprVisitor.setCurrMethod(currMethod);
     }
 
     @Override
@@ -88,16 +94,11 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
 
     private String visitReturn(JmmNode node, Void unused) {
 
-        String methodName = node.getAncestor(METHOD_DECL).map(method -> method.get("name")).orElseThrow();
-        Type retType = table.getReturnType(methodName);
+        Type retType = table.getReturnType(currMethod);
 
         StringBuilder code = new StringBuilder();
 
-        var expr = OllirExprResult.EMPTY;
-
-        if (node.getNumChildren() > 0) {
-            expr = exprVisitor.visit(node.getJmmChild(0));
-        }
+        var expr = exprVisitor.visit(node.getJmmChild(0));
 
         code.append(expr.getComputation());
         code.append("ret");

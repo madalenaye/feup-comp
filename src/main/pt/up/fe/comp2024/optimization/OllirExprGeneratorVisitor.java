@@ -24,6 +24,10 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
     private final String END_STMT = ";\n";
 
     private final SymbolTable table;
+    private String currMethod;
+    public void setCurrMethod(String methodName) {
+        this.currMethod = methodName;
+    }
 
     public OllirExprGeneratorVisitor(SymbolTable table) {
         this.table = table;
@@ -62,7 +66,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         computation.append(rhs.getComputation());
 
         // code to compute self
-        Type resType = TypeUtils.getExprType(node, table);
+        Type resType = TypeUtils.getExprType(node, table,currMethod);
         String resOllirType = OptUtils.toOllirType(resType);
         String code = OptUtils.getTemp() + resOllirType;
 
@@ -70,7 +74,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                 .append(ASSIGN).append(resOllirType).append(SPACE)
                 .append(lhs.getCode()).append(SPACE);
 
-        Type type = TypeUtils.getExprType(node, table);
+        Type type = TypeUtils.getExprType(node, table,currMethod);
         computation.append(node.get("op")).append(OptUtils.toOllirType(type)).append(SPACE)
                 .append(rhs.getCode()).append(END_STMT);
 
@@ -81,7 +85,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
     private OllirExprResult visitVarRef(JmmNode node, Void unused) {
 
         var id = node.get("name");
-        Type type = TypeUtils.getExprType(node, table);
+        Type type = TypeUtils.getExprType(node, table,currMethod);
         String ollirType = OptUtils.toOllirType(type);
 
         String code = id + ollirType;
@@ -113,12 +117,12 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
-        Type type = TypeUtils.getExprType(node.getJmmChild(1), table);
+        Type type = TypeUtils.getExprType(node.getJmmChild(1), table,currMethod);
         String ollirType = OptUtils.toOllirType(type);
 
         code.append(INVOKESTATIC)
                 .append("(").append(node.getJmmChild(0).get("name"))
-                .append(", \"").append(node.get("name"))
+                .append(", \"").append(node.get("method"))
                 .append("\", ").append(node.getJmmChild(1).get("name")).append(ollirType)
                 .append(").V").append(END_STMT);
 

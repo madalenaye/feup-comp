@@ -28,6 +28,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private final SymbolTable table;
     private final OllirStmtGeneratorVisitor stmtVisitor;
+    private String currMethod;
 
 
     public OllirGeneratorVisitor(SymbolTable table) {
@@ -92,6 +93,8 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private String visitMethodDecl(JmmNode node, Void unused) {
 
+        currMethod = node.get("name");
+        stmtVisitor.setCurrMethod(currMethod);
         StringBuilder code = new StringBuilder(".method ");
 
         boolean isPublic = NodeUtils.getBooleanAttribute(node, "isPublic", "false");
@@ -113,10 +116,20 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         // params
         List<JmmNode> params = node.getChildren(PARAM);
         code.append("(");
-        for (JmmNode param : params) {
-            String paramCode = visit(param);
+
+        if(!params.isEmpty()){
+            String paramCode = visit(params.get(0));
             code.append(paramCode);
+
+            for (int i=1; i<params.size();i++) {
+                code.append(", ");
+                paramCode = visit(params.get(i));
+                code.append(paramCode);
+            }
         }
+
+
+
         code.append(")");
 
         // type
