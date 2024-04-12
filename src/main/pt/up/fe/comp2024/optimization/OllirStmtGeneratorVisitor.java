@@ -30,6 +30,7 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
     protected void buildVisitor() {
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
+        addVisit(EXPR_STMT, this::visitExprStmt);
 
         setDefaultVisit(this::defaultVisit);
     }
@@ -110,6 +111,15 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
         return code.toString();
     }
 
+    private String visitExprStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        var expr = exprVisitor.visit(node.getJmmChild(0));
+
+        code.append(expr.getCode());
+
+        return code.toString();
+    }
 
     /**
      * Default visitor. Visits every child node and return an empty result.

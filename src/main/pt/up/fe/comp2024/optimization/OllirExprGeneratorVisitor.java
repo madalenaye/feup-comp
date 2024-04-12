@@ -16,7 +16,9 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
     private static final String SPACE = " ";
     private static final String ASSIGN = ":=";
     private static final String NEW = "new";
-    private static final String INVOKE = "invokespecial";
+    private static final String INVOKESPECIAL = "invokespecial";
+    private static final String INVOKESTATIC = "invokestatic";
+
 
 
     private final String END_STMT = ";\n";
@@ -99,7 +101,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                 .append(NEW+"(").append(resType).append(")").append(resOllirType)
                 .append(END_STMT);
 
-        computation.append(INVOKE+"(")
+        computation.append(INVOKESPECIAL+"(")
                 .append(code)
                 .append(", \"\").V")
                 .append(END_STMT);
@@ -108,10 +110,19 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
     }
 
     private OllirExprResult visitMethodExpr(JmmNode node, Void unused){
+        StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
-        String code =node.get("method") + "." + node.get("name");
 
-        return new OllirExprResult(code, computation);
+        Type type = TypeUtils.getExprType(node.getJmmChild(1), table);
+        String ollirType = OptUtils.toOllirType(type);
+
+        code.append(INVOKESTATIC)
+                .append("(").append(node.getJmmChild(0).get("name"))
+                .append(", \"").append(node.get("name"))
+                .append("\", ").append(node.getJmmChild(1).get("name")).append(ollirType)
+                .append(").V").append(END_STMT);
+
+        return new OllirExprResult(code.toString(), computation.toString());
     }
     /**
      * Default visitor. Visits every child node and return an empty result.

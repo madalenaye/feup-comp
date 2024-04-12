@@ -4,8 +4,10 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static pt.up.fe.comp2024.ast.Kind.STATEMENTS;
+import static pt.up.fe.comp2024.ast.Kind.STMTS;
 
 public class NodeUtils {
 
@@ -31,12 +33,13 @@ public class NodeUtils {
 
     public static List<JmmNode> getStmts(JmmNode node) {
         List<JmmNode> nodes = new ArrayList<>();
-        for (var kind : STATEMENTS) {
-            nodes.addAll(node.getChildren(kind));
+        for (JmmNode child : node.getChildren()) {
+            if (child.isInstance("Stmt")) {
+                nodes.add(child);
+            }
         }
         return nodes;
     }
-
 
 
 }
