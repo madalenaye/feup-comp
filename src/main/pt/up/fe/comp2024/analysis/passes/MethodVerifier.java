@@ -12,6 +12,7 @@ import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 import static pt.up.fe.comp2024.ast.Kind.*;
 
@@ -27,6 +28,7 @@ public class MethodVerifier extends AnalysisVisitor {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.VAR_DECL, this::visitVarDecl);
         addVisit(Kind.THIS_EXPR, this::visitThisExpr);
+        addVisit(Kind.VOID_TYPE, this::visitVoidType);
     }
 
     private Void visitClassDecl(JmmNode classDecl, SymbolTable table) {
@@ -57,11 +59,12 @@ public class MethodVerifier extends AnalysisVisitor {
         boolean isPublic = Boolean.parseBoolean(method.get("isPublic"));
 
         List<Symbol> params = table.getParameters(currentMethod);
+        List<JmmNode> returnStmts = method.getChildren(RETURN_STMT);
 
         String message;
 
         if (currentMethod.equals("main")) {
-            
+
             if (!(isStatic && isPublic)) {
                 message = "Main method must be public and static";
                 addReport(Report.newError(
@@ -73,21 +76,20 @@ public class MethodVerifier extends AnalysisVisitor {
                 );
             }
 
-            if (params.size() == 1) {
-                Type type = params.get(0).getType();
-                if (type.getName().equals("String") && type.isArray()) {
-                    return null;
-                }
+            checkMainArguments(method, table);
+
+            // Check return stmt
+            if (!returnStmts.isEmpty()) {
+                message = "Main method cannot have return statements";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(returnStmts.get(0)),
+                        NodeUtils.getColumn(returnStmts.get(0)),
+                        message,
+                        null)
+                );
             }
 
-            message = "Main method must have exactly one parameter (String[] args)";
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(method),
-                    NodeUtils.getColumn(method),
-                    message,
-                    null)
-            );
             return null;
         }
 
@@ -103,6 +105,7 @@ public class MethodVerifier extends AnalysisVisitor {
             );
         }
 
+        // Check parameters type
         for (Symbol param : params) {
             Type type = param.getType();
             if (type.isArray() && !type.getName().equals("int")) {
@@ -115,6 +118,30 @@ public class MethodVerifier extends AnalysisVisitor {
                         null)
                 );
             }
+        }
+
+        if (returnStmts.size() != 1) {
+            message = "Method must have exactly one return statement";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(method),
+                    NodeUtils.getColumn(method),
+                    message,
+                    null)
+            );
+        }
+
+        JmmNode lastChild = method.getChild(method.getNumChildren() - 1);
+
+        if (!returnStmts.get(0).equals(lastChild)) {
+            message = "Return statement must be the last statement in the method";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(returnStmts.get(0)),
+                    NodeUtils.getColumn(returnStmts.get(0)),
+                    message,
+                    null)
+            );
         }
 
         return null;
@@ -134,7 +161,7 @@ public class MethodVerifier extends AnalysisVisitor {
                 message,
                 null)
         );
-        
+
         return null;
     }
 
@@ -142,7 +169,7 @@ public class MethodVerifier extends AnalysisVisitor {
         if (!currentMethod.equals("main")) {
             return null;
         }
-        
+
         String message = "'this' expression cannot be used in a static method";
         addReport(Report.newError(
                 Stage.SEMANTIC,
@@ -151,6 +178,51 @@ public class MethodVerifier extends AnalysisVisitor {
                 message,
                 null)
         );
+        return null;
+    }
+
+
+    private void checkMainArguments(JmmNode mainMethod, SymbolTable table) {
+        List<Symbol> params = table.getParameters(currentMethod);
+
+        if (params.size() == 1) {
+            Type type = params.get(0).getType();
+            if (type.getName().equals("String") && type.isArray()) {
+                return;
+            }
+        }
+
+        String message = "Main method must have exactly one parameter (String[] args)";
+        addReport(Report.newError(
+                Stage.SEMANTIC,
+                NodeUtils.getLine(mainMethod),
+                NodeUtils.getColumn(mainMethod),
+                message,
+                null)
+        );
+    }
+
+    private Void visitVoidType(JmmNode voidNode, SymbolTable table) {
+
+        if (currentMethod != null && currentMethod.equals("main")) {
+            Optional<JmmNode> node = voidNode.getAncestor(METHOD_DECL);
+            if (node.isPresent()) {
+                JmmNode mainMethod = node.get();
+                if (voidNode.equals(mainMethod.getChild(0))) {
+                    return null;
+                }
+            }
+        }
+
+        String message = "Void type can only be used in main method";
+        addReport(Report.newError(
+                Stage.SEMANTIC,
+                NodeUtils.getLine(voidNode),
+                NodeUtils.getColumn(voidNode),
+                message,
+                null)
+        );
+
         return null;
     }
 }
