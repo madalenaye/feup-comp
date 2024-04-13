@@ -24,7 +24,6 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
     public OllirStmtGeneratorVisitor(SymbolTable table) {
         this.table = table;
         exprVisitor = new OllirExprGeneratorVisitor(table);
-
     }
 
     public void setCurrMethod(String methodName) {
@@ -37,35 +36,37 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
         addVisit(EXPR_STMT, this::visitExprStmt);
-
+        // addVisit(STMTS, this::visitStmts);
         setDefaultVisit(this::defaultVisit);
     }
 
     private String visitAssignStmt(JmmNode node, Void unused) {
-
 
         StringBuilder code = new StringBuilder();
 
         // variable
         String variable = node.get("name");
 
+        /*
         var varSymbolTable = table.getLocalVariables(node.getParent().get("name")).stream()
                 .filter(entry -> entry.getName().equals(variable))
                 .findFirst()
                 .orElse(null);
 
         Type varType=varSymbolTable.getType();
-        String varOllirType= OptUtils.toOllirType(varType);
+
+        */
+
+        Type varType = TypeUtils.getVariableType(variable, table, currMethod);
+        assert varType != null;
+        String varOllirType = OptUtils.toOllirType(varType);
 
         // expression
         var expr = exprVisitor.visit(node.getJmmChild(0));
 
-
         code.append(expr.getComputation());
-        code.append(variable + varOllirType);
-        code.append(SPACE + ASSIGN + varOllirType + SPACE);
-
-
+        code.append(variable).append(varOllirType);
+        code.append(SPACE + ASSIGN).append(varOllirType).append(SPACE);
 
         code.append(expr.getCode());
         /*
@@ -94,11 +95,11 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
 
     private String visitReturn(JmmNode node, Void unused) {
 
-        Type retType = table.getReturnType(currMethod);
-
         StringBuilder code = new StringBuilder();
 
-        var expr = exprVisitor.visit(node.getJmmChild(0));
+        Type retType = table.getReturnType(currMethod);
+
+        OllirExprResult expr = exprVisitor.visit(node.getJmmChild(0));
 
         code.append(expr.getComputation());
         code.append("ret");
