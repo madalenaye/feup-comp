@@ -26,7 +26,7 @@ public class MethodVerifier extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.CLASS_DECL, this::visitClassDecl);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
-        addVisit(Kind.VAR_DECL, this::visitVarDecl);
+        addVisit(OBJECT_ARRAY_TYPE, this::visitObjectArrayType);
         addVisit(Kind.THIS_EXPR, this::visitThisExpr);
         addVisit(Kind.VOID_TYPE, this::visitVoidType);
     }
@@ -147,17 +147,25 @@ public class MethodVerifier extends AnalysisVisitor {
         return null;
     }
 
-    private Void visitVarDecl(JmmNode varDecl, SymbolTable table) {
-        JmmNode typeNode = varDecl.getChild(0);
-        if (!typeNode.getKind().equals("ObjectArrayType")) {
-            return null;
+    private Void visitObjectArrayType(JmmNode typeNode, SymbolTable table) {
+        if (currentMethod != null && currentMethod.equals("main")) {
+            Optional<JmmNode> node = typeNode.getAncestor(METHOD_DECL);
+            if (node.isPresent()) {
+                JmmNode mainMethod = node.get();
+                if (!mainMethod.getChildren(PARAM).isEmpty()) {
+                    JmmNode firstParamType = mainMethod.getChild(1).getChild(0);
+                    if (typeNode.equals(firstParamType)) {
+                        return null;
+                    }
+                }
+            }
         }
 
         String message = "Only int[] arrays are allowed";
         addReport(Report.newError(
                 Stage.SEMANTIC,
-                NodeUtils.getLine(varDecl),
-                NodeUtils.getColumn(varDecl),
+                NodeUtils.getLine(typeNode),
+                NodeUtils.getColumn(typeNode),
                 message,
                 null)
         );

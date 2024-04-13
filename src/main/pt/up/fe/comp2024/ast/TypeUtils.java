@@ -26,22 +26,6 @@ public class TypeUtils {
      * @param table
      * @return
      */
-//    public static Type getExprType(JmmNode expr, SymbolTable table) {
-//
-//        Kind kind = Kind.fromString(expr.getKind());
-//
-//        Type type = switch (kind) {
-//            case BINARY_EXPR -> getBinExprType(expr);
-//            case VAR_REF_EXPR, NEW_OBJECT_EXPR -> getVarExprType(expr, table);
-//            case INTEGER_LITERAL -> new Type(INT_TYPE_NAME, false);
-//            case BOOLEAN_LITERAL -> new Type(BOOL_TYPE_NAME, false);
-//            case NEW_ARRAY_EXPR -> new Type(INT_TYPE_NAME, true);
-//            default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
-//        };
-//
-//        return type;
-//    }
-
     public static Type getExprType(JmmNode expr, SymbolTable table, String method) {
 
         if (expr.hasAttribute("notDeclared")) {
@@ -186,33 +170,6 @@ public class TypeUtils {
             return type;
         }
         return null;
-    }
-    public static Type getVarExprType(JmmNode varRefExpr, SymbolTable table) {
-        for (var field : table.getFields()) {
-            if (field.getName().equals(varRefExpr.get("name")))
-                return field.getType();
-        }
-        var method = varRefExpr.getAncestor(Kind.METHOD_DECL);
-        if (method.isPresent()) {
-            JmmNode m = method.get();
-            for (var local : table.getLocalVariables(m.get("name"))) {
-                if (local.getName().equals(varRefExpr.get("name")))
-                    return local.getType();
-            }
-        }
-
-        return new Type("", false);
-    }
-
-
-    /**
-     * @param sourceType
-     * @param destinationType
-     * @return true if sourceType can be assigned to destinationType
-     */
-    public static boolean areTypesAssignable(Type sourceType, Type destinationType) {
-
-        return sourceType.equals(destinationType);
     }
 
     public static boolean isIntType(Type type) {
