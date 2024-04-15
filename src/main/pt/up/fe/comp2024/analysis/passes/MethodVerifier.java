@@ -20,7 +20,6 @@ import static pt.up.fe.comp2024.ast.Kind.*;
 public class MethodVerifier extends AnalysisVisitor {
 
     private String currentMethod;
-    private boolean hasMainMethod;
 
     @Override
     public void buildVisitor() {
@@ -47,6 +46,7 @@ public class MethodVerifier extends AnalysisVisitor {
                     null)
             );
         }
+
 
         return null;
     }
@@ -129,6 +129,7 @@ public class MethodVerifier extends AnalysisVisitor {
                     message,
                     null)
             );
+            return null;
         }
 
         JmmNode lastChild = method.getChild(method.getNumChildren() - 1);
