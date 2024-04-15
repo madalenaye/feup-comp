@@ -47,46 +47,32 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
         // variable
         String variable = node.get("name");
 
-        /*
-        var varSymbolTable = table.getLocalVariables(node.getParent().get("name")).stream()
-                .filter(entry -> entry.getName().equals(variable))
-                .findFirst()
-                .orElse(null);
-
-        Type varType=varSymbolTable.getType();
-
-        */
-
         Type varType = TypeUtils.getVariableType(variable, table, currMethod);
         assert varType != null;
         String varOllirType = OptUtils.toOllirType(varType);
 
-        // expression
         var expr = exprVisitor.visit(node.getJmmChild(0));
-
         code.append(expr.getComputation());
-        code.append(variable).append(varOllirType);
-        code.append(SPACE + ASSIGN).append(varOllirType).append(SPACE);
-
-        code.append(expr.getCode());
-        /*
-        code.append(rhs.getComputation());
-
-        // code to compute self
-        // statement has type of lhs
-        Type thisType = TypeUtils.getExprType(node.getJmmChild(0), table);
-        String typeString = OptUtils.toOllirType(thisType);
 
 
-        code.append(lhs.getCode());
-        code.append(SPACE);
+        var fields = table.getFields();
+        boolean variableIsField = fields.stream()
+                .anyMatch(field -> field.getName().equals(variable));
 
-        code.append(ASSIGN);
-        code.append(typeString);
-        code.append(SPACE);
+        if(variableIsField){
+            code.append("putfield(this, ")
+                    .append(variable)
+                    .append(varOllirType)
+                    .append(", ")
+                    .append(expr.getCode())
+                    .append(").V");
+        }else{
+            code.append(variable).append(varOllirType);
+            code.append(SPACE + ASSIGN).append(varOllirType).append(SPACE);
 
-        code.append(rhs.getCode());
-        */
+            code.append(expr.getCode());
+        }
+
         code.append(END_STMT);
 
         return code.toString();
@@ -118,6 +104,7 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
 
         var expr = exprVisitor.visit(node.getJmmChild(0));
 
+        code.append(expr.getComputation());
         code.append(expr.getCode());
 
         return code.toString();
