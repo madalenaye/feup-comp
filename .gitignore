@@ -6,6 +6,7 @@
 /generated/
 /run/
 gradle*
+**/.DS_Store
 
 # Class files
 **/*.class
