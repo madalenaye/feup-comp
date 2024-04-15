@@ -21,8 +21,8 @@ public class JmmAnalysisImpl implements JmmAnalysis {
 
 
     public JmmAnalysisImpl() {
-        this.criticalPasses = List.of(new MethodVerifier(), new VarargsVerifier());
-        this.analysisPasses = List.of(new DeclarationVerifier(), new TypeVerifier(), new ArrayVerifier());
+        this.criticalPasses = List.of(new MethodVerifier(), new VarargsVerifier(), new DeclarationVerifier());
+        this.analysisPasses = List.of(new TypeVerifier(), new ArrayVerifier());
     }
 
     @Override
