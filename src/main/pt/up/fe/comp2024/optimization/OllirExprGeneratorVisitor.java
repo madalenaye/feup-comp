@@ -42,7 +42,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         addVisit(METHOD_EXPR,this::visitMethodExpr);
         //addVisit(NEG_EXPR, this::visitNegExpr);
         addVisit(BOOLEAN_LITERAL, this::visitBoolean);
-        //addVisit(PARENS_EXPR, this::visitParensExpr);
+        addVisit(PARENS_EXPR, this::visitParensExpr);
         setDefaultVisit(this::defaultVisit);
     }
 
@@ -156,13 +156,21 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
         return new OllirExprResult(code.toString(), computation.toString());
     }
-    /**
-     * Default visitor. Visits every child node and return an empty result.
-     *
-     * @param node
-     * @param unused
-     * @return
-     */
+
+    private OllirExprResult visitParensExpr(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        var expr = this.visit(node.getJmmChild(0));
+
+        return new OllirExprResult(expr.getCode(), expr.getComputation());
+    }
+        /**
+         * Default visitor. Visits every child node and return an empty result.
+         *
+         * @param node
+         * @param unused
+         * @return
+         */
     private OllirExprResult defaultVisit(JmmNode node, Void unused) {
 
         for (JmmNode child : node.getChildren()) {

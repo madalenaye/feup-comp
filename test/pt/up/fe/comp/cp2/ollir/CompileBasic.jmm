@@ -11,8 +11,7 @@ class CompileBasic extends Quicksort {
 
 
         intField = 10;
-        intLocal = intField + intField;
-
+        intLocal = 1 + (2+3);
 
         return 0;
     }
