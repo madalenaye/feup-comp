@@ -104,6 +104,7 @@ public class OllirStmtGeneratorVisitor extends PreorderJmmVisitor<Void, String> 
 
         var expr = exprVisitor.visit(node.getJmmChild(0));
 
+        code.append(expr.getComputation());
         code.append(expr.getCode());
 
         return code.toString();

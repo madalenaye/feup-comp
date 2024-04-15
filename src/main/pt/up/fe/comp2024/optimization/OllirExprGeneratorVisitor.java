@@ -94,15 +94,31 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
 
     private OllirExprResult visitVarRef(JmmNode node, Void unused) {
+        StringBuilder computation = new StringBuilder();
+        String code;
 
         String id = node.get("name");
         Type type = TypeUtils.getExprType(node, table, currMethod);
         assert type != null;
         String ollirType = OptUtils.toOllirType(type);
 
-        String code = id + ollirType;
 
-        return new OllirExprResult(code);
+        var fields = table.getFields();
+        boolean variableIsField = fields.stream()
+                .anyMatch(field -> field.getName().equals(id));
+
+        if(variableIsField){
+            code = OptUtils.getTemp() + ollirType;
+            computation.append(code)
+                    .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
+                    .append("getfield(this, ").append(ollirType).append(")")
+                    .append(ollirType).append(END_STMT);
+        }else{
+            code = id + ollirType;
+        }
+
+
+        return new OllirExprResult(code,computation);
     }
 
     private OllirExprResult visitNewObjExpr(JmmNode node, Void unused){
