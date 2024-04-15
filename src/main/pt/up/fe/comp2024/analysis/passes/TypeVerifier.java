@@ -275,6 +275,11 @@ public class TypeVerifier extends AnalysisVisitor {
             return null;
         }
 
+        // External method, assume okay
+        if (table.getImports().contains(assigned.getName())) {
+            return null;
+        }
+
         // Assignee is a superclass of assigned, return
         if (assignee.getName().equals(table.getSuper()) && assigned.getName().equals(table.getClassName())) {
             return null;

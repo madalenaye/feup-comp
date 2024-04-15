@@ -89,6 +89,10 @@ public class TypeUtils {
         String className = nodeType.getName();
         if (className.equals(table.getClassName()))
             return table.getReturnType(method);
+
+        if (table.getImports().contains(className))
+            return nodeType;
+
         return null;
     }
 
