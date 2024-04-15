@@ -9,6 +9,7 @@ import pt.up.fe.comp2024.ast.TypeUtils;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static pt.up.fe.comp2024.ast.Kind.TYPES;
@@ -33,6 +34,14 @@ public class OptUtils {
 
         tempNumber += 1;
         return tempNumber;
+    }
+
+    public static String toOllirBool(String boolValue) {
+
+        if(Objects.equals(boolValue, "true")) return "1";
+        else if (Objects.equals(boolValue, "false")) return "0";
+
+        return null;
     }
 
     public static String toOllirType(JmmNode typeNode) {
@@ -66,6 +75,5 @@ public class OptUtils {
 
         return type;
     }
-
 
 }

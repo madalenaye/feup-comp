@@ -14,7 +14,7 @@ public class TypeUtils {
     public static String getIntTypeName() {
         return INT_TYPE_NAME;
     }
-
+    public static String getBoolTypeName() { return BOOL_TYPE_NAME; }
 
 
     public static boolean isArray(JmmNode type) {

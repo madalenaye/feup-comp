@@ -9,6 +9,13 @@ class CompileBasic extends Quicksort {
     public int method1() {
         int intLocal1;
         boolean boolLocal1;
+        boolLocal1= true;
+        boolLocal1= false;
+
+
+
+        intField = 10;
+
 
         return 0;
     }
