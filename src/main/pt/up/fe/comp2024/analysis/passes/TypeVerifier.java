@@ -240,10 +240,14 @@ public class TypeVerifier extends AnalysisVisitor {
         switch (operator) {
             case "+", "*", "-", "/", "<" -> {
                 if (TypeUtils.isIntType(type1) && TypeUtils.isIntType(type2)) return null;
+                if (type1.hasAttribute("isExternal") && TypeUtils.isIntType(type2)) return null;
+                if (type2.hasAttribute("isExternal") && TypeUtils.isIntType(type1)) return null;
                 message = String.format("'%s' operation expects two integers ('%s' and '%s' given)", operator, type1.getName() + (type1.isArray() ? "[]" : ""), type2.getName() + (type2.isArray() ? "[]" : ""));
             }
             case "&&"-> {
                 if (TypeUtils.isBoolType(type1) && TypeUtils.isBoolType(type2)) return null;
+                if (type1.hasAttribute("isExternal") && TypeUtils.isBoolType(type2)) return null;
+                if (type2.hasAttribute("isExternal") && TypeUtils.isBoolType(type1)) return null;
                 message = String.format("'%s' operation expects two booleans ('%s' and '%s' given)", operator, type1.getName() + (type1.isArray() ? "[]" : ""), type2.getName() + (type2.isArray() ? "[]" : ""));
             }
             default -> throw new RuntimeException("Unknown operator '" + operator);
@@ -276,7 +280,7 @@ public class TypeVerifier extends AnalysisVisitor {
         }
 
         // External method, assume okay
-        if (table.getImports().contains(assigned.getName())) {
+        if (assigned.hasAttribute("isExternal")) {
             return null;
         }
 
@@ -306,7 +310,15 @@ public class TypeVerifier extends AnalysisVisitor {
 
         Type type = TypeUtils.getExprType(condition, table, currentMethod);
 
-        assert type != null;
+        if (type == null) {
+            return null;
+        }
+
+        // External method, assume okay
+        if (type.hasAttribute("isExternal")) {
+            return null;
+        }
+
         if (TypeUtils.isBoolType(type)) {
             return null;
         }
@@ -328,7 +340,15 @@ public class TypeVerifier extends AnalysisVisitor {
 
         Type type = TypeUtils.getExprType(expr, table, currentMethod);
 
-        assert type != null;
+        if (type == null) {
+            return null;
+        }
+
+        // External method, assume okay
+        if (type.hasAttribute("isExternal")) {
+            return null;
+        }
+
         if (TypeUtils.isBoolType(type)) {
             return null;
         }
