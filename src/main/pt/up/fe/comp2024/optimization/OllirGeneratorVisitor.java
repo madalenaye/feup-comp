@@ -32,7 +32,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         stmtVisitor = new OllirStmtGeneratorVisitor(table);
     }
 
-
     @Override
     protected void buildVisitor() {
 
@@ -49,7 +48,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
 
     private String visitParam(JmmNode node, Void unused) {
-
         var typeCode = OptUtils.toOllirType(node.getJmmChild(0));
         var id = node.get("name");
 
