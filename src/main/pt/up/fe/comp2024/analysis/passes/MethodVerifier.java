@@ -25,13 +25,16 @@ public class MethodVerifier extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.CLASS_DECL, this::visitClassDecl);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
-        addVisit(OBJECT_ARRAY_TYPE, this::visitObjectArrayType);
+        addVisit(Kind.OBJECT_ARRAY_TYPE, this::visitObjectArrayType);
         addVisit(Kind.THIS_EXPR, this::visitThisExpr);
         addVisit(Kind.VOID_TYPE, this::visitVoidType);
-        addVisit(VAR_REF_EXPR, this::visitVarRefExpr);
+        addVisit(Kind.VAR_REF_EXPR, this::visitIdentifier);
+        addVisit(ASSIGN_STMT, this::visitIdentifier);
+        addVisit(NEW_ARRAY_EXPR, this::visitIdentifier);
     }
 
-    private Void visitVarRefExpr(JmmNode varRefExpr, SymbolTable table) {
+
+    private Void visitIdentifier(JmmNode varRefExpr, SymbolTable table) {
 
         // only static method
         if (currentMethod.equals("main")) {
