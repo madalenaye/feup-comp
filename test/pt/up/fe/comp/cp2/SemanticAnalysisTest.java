@@ -243,7 +243,7 @@ public class SemanticAnalysisTest {
         System.out.println(result.getReports());
     }
 
-    /*
+
     @Test
     public void miscLengthAsName() {
         var result = TestUtils
@@ -257,7 +257,7 @@ public class SemanticAnalysisTest {
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/MemberAccessWrong.jmm"));
         TestUtils.mustFail(result);
         System.out.println(result.getReports());
-    }*/
+    }
 
     @Test
     public void multipleReturns() {

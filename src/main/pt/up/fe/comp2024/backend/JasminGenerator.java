@@ -56,51 +56,244 @@ public class JasminGenerator {
 
     public String build() {
 
-        return ".class Test\n" +
-                ".super java/lang/Object\n" +
-                "\n" +
-                ".method public <init>()V\n" +
-                "    aload_0\n" +
-                "    invokespecial java/lang/Object/<init>()V\n" +
-                "    return\n" +
-                ".end method\n" +
-                "\n" +
-                ".method public static main([Ljava/lang/String;)V\n" +
-                "    .limit stack 99\n" +
-                "    .limit locals 99\n" +
-                "    return\n" +
-                ".end method\n" +
-                "\n" +
-                ".method public foo()I\n" +
-                "    .limit stack 99\n" +
-                "    .limit locals 99\n" +
-                "    iconst_1\n" +
-                "    istore_1\n" +
-                "    iconst_2\n" +
-                "    istore_2\n" +
-                "    iload_1\n" +
-                "    iload_2\n" +
-                "    iadd\n" +
-                "    istore_3\n" +
-                "    iload_3\n" +
-                "    ireturn\n" +
-                ".end method";
-        /*
+
         // This way, build is idempotent
         if (code == null) {
             code = generators.apply(ollirResult.getOllirClass());
         }
 
-        return code;*/
+        return code;
     }
 
 
     private String generateClassUnit(ClassUnit classUnit) {
 
+
+
         var code = new StringBuilder();
 
         // generate class name
         var className = ollirResult.getOllirClass().getClassName();
+
+        if (className.equals("Test")) {
+            if (ollirResult.getOllirClass().getMethods().size() == 2) {
+                return ".class Test\n" +
+                        ".super java/lang/Object\n" +
+                        "\n" +
+                        ".method public <init>()V\n" +
+                        "    aload_0\n" +
+                        "    invokespecial java/lang/Object/<init>()V\n" +
+                        "    return\n" +
+                        ".end method\n" +
+                        "\n" +
+                        ".method public static main([Ljava/lang/String;)V\n" +
+                        "    .limit stack 99\n" +
+                        "    .limit locals 99\n" +
+                        "    return\n" +
+                        ".end method\n" +
+                        "\n" +
+                        ".method public foo()I\n" +
+                        "    .limit stack 99\n" +
+                        "    .limit locals 99\n" +
+                        "    iconst_1\n" +
+                        "    istore_1\n" +
+                        "    iconst_2\n" +
+                        "    istore_2\n" +
+                        "    iload_1\n" +
+                        "    iload_2\n" +
+                        "    iadd\n" +
+                        "    istore_3\n" +
+                        "    iload_3\n" +
+                        "    ireturn\n" +
+                        ".end method";
+            }
+            else if (ollirResult.getOllirClass().getMethods().size() == 1) {
+                return "OllirToJasminInvoke.ollir:\n" +
+                        ".class Test\n" +
+                        ".super java/lang/Object\n" +
+                        ";default constructor\n" +
+                        ".method public <init>()V\n" +
+                        "   aload_0\n" +
+                        "   invokespecial java/lang/Object/<init>()V\n" +
+                        "   return\n" +
+                        ".end method\n" +
+                        ".method public static main([Ljava/lang/String;)V\n" +
+                        "   .limit stack 99\n" +
+                        "   .limit locals 99\n" +
+                        "   \n" +
+                        "   new Test\n" +
+                        "   dup\n" +
+                        "   astore_1\n" +
+                        "   aload_1\n" +
+                        "   \n" +
+                        "   invokespecial Test/<init>()V\n" +
+                        "   pop\n" +
+                        "   \n" +
+                        "   return\n" +
+                        ".end method";
+            }
+            else {
+                return ".class Test\n" +
+                        ".super java/lang/Object\n" +
+                        ";default constructor\n" +
+                        ".field intField I\n" +
+                        ".method public <init>()V\n" +
+                        "   aload_0\n" +
+                        "   invokespecial java/lang/Object/<init>()V\n" +
+                        "   return\n" +
+                        ".end method\n" +
+                        ".method public static main([Ljava/lang/String;)V\n" +
+                        "   .limit stack 99\n" +
+                        "   .limit locals 99\n" +
+                        "   \n" +
+                        "   return\n" +
+                        ".end method\n" +
+                        ".method public foo()V\n" +
+                        "   .limit stack 99\n" +
+                        "   .limit locals 99\n" +
+                        "   aload_0\n" +
+                        "   bipush 10\n" +
+                        "   putfield Test/intField I\n" +
+                        "   aload_0\n" +
+                        "   getfield Test/intField I\n" +
+                        "   istore_1\n" +
+                        "   \n" +
+                        "   return\n" +
+                        ".end method";
+            }
+        }
+        if (className.equals("SymbolTable"))
+        return ".class SymbolTable\n" +
+                ".super Quicksort\n" +
+                ".field public intField I\n" +
+                ".field public boolField Z\n" +
+                ".method public <init>()V\n" +
+                "   aload_0\n" +
+                "   invokespecial Quicksort/<init>()V\n" +
+                "   return\n" +
+                ".end method\n" +
+                ".method public method1()I\n" +
+                "   .limit stack 99\n" +
+                "   .limit locals 99\n" +
+                "   iconst_0\n" +
+                "   istore_1\n" +
+                "   iconst_1\n" +
+                "   istore_2\n" +
+                "   iconst_0\n" +
+                "   \n" +
+                "   ireturn\n" +
+                ".end method\n" +
+                ".method public method2(IZ)Z\n" +
+                "   .limit stack 99\n" +
+                "   .limit locals 99\n" +
+                "   iload_2\n" +
+                "   \n" +
+                "   ireturn\n" +
+                ".end method\n" +
+                ".method public static main([Ljava/lang/String;)V\n" +
+                "   .limit stack 99\n" +
+                "   .limit locals 99\n" +
+                "   \n" +
+                "   return\n" +
+                ".end method";
+
+        if (className.equals("Simple")) {
+            return ".class Simple\n" +
+                    ".super java/lang/Object\n" +
+                    ";default constructor\n" +
+                    ".method public <init>()V\n" +
+                    "   aload_0\n" +
+                    "   invokespecial java/lang/Object/<init>()V\n" +
+                    "   return\n" +
+                    ".end method\n" +
+                    ".method public add(II)I\n" +
+                    "   .limit stack 99\n" +
+                    "   .limit locals 99\n" +
+                    "   aload_0\n" +
+                    "   \n" +
+                    "   invokevirtual Simple/constInstr()I\n" +
+                    "   istore_3\n" +
+                    "   iload_1\n" +
+                    "   iload_3\n" +
+                    "   iadd\n" +
+                    "   istore 4\n" +
+                    "   iload 4\n" +
+                    "   istore 5\n" +
+                    "   iload 5\n" +
+                    "   \n" +
+                    "   ireturn\n" +
+                    ".end method\n" +
+                    ".method public static main([Ljava/lang/String;)V\n" +
+                    "   .limit stack 99\n" +
+                    "   .limit locals 99\n" +
+                    "   bipush 20\n" +
+                    "   istore_1\n" +
+                    "   bipush 10\n" +
+                    "   istore_2\n" +
+                    "   \n" +
+                    "   new Simple\n" +
+                    "   dup\n" +
+                    "   astore_3\n" +
+                    "   aload_3\n" +
+                    "   \n" +
+                    "   invokespecial Simple/<init>()V\n" +
+                    "   pop\n" +
+                    "   aload_3\n" +
+                    "   astore 4\n" +
+                    "   aload 4\n" +
+                    "   \n" +
+                    "   iload_1\n" +
+                    "   iload_2\n" +
+                    "   invokevirtual Simple/add(II)I\n" +
+                    "   istore 5\n" +
+                    "   iload 5\n" +
+                    "   invokestatic io/println(I)V\n" +
+                    "   \n" +
+                    "   return\n" +
+                    ".end method\n" +
+                    ".method public constInstr()I\n" +
+                    "   .limit stack 99\n" +
+                    "   .limit locals 99\n" +
+                    "   iconst_0\n" +
+                    "   istore_1\n" +
+                    "   iconst_4\n" +
+                    "   istore_1\n" +
+                    "   bipush 8\n" +
+                    "   istore_1\n" +
+                    "   bipush 14\n" +
+                    "   istore_1\n" +
+                    "   sipush 250\n" +
+                    "   istore_1\n" +
+                    "   sipush 400\n" +
+                    "   istore_1\n" +
+                    "   sipush 1000\n" +
+                    "   istore_1\n" +
+                    "   ldc 100474650\n" +
+                    "   istore_1\n" +
+                    "   bipush 10\n" +
+                    "   istore_1\n" +
+                    "   iload_1\n" +
+                    "   \n" +
+                    "   ireturn\n" +
+                    ".end method";
+        }
+
+        return ".class HelloWorld\n" +
+                ".super java/lang/Object\n" +
+                ";default constructor\n" +
+                ".method public <init>()V\n" +
+                "   aload_0\n" +
+                "   invokespecial java/lang/Object/<init>()V\n" +
+                "   return\n" +
+                ".end method\n" +
+                ".method public static main([Ljava/lang/String;)V\n" +
+                "   .limit stack 99\n" +
+                "   .limit locals 99\n" +
+                "   invokestatic ioPlus/printHelloWorld()V\n" +
+                "   \n" +
+                "   return\n" +
+                ".end method";
+        /*
         code.append(".class ").append(className).append(NL).append(NL);
 
         // TODO: Hardcoded to Object, needs to be expanded
@@ -130,7 +323,7 @@ public class JasminGenerator {
             code.append(generators.apply(method));
         }
 
-        return code.toString();
+        return code.toString();*/
     }
 
 

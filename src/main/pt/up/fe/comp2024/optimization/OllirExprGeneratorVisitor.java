@@ -145,14 +145,25 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
-        Type type = TypeUtils.getExprType(node.getJmmChild(1), table,currMethod);
+        Type type = TypeUtils.getExprType(node.getJmmChild(0), table, currMethod);
         String ollirType = OptUtils.toOllirType(type);
 
-        code.append(INVOKESTATIC)
-                .append("(").append(node.getJmmChild(0).get("name"))
-                .append(", \"").append(node.get("method"))
-                .append("\", ").append(node.getJmmChild(1).get("name")).append(ollirType)
-                .append(").V").append(END_STMT);
+        if (table.getImports().contains(type.getName())) {
+            code.append(INVOKESTATIC)
+                    .append("(").append(node.getJmmChild(0).get("name"))
+                    .append(", \"").append(node.get("method"))
+                    .append("\", ").append(node.getJmmChild(0).get("name")).append(ollirType)
+                    .append(").V").append(END_STMT);
+        }
+        else {
+            code.append("invokevirtual")
+                    .append("(").append(node.getJmmChild(0).get("name"))
+                    .append(", \"").append(node.get("method"))
+                    .append("\", ").append(node.getJmmChild(0).get("name")).append(ollirType)
+                    .append(").V").append(END_STMT);
+        }
+
+
 
         return new OllirExprResult(code.toString(), computation.toString());
     }
