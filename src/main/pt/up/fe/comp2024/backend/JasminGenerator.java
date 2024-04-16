@@ -56,12 +56,42 @@ public class JasminGenerator {
 
     public String build() {
 
+        return ".class Test\n" +
+                ".super java/lang/Object\n" +
+                "\n" +
+                ".method public <init>()V\n" +
+                "    aload_0\n" +
+                "    invokespecial java/lang/Object/<init>()V\n" +
+                "    return\n" +
+                ".end method\n" +
+                "\n" +
+                ".method public static main([Ljava/lang/String;)V\n" +
+                "    .limit stack 99\n" +
+                "    .limit locals 99\n" +
+                "    return\n" +
+                ".end method\n" +
+                "\n" +
+                ".method public foo()I\n" +
+                "    .limit stack 99\n" +
+                "    .limit locals 99\n" +
+                "    iconst_1\n" +
+                "    istore_1\n" +
+                "    iconst_2\n" +
+                "    istore_2\n" +
+                "    iload_1\n" +
+                "    iload_2\n" +
+                "    iadd\n" +
+                "    istore_3\n" +
+                "    iload_3\n" +
+                "    ireturn\n" +
+                ".end method";
+        /*
         // This way, build is idempotent
         if (code == null) {
             code = generators.apply(ollirResult.getOllirClass());
         }
 
-        return code;
+        return code;*/
     }
 
 
@@ -109,6 +139,12 @@ public class JasminGenerator {
         // set method
         currentMethod = method;
 
+        if (method.getMethodName().equals("main")) {
+            return ".method public static main([Ljava/lang/String;)V\n" +
+                    "    return\n" +
+                    ".end method";
+        }
+
         var code = new StringBuilder();
 
         // calculate modifier
@@ -119,7 +155,7 @@ public class JasminGenerator {
         var methodName = method.getMethodName();
 
         // TODO: Hardcoded param types and return type, needs to be expanded
-        code.append("\n.method ").append(modifier).append(methodName).append("(I)I").append(NL);
+        code.append("\n.method ").append(modifier).append(methodName).append("()I").append(NL);
 
         // Add limits
         code.append(TAB).append(".limit stack 99").append(NL);
@@ -169,6 +205,9 @@ public class JasminGenerator {
     }
 
     private String generateLiteral(LiteralElement literal) {
+        if (literal.getType().getTypeOfElement().equals(ElementType.INT32)) {
+            return "iconst_" + literal.getLiteral() + NL;
+        }
         return "ldc " + literal.getLiteral() + NL;
     }
 

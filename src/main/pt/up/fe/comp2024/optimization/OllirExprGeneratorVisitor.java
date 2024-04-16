@@ -2,8 +2,8 @@ package pt.up.fe.comp2024.optimization;
 
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
+import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
-import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
 import static pt.up.fe.comp2024.ast.Kind.*;
@@ -11,7 +11,7 @@ import static pt.up.fe.comp2024.ast.Kind.*;
 /**
  * Generates OLLIR code from JmmNodes that are expressions.
  */
-public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExprResult> {
+public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult> {
 
     private static final String SPACE = " ";
     private static final String ASSIGN = ":=";
@@ -158,11 +158,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
     }
 
     private OllirExprResult visitParensExpr(JmmNode node, Void unused) {
-        StringBuilder code = new StringBuilder();
-
-        var expr = this.visit(node.getJmmChild(0));
-
-        return new OllirExprResult(expr.getCode(), expr.getComputation());
+        return this.visit(node.getJmmChild(0));
     }
         /**
          * Default visitor. Visits every child node and return an empty result.
