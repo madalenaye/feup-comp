@@ -10,8 +10,10 @@ class CompileBasic extends Quicksort {
         int intLocal;
 
 
-        intField = 10;
-        intLocal = 1 + (2+3);
+        boolean bool1;
+        bool1= !(!true);
+        intLocal = 2 * (3+2);
+
 
         return 0;
     }

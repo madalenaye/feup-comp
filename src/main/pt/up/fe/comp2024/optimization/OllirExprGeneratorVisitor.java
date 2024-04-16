@@ -40,7 +40,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(INTEGER_LITERAL, this::visitInteger);
         addVisit(NEW_OBJECT_EXPR, this::visitNewObjExpr);
         addVisit(METHOD_EXPR,this::visitMethodExpr);
-        //addVisit(NEG_EXPR, this::visitNegExpr);
+        addVisit(NEG_EXPR, this::visitNegExpr);
         addVisit(BOOLEAN_LITERAL, this::visitBoolean);
         addVisit(PARENS_EXPR, this::visitParensExpr);
         setDefaultVisit(this::defaultVisit);
@@ -163,6 +163,28 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         var expr = this.visit(node.getJmmChild(0));
 
         return new OllirExprResult(expr.getCode(), expr.getComputation());
+    }
+
+    private OllirExprResult visitNegExpr(JmmNode node, Void unused) {
+        StringBuilder computation = new StringBuilder();
+
+
+        var expr = this.visit(node.getJmmChild(0));
+
+        computation.append(expr.getComputation());
+
+        Type resType = TypeUtils.getExprType(node, table, currMethod);
+        assert resType != null;
+        String resOllirType = OptUtils.toOllirType(resType);
+        String code = OptUtils.getTemp() + resOllirType;
+
+        computation.append(code).append(SPACE)
+                .append(ASSIGN).append(resOllirType)
+                .append(" !.bool ")
+                .append(expr.getCode()).append(END_STMT);
+
+
+        return new OllirExprResult(code,computation);
     }
         /**
          * Default visitor. Visits every child node and return an empty result.
