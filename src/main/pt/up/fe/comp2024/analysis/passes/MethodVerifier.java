@@ -28,6 +28,29 @@ public class MethodVerifier extends AnalysisVisitor {
         addVisit(OBJECT_ARRAY_TYPE, this::visitObjectArrayType);
         addVisit(Kind.THIS_EXPR, this::visitThisExpr);
         addVisit(Kind.VOID_TYPE, this::visitVoidType);
+        addVisit(VAR_REF_EXPR, this::visitVarRefExpr);
+    }
+
+    private Void visitVarRefExpr(JmmNode varRefExpr, SymbolTable table) {
+
+        // only static method
+        if (currentMethod.equals("main")) {
+            for (var field : table.getFields()) {
+                if (field.getName().equals(varRefExpr.get("name"))) {
+                    String message = String.format("Call to non-static field '%s' in a static method", varRefExpr.get("name"));
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(varRefExpr),
+                            NodeUtils.getColumn(varRefExpr),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+            }
+        }
+
+        return null;
     }
 
     private Void visitClassDecl(JmmNode classDecl, SymbolTable table) {

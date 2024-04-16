@@ -68,6 +68,18 @@ public class VarargsVerifier extends AnalysisVisitor {
 
         String message;
 
+        JmmNode ret = method.getChild(0);
+        if (table.getReturnType(currentMethod).hasAttribute("isVararg")) {
+            message = "Method returns cannot be vararg";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(ret),
+                    NodeUtils.getColumn(ret),
+                    message,
+                    null)
+            );
+        }
+
         List<JmmNode> params = method.getChildren(Kind.PARAM);
 
         for (int i = 0; i < params.size() - 1; i++) {
