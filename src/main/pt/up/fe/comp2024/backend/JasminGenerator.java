@@ -73,19 +73,32 @@ public class JasminGenerator {
         var className = ollirResult.getOllirClass().getClassName();
         code.append(".class ").append(className).append(NL).append(NL);
 
-        // TODO: Hardcoded to Object, needs to be expanded
-        code.append(".super java/lang/Object").append(NL);
+        var defaultConstructor = new StringBuilder();
+        defaultConstructor.append(".method public <init>()V").append(NL).append(TAB).append("aload_0").append(NL).append(TAB);
 
-        // generate a single constructor method
-        var defaultConstructor = """
-                ;default constructor
-                .method public <init>()V
-                    aload_0
-                    invokespecial java/lang/Object/<init>()V
-                    return
-                .end method
-                """;
+        if (classUnit.getSuperClass() == null){
+            code.append(".super java/lang/Object").append(NL);
+            defaultConstructor.append("invokespecial java/lang/Object/<init>()V");
+        }
+        else{
+            code.append(".super ").append(classUnit.getSuperClass()).append(NL);
+            defaultConstructor.append("invokespecial ").append(classUnit.getSuperClass()).append("<init>()V");
+        }
+        var classFields = ollirResult.getOllirClass().getFields();
+        for (var field : classFields){
+            var accessModifierName = field.getFieldAccessModifier().name();
+            String newAccessModifierName = switch (accessModifierName){
+                case "PUBLIC" -> "public";
+                case "PRIVATE" -> "private";
+                case "DEFAULT" -> "";
+                default -> throw new IllegalStateException("Unexpected value: " + accessModifierName);
+            };
+            var fieldName = field.getFieldName();
+        }
+        defaultConstructor.append(NL).append(TAB).append("return").append(NL).append(".end method").append(NL);
+
         code.append(defaultConstructor);
+
 
         // generate code for all other methods
         for (var method : ollirResult.getOllirClass().getMethods()) {
@@ -189,6 +202,10 @@ public class JasminGenerator {
         var op = switch (binaryOp.getOperation().getOpType()) {
             case ADD -> "iadd";
             case MUL -> "imul";
+            case SUB -> "isub";
+            case DIV -> "idiv";
+            case AND -> "iand";
+            case OR -> "ior";
             default -> throw new NotImplementedException(binaryOp.getOperation().getOpType());
         };
 
@@ -202,10 +219,30 @@ public class JasminGenerator {
 
         // TODO: Hardcoded to int return type, needs to be expanded
 
+        if (returnInst.getOperand() != null){
         code.append(generators.apply(returnInst.getOperand()));
-        code.append("ireturn").append(NL);
+        }
+        var type = returnInst.getReturnType();
+        switch (type.getTypeOfElement()){
+            case INT32, BOOLEAN -> code.append(NL).append("ireturn").append(NL);
+            case VOID -> code.append(NL).append("return").append(NL);
+            case OBJECTREF, CLASS -> code.append(NL).append("areturn").append(NL);
+        }
 
+        code.append(NL);
         return code.toString();
     }
 
+    private String ollirTypeToJasmin(Type type){
+        return switch (type.getTypeOfElement()){
+            case INT32 -> "I";
+            case BOOLEAN -> "Z";
+            case STRING -> "Ljava/lang/String;";
+            case ARRAYREF -> "[";
+            case OBJECTREF -> "L";
+            case CLASS -> null;
+            case VOID -> "V";
+            default -> throw new NotImplementedException(type.getTypeOfElement());
+        };
+    }
 }
