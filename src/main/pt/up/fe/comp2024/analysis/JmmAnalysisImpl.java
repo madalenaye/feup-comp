@@ -19,9 +19,8 @@ public class JmmAnalysisImpl implements JmmAnalysis {
     private final List<AnalysisPass> analysisPasses;
     private final List<AnalysisPass> criticalPasses;
 
-
     public JmmAnalysisImpl() {
-        this.criticalPasses = List.of(new MethodVerifier(), new VarargsVerifier(), new DeclarationVerifier());
+        this.criticalPasses = List.of(new SymbolTableVerifier(), new MethodVerifier(), new VarargsVerifier(), new DeclarationVerifier());
         this.analysisPasses = List.of(new TypeVerifier(), new ArrayVerifier());
     }
 

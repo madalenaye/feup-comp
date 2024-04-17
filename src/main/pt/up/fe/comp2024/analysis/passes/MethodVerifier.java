@@ -20,15 +20,40 @@ import static pt.up.fe.comp2024.ast.Kind.*;
 public class MethodVerifier extends AnalysisVisitor {
 
     private String currentMethod;
-    private boolean hasMainMethod;
 
     @Override
     public void buildVisitor() {
         addVisit(Kind.CLASS_DECL, this::visitClassDecl);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
-        addVisit(OBJECT_ARRAY_TYPE, this::visitObjectArrayType);
+        addVisit(Kind.OBJECT_ARRAY_TYPE, this::visitObjectArrayType);
         addVisit(Kind.THIS_EXPR, this::visitThisExpr);
         addVisit(Kind.VOID_TYPE, this::visitVoidType);
+        addVisit(Kind.VAR_REF_EXPR, this::visitIdentifier);
+        addVisit(ASSIGN_STMT, this::visitIdentifier);
+        addVisit(NEW_ARRAY_EXPR, this::visitIdentifier);
+    }
+
+
+    private Void visitIdentifier(JmmNode varRefExpr, SymbolTable table) {
+
+        // only static method
+        if (currentMethod.equals("main")) {
+            for (var field : table.getFields()) {
+                if (field.getName().equals(varRefExpr.get("name"))) {
+                    String message = String.format("Call to non-static field '%s' in a static method", varRefExpr.get("name"));
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(varRefExpr),
+                            NodeUtils.getColumn(varRefExpr),
+                            message,
+                            null)
+                    );
+                    return null;
+                }
+            }
+        }
+
+        return null;
     }
 
     private Void visitClassDecl(JmmNode classDecl, SymbolTable table) {
@@ -47,6 +72,7 @@ public class MethodVerifier extends AnalysisVisitor {
                     null)
             );
         }
+
 
         return null;
     }
@@ -129,6 +155,7 @@ public class MethodVerifier extends AnalysisVisitor {
                     message,
                     null)
             );
+            return null;
         }
 
         JmmNode lastChild = method.getChild(method.getNumChildren() - 1);

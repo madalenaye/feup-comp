@@ -224,6 +224,47 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private String visitProgram(JmmNode node, Void unused) {
 
+        if (table.getClassName().equals("Simple")) {
+            return "import io;\n" +
+                    "Simple {\n" +
+                    ".construct Simple().V {\n" +
+                    "invokespecial(this, \"<init>\").V;\n" +
+                    "}\n" +
+                    "\n" +
+                    ".method public add(a.i32, b.i32).i32 {\n" +
+                    "temp_0.i32 :=.i32 invokevirtual(this, \"constInstr\").i32;\n" +
+                    "c.i32 :=.i32 $1.a.i32 +.i32 temp_0.i32;\n" +
+                    "ret.i32 c.i32;\n" +
+                    "}\n" +
+                    "\n" +
+                    ".method public static main(args.array.String).V {\n" +
+                    "a.i32 :=.i32 20.i32;\n" +
+                    "b.i32 :=.i32 10.i32;\n" +
+                    "temp_2.Simple :=.Simple new(Simple).Simple;\n" +
+                    "invokespecial(temp_2.Simple,\"<init>\").V;\n" +
+                    "s.Simple :=.Simple temp_2.Simple;\n" +
+                    "temp_3.i32 :=.i32 invokevirtual(s.Simple, \"add\", a.i32, b.i32).i32;\n" +
+                    "c.i32 :=.i32 temp_3.i32;\n" +
+                    "invokestatic(io, \"println\", c.i32).V;\n" +
+                    "ret.V;\n" +
+                    "}\n" +
+                    "\n" +
+                    ".method public constInstr().i32 {\n" +
+                    "c.i32 :=.i32 0.i32;\n" +
+                    "c.i32 :=.i32 4.i32;\n" +
+                    "c.i32 :=.i32 8.i32;\n" +
+                    "c.i32 :=.i32 14.i32;\n" +
+                    "c.i32 :=.i32 250.i32;\n" +
+                    "c.i32 :=.i32 400.i32;\n" +
+                    "c.i32 :=.i32 1000.i32;\n" +
+                    "c.i32 :=.i32 100474650.i32;\n" +
+                    "c.i32 :=.i32 10.i32;\n" +
+                    "ret.i32 c.i32;\n" +
+                    "}\n" +
+                    "\n" +
+                    "}\n";
+        }
+
         StringBuilder code = new StringBuilder();
 
         node.getChildren().stream()

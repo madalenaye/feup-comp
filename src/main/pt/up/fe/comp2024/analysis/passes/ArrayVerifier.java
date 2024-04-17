@@ -145,6 +145,20 @@ public class ArrayVerifier extends AnalysisVisitor {
     }
 
     private Void visitLenExpr(JmmNode expr, SymbolTable table) {
+
+        String length = expr.get("len");
+
+        if (!length.equals("length")) {
+            String message = String.format("Incorrect usage of length expression");
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(expr),
+                    NodeUtils.getColumn(expr),
+                    message,
+                    null)
+            );
+        }
+
         Type varType = TypeUtils.getExprType(expr.getChild(0), table, currentMethod);
 
         if (varType == null || varType.isArray()) {

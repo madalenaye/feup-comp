@@ -24,6 +24,15 @@ public class JasminTest {
     }
 
     @Test
+    public void ollirToJasminBloat(){
+        testOllirToJasmin("pt/up/fe/comp/cp2/apps/example_ollir/Simple.ollir");
+    }
+
+    @Test
+    public void ollirToJasminBloat1(){
+        testOllirToJasmin("pt/up/fe/comp/cp2/apps/example_ollir/HelloWorld.ollir");
+    }
+    @Test
     public void ollirToJasminInvoke() {
         testOllirToJasmin("pt/up/fe/comp/cp2/jasmin/OllirToJasminInvoke.ollir");
     }

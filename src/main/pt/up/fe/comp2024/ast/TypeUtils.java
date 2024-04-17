@@ -74,6 +74,7 @@ public class TypeUtils {
             if (varType == null) {
                 return null;
             } else if (table.getImports().contains(varType.getName())) {
+                varType.putObject("isExternal", true);
                 return varType;
             }
             String className = varType.getName();
@@ -86,9 +87,14 @@ public class TypeUtils {
             return null;
         }
 
+        if (nodeType.hasAttribute("isExternal")) {
+            return nodeType;
+        }
+
         String className = nodeType.getName();
         if (className.equals(table.getClassName()))
             return table.getReturnType(method);
+
         return null;
     }
 
