@@ -45,10 +45,10 @@ public class SymbolTableVerifier extends AnalysisVisitor {
             }
             set.add(i);
         }
-
+        set.clear();
         for (Symbol i : table.getLocalVariables(currentMethod)) {
             if (set.contains(i)) {
-                message = "duplicate params";
+                message = "duplicate locals";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
                         NodeUtils.getLine(method),
