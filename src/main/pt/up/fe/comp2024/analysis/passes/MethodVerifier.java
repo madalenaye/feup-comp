@@ -36,22 +36,8 @@ public class MethodVerifier extends AnalysisVisitor {
 
     private Void visitIdentifier(JmmNode varRefExpr, SymbolTable table) {
 
-        var node = varRefExpr.getAncestor("MethodDecl");
-        if (node.isEmpty()) {
-            return null;
-        }
-
-        JmmNode methodDecl = node.get();
-        boolean isStatic = Boolean.parseBoolean(methodDecl.get("isStatic"));
-
-        if (isStatic) {
-
-            for (var local : table.getLocalVariables(currentMethod)) {
-                if (local.getName().equals(varRefExpr.get("name"))) {
-                    return null;
-                }
-            }
-
+        // only static method
+        if (currentMethod.equals("main")) {
             for (var field : table.getFields()) {
                 if (field.getName().equals(varRefExpr.get("name"))) {
                     String message = String.format("Call to non-static field '%s' in a static method", varRefExpr.get("name"));
@@ -96,16 +82,17 @@ public class MethodVerifier extends AnalysisVisitor {
         currentMethod = method.get("name");
 
         boolean isStatic = Boolean.parseBoolean(method.get("isStatic"));
+        boolean isPublic = Boolean.parseBoolean(method.get("isPublic"));
 
         List<Symbol> params = table.getParameters(currentMethod);
         List<JmmNode> returnStmts = method.getChildren(RETURN_STMT);
 
         String message;
 
+        if (currentMethod.equals("main")) {
 
-        if (isStatic) {
-            if (!currentMethod.equals("main")) {
-                message = "Only main method can be static";
+            if (!(isStatic && isPublic)) {
+                message = "Main method must be public and static";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
                         NodeUtils.getLine(method),
@@ -113,7 +100,6 @@ public class MethodVerifier extends AnalysisVisitor {
                         message,
                         null)
                 );
-                return null;
             }
 
             checkMainArguments(method, table);
@@ -129,7 +115,20 @@ public class MethodVerifier extends AnalysisVisitor {
                         null)
                 );
             }
+
             return null;
+        }
+
+        // other methods
+        if (isStatic) {
+            message = "Only main method can be static";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(method),
+                    NodeUtils.getColumn(method),
+                    message,
+                    null)
+            );
         }
 
         // Check parameters type
@@ -244,8 +243,7 @@ public class MethodVerifier extends AnalysisVisitor {
             Optional<JmmNode> node = voidNode.getAncestor(METHOD_DECL);
             if (node.isPresent()) {
                 JmmNode mainMethod = node.get();
-                boolean isStatic = Boolean.parseBoolean(mainMethod.get("isStatic"));
-                if (isStatic && voidNode.equals(mainMethod.getChild(0))) {
+                if (voidNode.equals(mainMethod.getChild(0))) {
                     return null;
                 }
             }
