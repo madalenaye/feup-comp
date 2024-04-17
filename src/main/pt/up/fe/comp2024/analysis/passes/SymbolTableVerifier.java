@@ -71,7 +71,7 @@ public class SymbolTableVerifier extends AnalysisVisitor {
         // imports duplicates
         Set<String> set = new HashSet<>();
         for (String i : table.getImports()) {
-            if (set.contains(i) || i.equals(table.getClassName())) {
+            if (set.contains(i)) {
                 message = "duplicate imports";
                 addReport(Report.newError(
                         Stage.SEMANTIC,
@@ -84,7 +84,7 @@ public class SymbolTableVerifier extends AnalysisVisitor {
             }
             set.add(i);
         }
-        /*
+
         // field duplicates
         Set<Symbol> fields = new HashSet<Symbol>();
         for (Symbol i : table.getFields()) {
@@ -118,7 +118,7 @@ public class SymbolTableVerifier extends AnalysisVisitor {
             } else
                 methods.add(i);
         }
-        */
+
 
 
         return null;
