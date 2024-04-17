@@ -21,8 +21,8 @@ public class SymbolTableVerifier extends AnalysisVisitor {
 
     @Override
     public void buildVisitor() {
-        //addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
-        addVisit(Kind.PROGRAM, this::visitProgram);
+        addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
+        //addVisit(Kind.PROGRAM, this::visitProgram);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
