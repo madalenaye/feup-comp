@@ -151,14 +151,14 @@ public class DeclarationVerifier extends AnalysisVisitor {
                 message,
                 null)
         );
-        
+
         return null;
     }
 
     private Void visitAssign(JmmNode stmt, SymbolTable table) {
         String variable = stmt.get("name");
         Type type = TypeUtils.getVariableType(variable, table, currentMethod);
-        
+
         // If variable exists, return
         if (type != null) {
             return null;
