@@ -45,6 +45,13 @@ public class MethodVerifier extends AnalysisVisitor {
         boolean isStatic = Boolean.parseBoolean(methodDecl.get("isStatic"));
 
         if (isStatic) {
+
+            for (var local : table.getLocalVariables(currentMethod)) {
+                if (local.getName().equals(varRefExpr.get("name"))) {
+                    return null;
+                }
+            }
+
             for (var field : table.getFields()) {
                 if (field.getName().equals(varRefExpr.get("name"))) {
                     String message = String.format("Call to non-static field '%s' in a static method", varRefExpr.get("name"));
@@ -94,6 +101,7 @@ public class MethodVerifier extends AnalysisVisitor {
         List<JmmNode> returnStmts = method.getChildren(RETURN_STMT);
 
         String message;
+
 
         if (isStatic) {
             if (!currentMethod.equals("main")) {
