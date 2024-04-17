@@ -1,4 +1,4 @@
-import a.b.c.d;
+import io;
 import Quicksort;
 
 SymbolTable extends Quicksort {

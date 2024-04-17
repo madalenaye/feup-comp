@@ -29,7 +29,7 @@ public class VarargsVerifier extends AnalysisVisitor {
     private Void visitVarDecl(JmmNode varDecl, SymbolTable table) {
         JmmNode typeNode = varDecl.getChild(0);
         if (!typeNode.getKind().equals("VarargType")) {
-            return null;
+           return null;
         }
 
         String message = "Variable and field declarations cannot be vararg";

@@ -6,7 +6,6 @@ import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
-import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.passes.*;
 import pt.up.fe.comp2024.symboltable.JmmSymbolTableBuilder;
@@ -18,9 +17,11 @@ public class JmmAnalysisImpl implements JmmAnalysis {
 
 
     private final List<AnalysisPass> analysisPasses;
+    private final List<AnalysisPass> criticalPasses;
 
     public JmmAnalysisImpl() {
-        this.analysisPasses = List.of(new SymbolTableVerifier(), new MethodVerifier(), new VarargsVerifier(), new DeclarationVerifier(), new TypeVerifier(), new ArrayVerifier());
+        this.criticalPasses = List.of(new SymbolTableVerifier(), new MethodVerifier(), new VarargsVerifier(), new DeclarationVerifier());
+        this.analysisPasses = List.of(new TypeVerifier(), new ArrayVerifier());
     }
 
     @Override
@@ -32,16 +33,30 @@ public class JmmAnalysisImpl implements JmmAnalysis {
 
         List<Report> reports = new ArrayList<>();
 
+        // Critical passes
+        for (var analysisPass : criticalPasses) {
+            try {
+                var passReports = analysisPass.analyze(rootNode, table);
+                reports.addAll(passReports);
+                if (!reports.isEmpty()) {
+                    return new JmmSemanticsResult(parserResult, table, reports);
+                }
+            } catch (Exception e) {
+                reports.add(Report.newError(Stage.SEMANTIC,
+                        -1,
+                        -1,
+                        "Problem while executing analysis pass '" + analysisPass.getClass() + "'",
+                        e)
+                );
+            }
+        }
+
 
         // Visit all nodes in the AST
         for (var analysisPass : analysisPasses) {
             try {
                 var passReports = analysisPass.analyze(rootNode, table);
                 reports.addAll(passReports);
-                for (var report: passReports) {
-                    if (report.getType().equals(ReportType.ERROR))
-                        break;
-                }
             } catch (Exception e) {
                 reports.add(Report.newError(Stage.SEMANTIC,
                         -1,

@@ -165,7 +165,7 @@ public class TypeVerifier extends AnalysisVisitor {
             // Vararg argument set to empty array
             if (actualParams.size() < expectedParams.size()) {
                 return;
-            }
+            } 
 
             // Only one vararg argument, return is int[]
             if (actualParams.size() == expectedParams.size()) {
@@ -292,7 +292,7 @@ public class TypeVerifier extends AnalysisVisitor {
         // Assignee and assigned are imported classes, return
         if (table.getImports().contains(assigned.getName()) && table.getImports().contains(assignee.getName())) {
             return null;
-        }
+        }   
 
         String message = String.format("Incompatible assignee and assigned types ('%s' expected, '%s' given)", assignee.getName() + (assignee.isArray() ? "[]" : ""), assigned.getName() + (assigned.isArray() ? "[]" : ""));
         addReport(Report.newError(
