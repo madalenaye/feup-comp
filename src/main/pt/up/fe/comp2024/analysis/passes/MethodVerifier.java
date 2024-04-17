@@ -29,15 +29,18 @@ public class MethodVerifier extends AnalysisVisitor {
         addVisit(Kind.THIS_EXPR, this::visitThisExpr);
         addVisit(Kind.VOID_TYPE, this::visitVoidType);
         addVisit(Kind.VAR_REF_EXPR, this::visitIdentifier);
-        addVisit(ASSIGN_STMT, this::visitIdentifier);
-        addVisit(NEW_ARRAY_EXPR, this::visitIdentifier);
+        addVisit(Kind.ASSIGN_STMT, this::visitIdentifier);
+        addVisit(Kind.NEW_ARRAY_EXPR, this::visitIdentifier);
     }
 
 
     private Void visitIdentifier(JmmNode varRefExpr, SymbolTable table) {
 
+
+
         // only static method
         if (currentMethod.equals("main")) {
+
             for (var field : table.getFields()) {
                 if (field.getName().equals(varRefExpr.get("name"))) {
                     String message = String.format("Call to non-static field '%s' in a static method", varRefExpr.get("name"));
