@@ -41,8 +41,11 @@ public class JasminGenerator {
 
         this.generators = new FunctionClassMap<>();
         generators.put(ClassUnit.class, this::generateClassUnit);
+        generators.put(PutFieldInstruction.class, this::generatePutFieldInstruction);
+        generators.put(GetFieldInstruction.class, this::generateGetFieldInstruction);
         generators.put(Method.class, this::generateMethod);
         generators.put(AssignInstruction.class, this::generateAssign);
+        generators.put(CallInstruction.class, this::generateCallInstruction);
         generators.put(SingleOpInstruction.class, this::generateSingleOp);
         generators.put(LiteralElement.class, this::generateLiteral);
         generators.put(Operand.class, this::generateOperand);
@@ -76,18 +79,17 @@ public class JasminGenerator {
         var defaultConstructor = new StringBuilder();
         defaultConstructor.append(".method public <init>()V").append(NL).append(TAB).append("aload_0").append(NL).append(TAB);
 
-        if (classUnit.getSuperClass() == null){
+        if (classUnit.getSuperClass() == null) {
             code.append(".super java/lang/Object").append(NL);
             defaultConstructor.append("invokespecial java/lang/Object/<init>()V");
-        }
-        else{
+        } else {
             code.append(".super ").append(classUnit.getSuperClass()).append(NL);
             defaultConstructor.append("invokespecial ").append(classUnit.getSuperClass()).append("/<init>()V");
         }
         var classFields = ollirResult.getOllirClass().getFields();
-        for (var field : classFields){
+        for (var field : classFields) {
             var accessModifierName = field.getFieldAccessModifier().name();
-            String newAccessModifierName = switch (accessModifierName){
+            String newAccessModifierName = switch (accessModifierName) {
                 case "PUBLIC" -> "public";
                 case "PRIVATE" -> "private";
                 case "DEFAULT" -> "";
@@ -117,7 +119,6 @@ public class JasminGenerator {
         return code.toString();
     }
 
-
     private String generateMethod(Method method) {
 
         // set method
@@ -132,11 +133,12 @@ public class JasminGenerator {
 
         var methodName = method.getMethodName();
 
-        if (method.isStaticMethod()) code.append(NL).append(".method ").append(modifier).append("static ").append(methodName).append("(");
+        if (method.isStaticMethod())
+            code.append(NL).append(".method ").append(modifier).append("static ").append(methodName).append("(");
         else code.append(NL).append(".method ").append(modifier).append(methodName).append("(");
 
         var parameters = method.getParams();
-        for (var parameter : parameters){
+        for (var parameter : parameters) {
             var parameterType = ollirTypeToJasmin(parameter.getType());
             code.append(parameterType);
         }
@@ -182,7 +184,7 @@ public class JasminGenerator {
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
 
         var type = operand.getType().getTypeOfElement();
-        switch (type){
+        switch (type) {
             case INT32, BOOLEAN -> {
                 if (reg > 3) code.append("istore ").append(reg).append(NL);
                 else code.append("istore_").append(reg).append(NL);
@@ -192,7 +194,8 @@ public class JasminGenerator {
                 else code.append("astore_").append(reg).append(NL);
             }
             default -> throw new NotImplementedException(type.name());
-        };
+        }
+        ;
 
         return code.toString();
     }
@@ -205,7 +208,7 @@ public class JasminGenerator {
         var code = new StringBuilder();
         var literalString = literal.getLiteral();
 
-        if (literal.getType().getTypeOfElement().name().equals("STRING")){
+        if (literal.getType().getTypeOfElement().name().equals("STRING")) {
             code.append(literalString.replaceAll("\"", "")).append("(");
             return code.toString();
         }
@@ -219,14 +222,13 @@ public class JasminGenerator {
 
     private String generateOperand(Operand operand) {
         var operandName = operand.getName();
-        if (currentMethod.getVarTable().containsKey(operandName)){
+        if (currentMethod.getVarTable().containsKey(operandName)) {
             var reg = currentMethod.getVarTable().get(operandName).getVirtualReg();
             var type = operand.getType().getTypeOfElement().name();
-            if (type.equals("INT32") || type.equals("BOOLEAN")){
+            if (type.equals("INT32") || type.equals("BOOLEAN")) {
                 if (reg > 3) return "iload " + reg + NL;
                 return "iload_" + reg + NL;
-            }
-            else{
+            } else {
                 if (reg > 3) return "aload " + reg + NL;
                 return "aload_" + reg + NL;
             }
@@ -261,11 +263,11 @@ public class JasminGenerator {
     private String generateReturn(ReturnInstruction returnInst) {
         var code = new StringBuilder();
 
-        if (returnInst.getOperand() != null){
-        code.append(generators.apply(returnInst.getOperand()));
+        if (returnInst.getOperand() != null) {
+            code.append(generators.apply(returnInst.getOperand()));
         }
         var type = returnInst.getReturnType();
-        switch (type.getTypeOfElement()){
+        switch (type.getTypeOfElement()) {
             case INT32, BOOLEAN -> code.append(NL).append("ireturn").append(NL);
             case VOID -> code.append(NL).append("return").append(NL);
             case OBJECTREF, CLASS -> code.append(NL).append("areturn").append(NL);
@@ -275,15 +277,111 @@ public class JasminGenerator {
         return code.toString();
     }
 
-    private String ollirTypeToJasmin(Type type){
-        return switch (type.getTypeOfElement()){
+    private String generateCallInstruction(CallInstruction callInstruction){
+        var code = new StringBuilder();
+        var invocationType = callInstruction.getInvocationType();
+
+        switch (invocationType){
+            case invokestatic -> {
+                callInstruction.getArguments().forEach((arg) -> code.append(generators.apply(arg)));
+                var calledObject = callInstruction.getCaller();
+                var methodName = callInstruction.getMethodName();
+                code.append("invokestatic ").append(generators.apply(calledObject)).append("/").append(generators.apply(methodName));
+
+                callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
+                code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+            }
+            case NEW -> {
+                var objectClass = (Operand) callInstruction.getCaller();
+                var className = objectClass.getName();
+                code.append("new ").append(className).append(NL).append("dup").append(NL);
+            }
+            case invokespecial -> {
+                var objectClass = (Operand) callInstruction.getCaller();
+                var elementType = objectClass.getType();
+                var elementName = ((ClassType) elementType).getName();
+                code.append(generators.apply(objectClass)).append("invokespecial ");
+                if (elementType.getTypeOfElement() == ElementType.THIS) code.append(ollirResult.getOllirClass().getSuperClass());
+                else code.append(getImportedClassName(elementName));
+                code.append("/<init>").append("(");
+
+                callInstruction.getArguments().forEach((op) -> code.append(ollirTypeToJasmin(op.getType())));
+                code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+                if (!elementName.equals(ollirResult.getOllirClass().getSuperClass())) code.append("pop");
+
+            }
+            case invokevirtual -> {
+                var object = (Operand) callInstruction.getCaller();
+                var elementName = ((ClassType) object.getType()).getName();
+                var methodName = callInstruction.getMethodName();
+                code.append(generators.apply(object)).append(NL);
+
+                callInstruction.getArguments().forEach((op) -> code.append(generators.apply(op)));
+                code.append("invokevirtual ").append(elementName).append("/").append(generators.apply(methodName));
+
+                callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
+                code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+            }
+            default -> throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
+
+        }
+        return code.toString();
+    }
+
+    private String generatePutFieldInstruction(PutFieldInstruction instruction){
+        var code = new StringBuilder();
+        code.append(generators.apply(instruction.getObject())).append(generators.apply(instruction.getValue())).append("putfield ");
+
+        var className = ((ClassType) instruction.getObject().getType()).getName();
+        var fieldName = instruction.getField().getName();
+        var fieldType = ollirTypeToJasmin(instruction.getField().getType());
+
+        code.append(className).append("/").append(fieldName).append(" ").append(fieldType).append(NL);
+        return code.toString();
+    }
+    private String generateGetFieldInstruction(GetFieldInstruction instruction){
+        var code = new StringBuilder();
+        var className = ((ClassType) instruction.getObject().getType()).getName();
+        var fieldName = instruction.getField().getName();
+        var fieldType = ollirTypeToJasmin(instruction.getField().getType());
+        code.append(generators.apply(instruction.getObject())).append("getfield ").append(className).append("/").append(fieldName).append(" ").append(fieldType).append(NL);
+
+        return code.toString();
+    }
+    private String ollirTypeToJasmin(Type type) {
+        if (type instanceof ArrayType arrayType) {
+            ElementType elementType = arrayType.getElementType().getTypeOfElement();
+            return switch (elementType) {
+                case STRING -> "[Ljava/lang/String;";
+                case INT32 -> "LI";
+                default -> null;
+            };
+        }
+
+        return switch (type.getTypeOfElement()) {
             case INT32 -> "I";
             case BOOLEAN -> "Z";
             case STRING -> "Ljava/lang/String;";
-            case ARRAYREF -> "[";
-            case OBJECTREF, CLASS -> "L" + type.getClass() + ";";
+            case OBJECTREF, CLASS -> getObjectType(type);
             case VOID -> "V";
-            default -> throw new NotImplementedException(type.getTypeOfElement());
+            default -> null;
         };
+    }
+
+    private String normalizeClassName(String className) {
+        return className.replace(".", "/");
+    }
+
+    private String getImportedClassName(String basicClassName) {
+        if (basicClassName.equals("this")) return ollirResult.getOllirClass().getClassName();
+
+        for (String importedClass : ollirResult.getOllirClass().getImports()){
+            if (importedClass.endsWith(basicClassName)) return normalizeClassName(importedClass);
+        }
+        return basicClassName;
+    }
+
+    private String getObjectType (Type type){
+        return "L" + getImportedClassName(type.getTypeOfElement().toString()) + ";";
     }
 }
