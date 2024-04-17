@@ -9,8 +9,6 @@ import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.ast.TypeUtils;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class ArrayVerifier extends AnalysisVisitor {
@@ -59,6 +57,7 @@ public class ArrayVerifier extends AnalysisVisitor {
         JmmNode assigned = arrayStmt.getObject("array", JmmNode.class);
         Type assignedType = TypeUtils.getExprType(assigned,table, currentMethod);
 
+        assert assignedType != null;
         if (TypeUtils.isIntType(assignedType)) {
             return null;
         }
@@ -84,6 +83,7 @@ public class ArrayVerifier extends AnalysisVisitor {
         JmmNode variable = expr.getObject("array", JmmNode.class);
         Type varType = TypeUtils.getExprType(variable, table, currentMethod);
 
+        assert varType != null;
         if (varType.getName().equals("int") && varType.isArray()) {
             return null;
         }
@@ -107,6 +107,7 @@ public class ArrayVerifier extends AnalysisVisitor {
         List<JmmNode> elements = array.getChildren();
         for (JmmNode element : elements) {
             Type type = TypeUtils.getExprType(element, table, currentMethod);
+            assert type != null;
             if (!TypeUtils.isIntType(type)) {
                 String message = String.format("Array expects elements of type integer ('%s' given)", type.getName() + (type.isArray() ? "[]" : ""));
                 addReport(Report.newError(
@@ -128,6 +129,7 @@ public class ArrayVerifier extends AnalysisVisitor {
         JmmNode index = expr.getObject("index", JmmNode.class);
         Type indexType = TypeUtils.getExprType(index, table, currentMethod);
 
+        assert indexType != null;
         if (!TypeUtils.isIntType(indexType)) {
             String message = String.format("Array access index expects an expression of type integer ('%s' given)", indexType.getName() + (indexType.isArray() ? "[]" : ""));
 
@@ -143,13 +145,23 @@ public class ArrayVerifier extends AnalysisVisitor {
     }
 
     private Void visitLenExpr(JmmNode expr, SymbolTable table) {
-        Type varType = TypeUtils.getExprType(expr.getChild(0), table, currentMethod);
 
-        if (varType == null) {
-            return null;
+        String length = expr.get("len");
+
+        if (!length.equals("length")) {
+            String message = String.format("Incorrect usage of length expression");
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(expr),
+                    NodeUtils.getColumn(expr),
+                    message,
+                    null)
+            );
         }
 
-        if (varType.isArray()) {
+        Type varType = TypeUtils.getExprType(expr.getChild(0), table, currentMethod);
+
+        if (varType == null || varType.isArray()) {
             return null;
         }
 

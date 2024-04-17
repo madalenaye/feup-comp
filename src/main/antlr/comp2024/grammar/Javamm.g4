@@ -21,7 +21,6 @@ IMPORT : 'import' ;
 EXTENDS : 'extends' ;
 STATIC : 'static' ;
 VOID : 'void' ;
-LENGTH : 'length' ;
 THIS : 'this' ;
 TRUE : 'true';
 FALSE : 'false';
@@ -91,7 +90,7 @@ stmt
 
 expr
     : '(' expr ')' #ParensExpr
-    | expr '.' LENGTH #LenExpr
+    | expr '.' len=ID #LenExpr
     | array=expr '[' index=expr ']' #ArrayElemExpr
     | '[' (expr (',' expr)*)? ']' #ArrayExpr
     | object=expr '.' method=ID '(' (expr (',' expr)*)? ')' #MethodExpr

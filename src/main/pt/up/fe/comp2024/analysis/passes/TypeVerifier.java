@@ -34,12 +34,28 @@ public class TypeVerifier extends AnalysisVisitor {
         JmmNode object = methodExpr.getObject("object", JmmNode.class);
         Type objectType = TypeUtils.getExprType(object, table, currentMethod);
 
-        // external method, assume okay
-        if (objectType != null && objectType.hasAttribute("isExternal")) {
+        if (objectType == null) {
             return null;
         }
 
-        // check argument types
+        // External method, assume okay
+        if (table.getImports().contains(objectType.getName())) {
+            return null;
+        }
+
+        if (!TypeUtils.isObjectType(objectType)) {
+            String message = String.format("Method call on non-object type ('%s' given)", objectType.getName() + (objectType.isArray() ? "[]" : ""));
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(object),
+                    NodeUtils.getColumn(object),
+                    message,
+                    null)
+            );
+            return null;
+        }
+
+        // Check argument types
         checkArguments(methodExpr, table);
 
         return null;
@@ -67,10 +83,12 @@ public class TypeVerifier extends AnalysisVisitor {
             List<Symbol> expectedParams = table.getParameters(method);
             List<JmmNode> actualParams = methodExpr.getChildren(); actualParams.remove(0);
 
+            // Method calls with no arguments
             if (expectedParams.isEmpty() && actualParams.isEmpty()) {
                 return;
             }
 
+            // Method calls with no arguments, but expected arguments
             if (expectedParams.isEmpty()) {
                 message = String.format("Method call has wrong number of arguments (expected 0, given %d)", actualParams.size());
                 addReport(Report.newError(
@@ -173,11 +191,6 @@ public class TypeVerifier extends AnalysisVisitor {
                     );
                 }
             }
-
-
-
-
-
         }
     }
 
@@ -192,7 +205,7 @@ public class TypeVerifier extends AnalysisVisitor {
         }
 
         // external method
-        if (actualType != null && actualType.hasAttribute("isExternal")) {
+        if (actualType != null && table.getImports().contains(actualType.getName())) {
             return null;
         }
 
@@ -212,36 +225,30 @@ public class TypeVerifier extends AnalysisVisitor {
         return null;
     }
 
-
-
     private Void visitBinaryExpr(JmmNode expr, SymbolTable table) {
 
         Type type1 = TypeUtils.getExprType(expr.getChild(0), table, currentMethod);
         Type type2 = TypeUtils.getExprType(expr.getChild(1), table, currentMethod);
+        String operator = expr.get("op");
 
-        // Binary expression with arrays
-        if (type1.isArray() || type2.isArray()) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(expr),
-                    NodeUtils.getColumn(expr),
-                    "Array cannot be used in arithmetic operations",
-                    null)
-            );
+        if (type1 == null || type2 == null) {
             return null;
         }
 
-        String operator = expr.get("op");
         String message;
 
         switch (operator) {
             case "+", "*", "-", "/", "<" -> {
                 if (TypeUtils.isIntType(type1) && TypeUtils.isIntType(type2)) return null;
+                if (type1.hasAttribute("isExternal") && TypeUtils.isIntType(type2)) return null;
+                if (type2.hasAttribute("isExternal") && TypeUtils.isIntType(type1)) return null;
                 message = String.format("'%s' operation expects two integers ('%s' and '%s' given)", operator, type1.getName() + (type1.isArray() ? "[]" : ""), type2.getName() + (type2.isArray() ? "[]" : ""));
             }
             case "&&"-> {
                 if (TypeUtils.isBoolType(type1) && TypeUtils.isBoolType(type2)) return null;
-                message = String.format("'%s' operation expects two booleans ('%s' and '%s' given)", operator, type1.getName() + (type2.isArray() ? "[]" : ""), type2.getName() + (type2.isArray() ? "[]" : ""));
+                if (type1.hasAttribute("isExternal") && TypeUtils.isBoolType(type2)) return null;
+                if (type2.hasAttribute("isExternal") && TypeUtils.isBoolType(type1)) return null;
+                message = String.format("'%s' operation expects two booleans ('%s' and '%s' given)", operator, type1.getName() + (type1.isArray() ? "[]" : ""), type2.getName() + (type2.isArray() ? "[]" : ""));
             }
             default -> throw new RuntimeException("Unknown operator '" + operator);
         }
@@ -256,9 +263,6 @@ public class TypeVerifier extends AnalysisVisitor {
         return null;
     }
 
-
-
-
     private Void visitAssignStmt(JmmNode stmt, SymbolTable table) {
         String variable = stmt.get("name");
         Type assignee = TypeUtils.getVariableType(variable, table, currentMethod);
@@ -270,17 +274,22 @@ public class TypeVerifier extends AnalysisVisitor {
             return null;
         }
 
-        // Compatible types
+        // Compatible types, return
         if (assignee.equals(assigned)) {
             return null;
         }
 
-        // Assignee is a superclass of assigned
+        // External method, assume okay
+        if (assigned.hasAttribute("isExternal")) {
+            return null;
+        }
+
+        // Assignee is a superclass of assigned, return
         if (assignee.getName().equals(table.getSuper()) && assigned.getName().equals(table.getClassName())) {
             return null;
         }
 
-        // Assignee and assigned are imported classes
+        // Assignee and assigned are imported classes, return
         if (table.getImports().contains(assigned.getName()) && table.getImports().contains(assignee.getName())) {
             return null;
         }   
@@ -300,6 +309,15 @@ public class TypeVerifier extends AnalysisVisitor {
         JmmNode condition = stmt.getObject("condition", JmmNode.class);
 
         Type type = TypeUtils.getExprType(condition, table, currentMethod);
+
+        if (type == null) {
+            return null;
+        }
+
+        // External method, assume okay
+        if (type.hasAttribute("isExternal")) {
+            return null;
+        }
 
         if (TypeUtils.isBoolType(type)) {
             return null;
@@ -321,6 +339,15 @@ public class TypeVerifier extends AnalysisVisitor {
         JmmNode expr = negExpr.getChild(0);
 
         Type type = TypeUtils.getExprType(expr, table, currentMethod);
+
+        if (type == null) {
+            return null;
+        }
+
+        // External method, assume okay
+        if (type.hasAttribute("isExternal")) {
+            return null;
+        }
 
         if (TypeUtils.isBoolType(type)) {
             return null;

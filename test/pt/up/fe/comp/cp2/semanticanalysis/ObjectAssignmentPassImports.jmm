@@ -16,6 +16,7 @@ class ObjectAssignmentPassImports {
 
         // A and B imported, assume it is correct
         a = b;
+
         return a;
     }
 }

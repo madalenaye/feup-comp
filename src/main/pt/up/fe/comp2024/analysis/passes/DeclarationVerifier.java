@@ -25,7 +25,10 @@ public class DeclarationVerifier extends AnalysisVisitor {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.VAR_REF_EXPR, this::visitVarRefExpr);
         addVisit(Kind.METHOD_EXPR, this::visitMethodExpr);
-        addVisit(Kind.NEW_OBJECT_EXPR, this::visitNewObjectExpr);
+        addVisit(Kind.ASSIGN_STMT, this::visitAssign);
+        addVisit(Kind.ARRAY_ASSIGN_STMT, this::visitAssign);
+        addVisit(Kind.NEW_OBJECT_EXPR, this::visitObject);
+        addVisit(Kind.OBJECT_TYPE, this::visitObject);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -36,30 +39,23 @@ public class DeclarationVerifier extends AnalysisVisitor {
     private Void visitMethodExpr(JmmNode methodExpr, SymbolTable table) {
 
         JmmNode object = methodExpr.getObject("object", JmmNode.class);
-
-        if (!object.getKind().equals("VarRefExpr")) {
-            return null;
-        }
-
-        String varRefName = object.get("name");
-
-        Type type = TypeUtils.getVarExprType(object, table, currentMethod);
+        Type type = TypeUtils.getExprType(object, table, currentMethod);
 
         if (type == null) {
-
-            var message = String.format("Class '%s' does not exist.", varRefName);
-
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(object),
-                    NodeUtils.getColumn(object),
-                    message,
-                    null)
-            );
+            if (object.getKind().equals("VarRefExpr")) {
+                String message = String.format("Class '%s' does not exist.", object.get("name"));
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(object),
+                        NodeUtils.getColumn(object),
+                        message,
+                        null)
+                );
+            }
             return null;
         }
 
-        // object is from imported class, return
+        // Object is from imported class, return
         if (table.getImports().contains(type.getName())) {
             return null;
         }
@@ -68,12 +64,12 @@ public class DeclarationVerifier extends AnalysisVisitor {
 
             String method = methodExpr.get("method");
 
-            // method exists in current class, return
+            // Method exists in current class, return
             if (table.getMethods().contains(method)) {
                 return null;
             }
 
-            // method exists in super class (assume), return
+            // Method exists in super class (assume), return
             if (!table.getSuper().isBlank()) {
                 return null;
             }
@@ -87,22 +83,6 @@ public class DeclarationVerifier extends AnalysisVisitor {
                     message,
                     null)
             );
-            /*
-            var params = methodExpr.getChildren();
-            params.remove(0);
-            boolean validArguments = checkArguments(methodExpr, table, func);
-
-            if (!validArguments) {
-                var message = String.format("Incompatible argument types.", object);
-
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        NodeUtils.getLine(object),
-                        NodeUtils.getColumn(object),
-                        message,
-                        null)
-                );
-            }*/
         }
 
         return null;
@@ -112,33 +92,31 @@ public class DeclarationVerifier extends AnalysisVisitor {
     private Void visitVarRefExpr(JmmNode varRefExpr, SymbolTable table) {
         SpecsCheck.checkNotNull(currentMethod, () -> "Expected current method to be set");
 
-        // Check if exists a parameter or variable declaration with the same name as the variable reference
-        var varRefName = varRefExpr.get("name");
-
         JmmNode parentNode = varRefExpr.getJmmParent();
         if (parentNode.getKind().equals("MethodExpr")) {
             return null;
         }
+
+        // Check if exists a parameter or variable declaration with the same name as the variable reference
+        var varRefName = varRefExpr.get("name");
+
         // Var is a field, return
-        if (table.getFields().stream()
-                .anyMatch(param -> param.getName().equals(varRefName))) {
+        if (table.getFields().stream().anyMatch(param -> param.getName().equals(varRefName))) {
             return null;
         }
 
         // Var is a parameter, return
-        if (table.getParameters(currentMethod).stream()
-                .anyMatch(param -> param.getName().equals(varRefName))) {
+        if (table.getParameters(currentMethod).stream().anyMatch(param -> param.getName().equals(varRefName))) {
             return null;
         }
 
         // Var is a declared variable, return
-        if (table.getLocalVariables(currentMethod).stream()
-                .anyMatch(varDecl -> varDecl.getName().equals(varRefName))) {
+        if (table.getLocalVariables(currentMethod).stream().anyMatch(varDecl -> varDecl.getName().equals(varRefName))) {
             return null;
         }
 
         // Create error report
-        var message = String.format("Variable '%s' does not exist.", varRefName);
+        String message = String.format("Variable '%s' does not exist.", varRefName);
         addReport(Report.newError(
                 Stage.SEMANTIC,
                 NodeUtils.getLine(varRefExpr),
@@ -150,15 +128,22 @@ public class DeclarationVerifier extends AnalysisVisitor {
         return null;
     }
 
-    private Void visitNewObjectExpr(JmmNode expr, SymbolTable table) {
+    private Void visitObject(JmmNode expr, SymbolTable table) {
 
-        Type type = TypeUtils.getExprType(expr, table, currentMethod);
+        String objectClass = expr.get("name");
 
-        if (type != null) {
+        // Object is from current class, return
+        if (objectClass.equals(table.getClassName())) {
             return null;
         }
 
-        String message = String.format("Class '%s' does not exist.", expr.get("name"));
+        // Object is from imported class, return
+        if (table.getImports().contains(objectClass)) {
+            return null;
+        }
+
+        // Create error report
+        String message = String.format("Class '%s' does not exist.", objectClass);
         addReport(Report.newError(
                 Stage.SEMANTIC,
                 NodeUtils.getLine(expr),
@@ -169,5 +154,28 @@ public class DeclarationVerifier extends AnalysisVisitor {
         
         return null;
     }
+
+    private Void visitAssign(JmmNode stmt, SymbolTable table) {
+        String variable = stmt.get("name");
+        Type type = TypeUtils.getVariableType(variable, table, currentMethod);
+        
+        // If variable exists, return
+        if (type != null) {
+            return null;
+        }
+
+        // Create error report
+        String message = String.format("Variable '%s' does not exist.", variable);
+        addReport(Report.newError(
+                Stage.SEMANTIC,
+                NodeUtils.getLine(stmt),
+                NodeUtils.getColumn(stmt),
+                message,
+                null)
+        );
+
+        return null;
+    }
+
 }
 

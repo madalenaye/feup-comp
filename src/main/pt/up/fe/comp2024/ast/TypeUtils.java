@@ -14,6 +14,7 @@ public class TypeUtils {
     public static String getIntTypeName() {
         return INT_TYPE_NAME;
     }
+    public static String getBoolTypeName() { return BOOL_TYPE_NAME; }
 
 
     public static boolean isArray(JmmNode type) {
@@ -46,7 +47,7 @@ public class TypeUtils {
             case THIS_EXPR -> new Type(table.getClassName(), false);
             case BINARY_EXPR -> getBinExprType(expr);
             case VAR_REF_EXPR -> getVarExprType(expr, table, method);
-            case NEW_OBJECT_EXPR -> getNewObjectExprType(expr, table, method);
+            case NEW_OBJECT_EXPR -> new Type(expr.get("name"), false);
             case METHOD_EXPR -> getMethodExprType(expr, table, method);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
@@ -72,7 +73,8 @@ public class TypeUtils {
             Type varType = getVarExprType(node, table, currentMethod);
             if (varType == null) {
                 return null;
-            } else if (varType.hasAttribute("isExternal")) {
+            } else if (table.getImports().contains(varType.getName())) {
+                varType.putObject("isExternal", true);
                 return varType;
             }
             String className = varType.getName();
@@ -85,35 +87,14 @@ public class TypeUtils {
             return null;
         }
 
+        if (nodeType.hasAttribute("isExternal")) {
+            return nodeType;
+        }
+
         String className = nodeType.getName();
         if (className.equals(table.getClassName()))
             return table.getReturnType(method);
-        return null;
-    }
-    private static Type getNewObjectExprType(JmmNode expr, SymbolTable table, String method) {
-        String id = expr.get("name");
 
-        if (id.equals(table.getClassName()) || id.equals(table.getSuper())) {
-            return new Type(id, false);
-        }
-
-        for (String imp : table.getImports()) {
-            if (imp.equals(id)) {
-                return new Type(id, false);
-            }
-        }
-
-        for (var field : table.getFields()) {
-            if (field.getType().getName().equals(id)) {
-                return field.getType();
-            }
-        }
-
-        for (var local : table.getLocalVariables(method)) {
-            if (local.getType().getName().equals(id)) {
-                return local.getType();
-            }
-        }
         return null;
     }
 
@@ -136,38 +117,27 @@ public class TypeUtils {
         // Var is a field
         for (var field : table.getFields()) {
             if (field.getName().equals(variable)) {
-                Type type = field.getType();
-                if (table.getImports().contains(type.getName()))
-                    type.putObject("isExternal", true);
-                return type;
+                return field.getType();
             }
         }
 
         // Var is a local
         for (var local : table.getLocalVariables(method)) {
             if (local.getName().equals(variable)) {
-                Type type = local.getType();
-                if (table.getImports().contains(type.getName()))
-                    type.putObject("isExternal", true);
-                return type;
+                return local.getType();
             }
         }
 
         // Var is a parameter
         for (var param : table.getParameters(method)) {
             if (param.getName().equals(variable)) {
-                Type type = param.getType();
-                if (table.getImports().contains(type.getName()))
-                    type.putObject("isExternal", true);
-                return type;
+                return param.getType();
             }
         }
 
         // Var is imported
         if (table.getImports().contains(variable)) {
-            Type type = new Type(variable, false);
-            type.putObject("isExternal", true);
-            return type;
+            return new Type(variable, false);
         }
         return null;
     }
@@ -180,43 +150,32 @@ public class TypeUtils {
         return type.getName().equals(BOOL_TYPE_NAME) && !type.isArray();
     }
 
+    public static boolean isObjectType(Type type) {
+        return !type.isArray() && !type.getName().equals(INT_TYPE_NAME) && !type.getName().equals(BOOL_TYPE_NAME);
+    }
+
     public static Type getVariableType(String variable, SymbolTable table, String method) {
         // Var is a field
         for (var field : table.getFields()) {
             if (field.getName().equals(variable)) {
-                Type type = field.getType();
-                if (table.getImports().contains(type.getName()))
-                    type.putObject("isExternal", true);
-                return type;
+                return field.getType();
             }
         }
 
         // Var is a local
         for (var local : table.getLocalVariables(method)) {
             if (local.getName().equals(variable)) {
-                Type type = local.getType();
-                if (table.getImports().contains(type.getName()))
-                    type.putObject("isExternal", true);
-                return type;
+                return local.getType();
             }
         }
 
         // Var is a parameter
         for (var param : table.getParameters(method)) {
             if (param.getName().equals(variable)) {
-                Type type = param.getType();
-                if (table.getImports().contains(type.getName()))
-                    type.putObject("isExternal", true);
-                return type;
+                return param.getType();
             }
         }
 
-        // Var is imported
-        if (table.getImports().contains(variable)) {
-            Type type = new Type(variable, false);
-            type.putObject("isExternal", true);
-            return type;
-        }
         return null;
     }
 
