@@ -71,6 +71,7 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
                         .append(exprCode);
                 exprCode = newTmp;
             }
+
             else {
                 String ollirType = OptUtils.toOllirType(type);
                 String newTmp = OptUtils.getTemp() + ollirType;

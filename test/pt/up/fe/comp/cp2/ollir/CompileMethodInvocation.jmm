@@ -5,7 +5,7 @@ class test{
     public int foo() {
         int d;
         d = C.foo();
-        this.bar(this.bar(2+4));
+        this.bar(C.foo());
         return 1;
     }
     public int bar(int a) {

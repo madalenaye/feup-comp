@@ -88,8 +88,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String rightCode = rhs.getCode();
 
         if (left.getKind().equals("MethodExpr")) {
-            Type type = TypeUtils.getExprType(left, table, currMethod);
-            String ollirType = OptUtils.toOllirType(Objects.requireNonNull(type));
+            String ollirType = leftCode.substring(leftCode.lastIndexOf("."), leftCode.length()-2);
             String newTmp = OptUtils.getTemp() + ollirType;
             computation.append(newTmp)
                     .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
@@ -98,8 +97,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         }
 
         if (right.getKind().equals("MethodExpr")) {
-            Type type = TypeUtils.getExprType(right, table, currMethod);
-            String ollirType = OptUtils.toOllirType(Objects.requireNonNull(type));
+            String ollirType = rightCode.substring(rightCode.lastIndexOf("."), rightCode.length()-2);
             String newTmp = OptUtils.getTemp() + ollirType;
             computation.append(newTmp)
                     .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
@@ -246,9 +244,11 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         else if (object.getKind().equals("VarRefExpr")) {
             assert objectType != null;
 
+
             // imported class
-            if (objectType.hasAttribute("isExternal") && table.getReturnType(method) == null) {
+            if (objectType.hasAttribute("isExternal") && !objectType.hasAttribute("isInstance") && table.getReturnType(method) == null) {
                 ollirReturnType = ".V";
+
                 code.append("invokestatic")
                         .append("(").append(objectType.getName())
                         .append(", \"").append(method).append("\"");
@@ -266,7 +266,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     ollirReturnType = OptUtils.toOllirType(returnType);
                 }
                     OllirExprResult objectResult = visit(object);
-                    computation.append(objectResult.getComputation());
 
                     code.append("invokevirtual")
                             .append("(").append(objectResult.getCode())
@@ -309,54 +308,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 .append(END_STMT);
 
         return new OllirExprResult(code.toString(), computation);
-
-
-
-
-
-
-
-
-
-        // this.foo().println(1+2)
-
-        // tmp0 = 1.i32 + 2.i32;
-        // invokestatic(io, "println", 1.i32);
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /*
-        Type type = TypeUtils.getExprType(node.getJmmChild(0), table, currMethod);
-        String ollirType = OptUtils.toOllirType(type);
-
-        if (table.getImports().contains(type.getName())) {
-            code.append(INVOKESTATIC)
-                    .append("(").append(node.getJmmChild(0).get("name"))
-                    .append(", \"").append(node.get("method"))
-                    .append("\", ").append(node.getJmmChild(0).get("name")).append(ollirType)
-                    .append(").V").append(END_STMT);
-        }
-        else {
-            code.append("invokevirtual")
-                    .append("(").append(node.getJmmChild(0).get("name"))
-                    .append(", \"").append(node.get("method"))
-                    .append("\", ").append(node.getJmmChild(0).get("name")).append(ollirType)
-                    .append(").V").append(END_STMT);
-        }
-
-
-
-        return new OllirExprResult(code.toString(), computation.toString());*/
     }
 
     private OllirExprResult visitParensExpr(JmmNode node, Void unused) {
