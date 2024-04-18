@@ -314,11 +314,12 @@ public class JasminGenerator {
             case invokevirtual -> {
                 var object = (Operand) callInstruction.getCaller();
                 var elementName = ((ClassType) object.getType()).getName();
+                var fullElementName = getImportedClassName(elementName);
                 var methodName = callInstruction.getMethodName();
                 code.append(generators.apply(object)).append(NL);
 
                 callInstruction.getArguments().forEach((op) -> code.append(generators.apply(op)));
-                code.append("invokevirtual ").append(elementName).append("/").append(generators.apply(methodName));
+                code.append("invokevirtual ").append(fullElementName).append("/").append(generators.apply(methodName));
 
                 callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
                 code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
