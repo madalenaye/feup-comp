@@ -9,7 +9,6 @@ import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
-import pt.up.fe.comp2024.ast.TypeUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,20 +35,20 @@ public class MethodVerifier extends AnalysisVisitor {
 
     private Void visitIdentifier(JmmNode varRefExpr, SymbolTable table) {
 
-        // only static method
+        // assuming main is the only static method
         if (currentMethod.equals("main")) {
-            for (var field : table.getFields()) {
-                if (field.getName().equals(varRefExpr.get("name"))) {
-                    String message = String.format("Call to non-static field '%s' in a static method", varRefExpr.get("name"));
-                    addReport(Report.newError(
-                            Stage.SEMANTIC,
-                            NodeUtils.getLine(varRefExpr),
-                            NodeUtils.getColumn(varRefExpr),
-                            message,
-                            null)
-                    );
-                    return null;
-                }
+            String variable = varRefExpr.get("name");
+
+            if (table.getFields().stream().anyMatch(field -> field.getName().equals(variable))) {
+                String message = String.format("Call to non-static field '%s' in a static method", varRefExpr.get("name"));
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(varRefExpr),
+                        NodeUtils.getColumn(varRefExpr),
+                        message,
+                        null)
+                );
+                return null;
             }
         }
 
@@ -72,7 +71,6 @@ public class MethodVerifier extends AnalysisVisitor {
                     null)
             );
         }
-
 
         return null;
     }

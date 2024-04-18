@@ -10,10 +10,7 @@ import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.ast.TypeUtils;
-
 import java.util.List;
-
-import static pt.up.fe.comp2024.ast.Kind.*;
 
 public class TypeVerifier extends AnalysisVisitor {
     private String currentMethod;
@@ -134,6 +131,7 @@ public class TypeVerifier extends AnalysisVisitor {
                 Type actualType = TypeUtils.getExprType(actualParams.get(i), table, currentMethod);
                 Type expectedType = expectedParams.get(i).getType();
                 if (!expectedType.equals(actualType)) {
+                    assert actualType != null;
                     message = String.format("Incompatible argument types ('%s' expected, '%s' given)", expectedType.getName() + (expectedType.isArray() ? "[]" : ""), actualType.getName() + (actualType.isArray() ? "[]" : ""));
                     addReport(Report.newError(
                             Stage.SEMANTIC,
@@ -150,6 +148,7 @@ public class TypeVerifier extends AnalysisVisitor {
                 Type actualType = TypeUtils.getExprType(actualParams.get(i), table, currentMethod);
                 Type expectedType = expectedParams.get(i).getType();
                 if (!expectedType.equals(actualType)) {
+                    assert actualType != null;
                     message = String.format("Incompatible argument types ('%s' expected, '%s' given)", expectedType.getName() + (expectedType.isArray() ? "[]" : ""), actualType.getName() + (actualType.isArray() ? "[]" : ""));
                     addReport(Report.newError(
                             Stage.SEMANTIC,
