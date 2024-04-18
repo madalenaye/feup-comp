@@ -73,8 +73,10 @@ public class TypeUtils {
             Type varType = getVarExprType(node, table, currentMethod);
             if (varType == null) {
                 return null;
+            } else if (varType.hasAttribute("isExternal")) {
+                return varType;
             } else if (table.getImports().contains(varType.getName())) {
-                varType.putObject("isExternal", true);
+                varType.putObject("isExternalObject", true);
                 return varType;
             }
             String className = varType.getName();
@@ -91,7 +93,7 @@ public class TypeUtils {
             return null;
         }
 
-        if (nodeType.hasAttribute("isExternal")) {
+        if (nodeType.hasAttribute("isExternal") || nodeType.hasAttribute("isExternalObject")) {
             return nodeType;
         }
 

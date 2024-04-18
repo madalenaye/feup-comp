@@ -268,7 +268,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     ollirReturnType = OptUtils.toOllirType(returnType);
                 }
                     OllirExprResult objectResult = visit(object);
-                    computation.append(objectResult.getComputation());
 
                     code.append("invokevirtual")
                             .append("(").append(objectResult.getCode())
