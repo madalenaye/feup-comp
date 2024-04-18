@@ -38,11 +38,8 @@ public class MethodVerifier extends AnalysisVisitor {
 
         // only static method
         if (currentMethod.equals("main")) {
-
-            String variable = varRefExpr.get("name");
-            if (table.getFields().stream().anyMatch(field -> field.getName().equals(variable))) {
-            //for (var field : table.getFields()) {
-              //  if (field.getName().equals(varRefExpr.get("name"))) {
+            for (var field : table.getFields()) {
+                if (field.getName().equals(varRefExpr.get("name"))) {
                     String message = String.format("Call to non-static field '%s' in a static method", varRefExpr.get("name"));
                     addReport(Report.newError(
                             Stage.SEMANTIC,
@@ -52,7 +49,7 @@ public class MethodVerifier extends AnalysisVisitor {
                             null)
                     );
                     return null;
-          //      }
+                }
             }
         }
 
