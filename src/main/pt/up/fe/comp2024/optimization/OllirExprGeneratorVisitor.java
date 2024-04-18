@@ -290,14 +290,14 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 if (argumentType.hasAttribute("isExternal")) {
                     argumentType = table.getParameters(method).get(0).getType();
                     ollirType = OptUtils.toOllirType(argumentType);
-                    invoke = invoke.substring(0, invoke.lastIndexOf(".")) + ollirType;
+                    invoke = invoke.substring(0, invoke.lastIndexOf(".")) + ollirType + ";\n";
                 }
                 else {
                     ollirType = OptUtils.toOllirType(argumentType);
                 }
 
                 computation.append(temp).append(ollirType).append(SPACE).append(ASSIGN)
-                        .append(ollirType).append(SPACE).append(invoke).append(END_STMT);
+                        .append(ollirType).append(SPACE).append(invoke);
 
                 argCode.append(", ").append(temp).append(ollirType);
             }

@@ -9,7 +9,7 @@ class test{
     public int foo() {
         C c1;
         int d;
-        this.bar(C.foo(), C.foo());
+        this.bar(this.foo(), C.foo());
         return 1;
     }
 }
