@@ -69,6 +69,21 @@ public class TypeUtils {
             return table.getReturnType(method);
         }
 
+        if (node.getKind().equals("NewObjectExpr")) {
+            // instance of same class
+            if (node.get("name").equals(table.getClassName())) {
+                return table.getReturnType(method);
+            }
+            Type type = new Type(node.get("name"), false);
+            type.putObject("isExternal", true);
+            type.putObject("isInstance", true);
+            return type;
+        }
+
+        if (node.getKind().equals("ParensExpr")) {
+            return getExprType(node.getChild(0), table, currentMethod);
+        }
+
         if (node.getKind().equals("VarRefExpr")) {
             Type varType = getVarExprType(node, table, currentMethod);
             if (varType == null) {

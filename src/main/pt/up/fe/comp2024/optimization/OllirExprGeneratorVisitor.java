@@ -182,10 +182,16 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         Type objectType = TypeUtils.getExprType(object, table, currMethod);
         String tipo = OptUtils.toOllirType(objectType);
 
-
         String method = node.get("method");
 
         String ollirReturnType = "";
+
+        if (object.getKind().equals("ParensExpr")) {
+            object = object.getJmmChild(0);
+            objectType = TypeUtils.getExprType(object, table, currMethod);
+            tipo = OptUtils.toOllirType(objectType);
+        }
+
 
         if (object.getKind().equals("MethodExpr")) {
 
@@ -235,6 +241,24 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     .append("(").append("this.").append(table.getClassName())
                     .append(", \"").append(method).append("\"");
 
+        }
+
+        else if (object.getKind().equals("ParensExpr")) {
+            OllirExprResult c = visit(object.getJmmChild(0));
+            computation.append(c);
+
+
+        }
+
+        else if (object.getKind().equals("NewObjectExpr")) {
+
+            OllirExprResult newExpr = visit(object);
+            Type returnType = table.getReturnType(method);
+            ollirReturnType = OptUtils.toOllirType(returnType);
+            computation.append(newExpr.getComputation());
+            code.append("invokevirtual")
+                    .append("(").append(newExpr.getCode())
+                    .append(", \"").append(method).append("\"");
         }
 
         else if (object.getKind().equals("VarRefExpr")) {
@@ -287,7 +311,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 String invoke = argumentCode.getCode();
                 String ollirType;
                 assert argumentType != null;
-                if (argumentType.hasAttribute("isExternal")) {
+                if (argumentType.hasAttribute("isExternal") || table.getClassName().equals(argumentType.getName())) {
                     argumentType = table.getParameters(method).get(0).getType();
                     ollirType = OptUtils.toOllirType(argumentType);
                     invoke = invoke.substring(0, invoke.lastIndexOf(".")) + ollirType + ";\n";
