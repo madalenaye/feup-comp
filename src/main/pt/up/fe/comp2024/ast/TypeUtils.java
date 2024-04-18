@@ -141,7 +141,9 @@ public class TypeUtils {
 
         // Var is imported
         if (table.getImports().contains(variable)) {
-            return new Type(variable, false);
+            Type type = new Type(variable, false);
+            type.putObject("isExternal", true);
+            return type;
         }
         return null;
     }

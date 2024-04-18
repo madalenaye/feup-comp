@@ -5,12 +5,15 @@ class CompileBasic extends Quicksort {
 
     int intField;
     boolean boolField;
+    int b;
+    Quicksort a;
+    c d;
 
     public int method1() {
         int intLocal;
 
 
-        intField = 10;
+        intField = 10 + 4;
         intLocal = 1 + (2+3);
 
         return 0;

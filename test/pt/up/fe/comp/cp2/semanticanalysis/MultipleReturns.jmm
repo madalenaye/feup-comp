@@ -1,8 +1,22 @@
-class MultipleReturns {
+import foo.bar.A;
+import String;
+class Simple {
 
-    int x;
-    public int foo() {
+    public int test() {
+        int c;
+        String d;
+        d = A.foo();
+        c = this.foo();
+        return c;
+    }
 
-        return 1;
+    public int foo(){
+        return 3;
+    }
+
+    public static void main(String[] args){
+       Simple s;
+       s = new Simple();
+       s.test();
     }
 }
