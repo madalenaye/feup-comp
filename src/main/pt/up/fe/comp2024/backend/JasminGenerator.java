@@ -155,7 +155,9 @@ public class JasminGenerator {
                     .collect(Collectors.joining(NL + TAB, TAB, NL));
 
             code.append(instCode);
-            if (((CallInstruction) inst).getReturnType().getTypeOfElement() != ElementType.VOID && inst.getInstType() == InstructionType.CALL) code.append("pop").append(NL);
+            if (inst.getInstType() == InstructionType.CALL &&
+                    ((CallInstruction) inst).getReturnType().getTypeOfElement() != ElementType.VOID)
+                code.append("pop").append(NL);
         }
 
         code.append(".end method").append(NL);
@@ -197,6 +199,7 @@ public class JasminGenerator {
             case VOID -> {}
             default -> throw new NotImplementedException(type.name());
         }
+
         return code.toString();
     }
 
@@ -234,12 +237,11 @@ public class JasminGenerator {
             }
         }
         if (currentMethod.getOllirClass().getImports().contains(operandName)) return operandName;
-
-        String fullPathClass = "." + operandName;
+        String fullClass = "." + operandName;
 
         if (ollirResult.getOllirClass().getImportedClasseNames().contains(operandName)){
             for (var imp: ollirResult.getOllirClass().getImports()) {
-                if (imp.endsWith(fullPathClass)) return operandName;
+                if (imp.endsWith(fullClass)) return operandName;
             }
         }
         return null;
@@ -271,13 +273,16 @@ public class JasminGenerator {
     private String generateReturn(ReturnInstruction returnInst) {
         var code = new StringBuilder();
 
-        if (returnInst.getOperand() != null) code.append(generators.apply(returnInst.getOperand()));
+        if (returnInst.getOperand() != null) {
+            code.append(generators.apply(returnInst.getOperand()));
+        }
         var type = returnInst.getReturnType();
         switch (type.getTypeOfElement()) {
             case INT32, BOOLEAN -> code.append("ireturn");
             case VOID -> code.append("return");
             case OBJECTREF, CLASS -> code.append("areturn");
         }
+
         code.append(NL);
         return code.toString();
     }
@@ -393,8 +398,11 @@ public class JasminGenerator {
                 if (imp.endsWith(fullClass)) return normalizeClassName(imp);
             }
         }
+
+
         return basicClassName;
     }
+
     private String getObjectType (Type type){
         return "L" + getImportedClassName(((ClassType) type).getName()) + ";";
     }
