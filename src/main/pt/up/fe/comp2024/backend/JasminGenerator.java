@@ -189,7 +189,7 @@ public class JasminGenerator {
                 if (reg > 3) code.append("istore ").append(reg).append(NL);
                 else code.append("istore_").append(reg).append(NL);
             }
-            case CLASS, OBJECTREF -> {
+            case CLASS, OBJECTREF, STRING -> {
                 if (reg > 3) code.append("astore ").append(reg).append(NL);
                 else code.append("astore_").append(reg).append(NL);
             }
@@ -287,12 +287,13 @@ public class JasminGenerator {
                 callInstruction.getArguments().forEach((arg) -> code.append(generators.apply(arg)));
                 var calledObject = callInstruction.getCaller();
                 var methodName = callInstruction.getMethodName();
-                code.append("invokestatic ").append(generators.apply(calledObject)).append("/").append(generators.apply(methodName));
+                code.append("invokestatic ").append(getImportedClassName(generators.apply(calledObject))).append("/").append(generators.apply(methodName));
 
                 callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
                 code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
             }
             case NEW -> {
+                callInstruction.getArguments().forEach((obj) -> code.append(generators.apply(obj)));
                 var objectClass = (Operand) callInstruction.getCaller();
                 var className = objectClass.getName();
                 var fullClassName = getImportedClassName(className);
