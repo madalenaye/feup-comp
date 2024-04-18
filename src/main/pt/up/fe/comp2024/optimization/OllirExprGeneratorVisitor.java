@@ -9,6 +9,7 @@ import pt.up.fe.comp2024.ast.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static pt.up.fe.comp2024.ast.Kind.*;
 
@@ -69,14 +70,42 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
     private OllirExprResult visitBinExpr(JmmNode node, Void unused) {
 
-        OllirExprResult lhs = visit(node.getJmmChild(0));
-        OllirExprResult rhs = visit(node.getJmmChild(1));
+        JmmNode left = node.getJmmChild(0);
+        JmmNode right = node.getJmmChild(1);
+
+        OllirExprResult lhs = visit(left);
+        OllirExprResult rhs = visit(right);
 
         StringBuilder computation = new StringBuilder();
 
         // code to compute the children
         computation.append(lhs.getComputation());
         computation.append(rhs.getComputation());
+
+        String leftCode = lhs.getCode();
+        String rightCode = rhs.getCode();
+
+        if (left.getKind().equals("MethodExpr")) {
+            Type type = TypeUtils.getExprType(left, table, currMethod);
+            String ollirType = OptUtils.toOllirType(Objects.requireNonNull(type));
+            String newTmp = OptUtils.getTemp() + ollirType;
+            computation.append(newTmp)
+                    .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
+                    .append(leftCode);
+            leftCode = newTmp;
+        }
+
+        if (right.getKind().equals("MethodExpr")) {
+            Type type = TypeUtils.getExprType(right, table, currMethod);
+            String ollirType = OptUtils.toOllirType(Objects.requireNonNull(type));
+            String newTmp = OptUtils.getTemp() + ollirType;
+            computation.append(newTmp)
+                    .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
+                    .append(rightCode);
+            rightCode = newTmp;
+        }
+
+
 
         // code to compute self
         Type resType = TypeUtils.getExprType(node, table, currMethod);
@@ -86,12 +115,12 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         computation.append(code).append(SPACE)
                 .append(ASSIGN).append(resOllirType).append(SPACE)
-                .append(lhs.getCode()).append(SPACE);
+                .append(leftCode).append(SPACE);
 
         Type type = TypeUtils.getExprType(node, table, currMethod);
         assert type != null;
         computation.append(node.get("op")).append(OptUtils.toOllirType(type)).append(SPACE)
-                .append(rhs.getCode()).append(END_STMT);
+                .append(rightCode).append(END_STMT);
 
         return new OllirExprResult(code, computation);
     }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import package1.ClassA.package2.ClassB.package3.ClassC.classD;
 import package1.ClassA.package2.ClassB.package3.ClassC.classF.q.w.e.r.t.y.y.y.y.y.y.y.y.y.y.y.Y;
 
@@ -7,3 +8,11 @@ class Main {
             i = new Y();
     }
 }
+=======
+import ioPlus;
+class HelloWorld {
+	public static void main(String[] args) {
+		ioPlus.printHelloWorld();
+	}
+}
+>>>>>>> 8383bdd44e749f9f038c6b89d2b3dff5a2a73202
