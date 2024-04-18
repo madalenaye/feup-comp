@@ -2,10 +2,14 @@ import A.B.C;
 
 class test{
 
+    public int bar(int a, int b) {
+        return 1;
+    }
+
     public int foo() {
         C c1;
         int d;
-        d = C.foo();
+        this.bar(C.foo(), C.foo());
         return 1;
     }
 }

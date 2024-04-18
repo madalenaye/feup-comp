@@ -105,18 +105,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         String paramsCode = String.join(", ", parameters);
         code.append(paramsCode);
 
-        //before
-        /*if(!params.isEmpty()){
-            String paramCode = visit(params.get(0));
-            code.append(paramCode);
-
-            for (int i = 1; i < params.size(); i++) {
-                code.append(", ");
-                paramCode = visit(params.get(i));
-                code.append(paramCode);
-            }
-        }*/
-
         code.append(")");
 
         // type
