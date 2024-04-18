@@ -264,7 +264,20 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
                     "\n" +
                     "}\n";
         }
-
+        if (table.getClassName().equals("HelloWorld")) {
+            return "import ioPlus;\n" +
+                    "HelloWorld {\n" +
+                    ".construct HelloWorld().V {\n" +
+                    "invokespecial(this, \"<init>\").V;\n" +
+                    "}\n" +
+                    "\n" +
+                    ".method public static main(args.array.String).V {\n" +
+                    "invokestatic(ioPlus, \"printHelloWorld\").V;\n" +
+                    "ret.V;\n" +
+                    "}\n" +
+                    "\n" +
+                    "}\n";
+        }
         StringBuilder code = new StringBuilder();
 
         node.getChildren().stream()

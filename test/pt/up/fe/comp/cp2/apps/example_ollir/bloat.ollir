@@ -1,0 +1,22 @@
+import io;
+import java.util.List;
+import A;
+Simple extends A {
+
+
+.method public arithmetic().i32 {
+tmp0.A :=.A new(A).A;
+invokespecial(tmp0.A, "").V;
+a.A :=.A tmp0.A;
+tmp1.V :=.V invokestatic(A, "calling").V;
+tmp2.A :=.A invokevirtual(a.A, "function", tmp1.V).A;
+test.i32 :=.i32 tmp2.A;
+tmp3.i32 :=.i32 invokestatic(A, "foo").i32;
+test.i32 :=.i32 tmp3.i32;
+ret.i32 10.i32;
+}
+
+.construct Simple().V {
+invokespecial(this, "").V;
+}
+}
