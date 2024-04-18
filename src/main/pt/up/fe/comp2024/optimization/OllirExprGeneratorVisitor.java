@@ -75,6 +75,15 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         JmmNode left = node.getJmmChild(0);
         JmmNode right = node.getJmmChild(1);
 
+        String operator = node.get("op");
+
+        String ollirType = switch (operator) {
+            case "+", "*", "-", "/", "<" -> ".i32";
+            case "&&" -> ".bool";
+            default -> "";
+        };
+
+
         OllirExprResult lhs = visit(left);
         OllirExprResult rhs = visit(right);
 
@@ -88,7 +97,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String rightCode = rhs.getCode();
 
         if (left.getKind().equals("MethodExpr")) {
-            String ollirType = leftCode.substring(leftCode.lastIndexOf("."), leftCode.length()-2);
+            if (Objects.requireNonNull(TypeUtils.getExprType(left, table, currMethod)).hasAttribute("isExternal")) {
+                leftCode = leftCode.substring(0, leftCode.lastIndexOf(".")) + ollirType + END_STMT;
+            }
             String newTmp = OptUtils.getTemp() + ollirType;
             computation.append(newTmp)
                     .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
@@ -97,7 +108,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         }
 
         if (right.getKind().equals("MethodExpr")) {
-            String ollirType = rightCode.substring(rightCode.lastIndexOf("."), rightCode.length()-2);
+            if (Objects.requireNonNull(TypeUtils.getExprType(right, table, currMethod)).hasAttribute("isExternal")) {
+                rightCode = rightCode.substring(0, rightCode.lastIndexOf(".")) + ollirType + END_STMT;
+            }
             String newTmp = OptUtils.getTemp() + ollirType;
             computation.append(newTmp)
                     .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
