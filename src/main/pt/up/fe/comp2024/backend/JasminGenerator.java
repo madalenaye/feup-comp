@@ -294,7 +294,8 @@ public class JasminGenerator {
             case NEW -> {
                 var objectClass = (Operand) callInstruction.getCaller();
                 var className = objectClass.getName();
-                code.append("new ").append(className).append(NL).append("dup").append(NL);
+                var fullClassName = getImportedClassName(className);
+                code.append("new ").append(fullClassName).append(NL).append("dup").append(NL);
             }
             case invokespecial -> {
                 var objectClass = (Operand) callInstruction.getCaller();
@@ -321,6 +322,7 @@ public class JasminGenerator {
 
                 callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
                 code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+
             }
             default -> throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
 
