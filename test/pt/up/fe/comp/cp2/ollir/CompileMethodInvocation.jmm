@@ -6,12 +6,22 @@ class CompileMethodInvocation {
 
     }
 
+
+    public io f2(){
+    io x;
+return x;
+}
+
+    public CompileMethodInvocation f3(int a){
+return this;
+}
+
     public int foo() {
         int a;
 
         a = 1;
 
-        io.println(a);
+        this.f3(3*2+1).f3(1+23+4).f3(5*5*6).f2().print();
 
         return 0;
     }

@@ -151,14 +151,50 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         JmmNode object = node.getObject("object", JmmNode.class);
         Type objectType = TypeUtils.getExprType(object, table, currMethod);
+        String tipo = OptUtils.toOllirType(objectType);
+
 
         String method = node.get("method");
 
         String ollirReturnType = "";
 
         if (object.getKind().equals("MethodExpr")) {
-            //...
-            return new OllirExprResult("", "");
+
+            OllirExprResult left = visit(object);
+            computation.append(left.getComputation());
+
+            String temp = OptUtils.getTemp() + tipo;
+            computation.append(temp).append(SPACE)
+                    .append(ASSIGN).append(tipo).append(SPACE)
+                    .append(left.getCode());
+
+            if (objectType.getName().equals(table.getClassName())) {
+                Type returnType = table.getReturnType(method);
+                ollirReturnType = OptUtils.toOllirType(returnType);
+            } else {
+                ollirReturnType = OptUtils.toOllirType(objectType);
+            }
+                code.append("invokevirtual")
+                        .append("(").append(temp)
+                        .append(", \"").append(method).append("\"");
+
+                var arguments = node.getChildren();
+                arguments.remove(0);
+
+                StringBuilder argCode = new StringBuilder();
+                for (var argument : arguments) {
+                    OllirExprResult argumentCode = visit(argument);
+                    computation.append(argumentCode.getComputation());
+                    argCode.append(", ").append(argumentCode.getCode());
+                }
+
+                code.append(argCode)
+                        .append(")").append(ollirReturnType)
+                        .append(END_STMT);
+
+                return new OllirExprResult(code.toString(), computation.toString());
+
+
         }
 
         else if (object.getKind().equals("ThisExpr")) {
@@ -170,7 +206,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     .append("(").append("this.").append(table.getClassName())
                     .append(", \"").append(method).append("\"");
 
-            return new OllirExprResult(code.toString(), computation);
         }
 
         else if (object.getKind().equals("VarRefExpr")) {
