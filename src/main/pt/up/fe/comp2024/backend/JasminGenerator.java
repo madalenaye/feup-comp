@@ -366,7 +366,7 @@ public class JasminGenerator {
         return switch (type.getTypeOfElement()) {
             case INT32 -> "I";
             case BOOLEAN -> "Z";
-            case STRING -> "Ljava/lang/String;";
+            case STRING -> "[Ljava/lang/String;";
             case OBJECTREF, CLASS -> getObjectType(type);
             case VOID -> "V";
             default -> null;
