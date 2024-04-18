@@ -157,7 +157,7 @@ public class JasminGenerator {
             code.append(instCode);
         }
 
-        code.append(".end method\n");
+        code.append(".end method").append(NL);
 
         // unset method
         currentMethod = null;
@@ -268,9 +268,9 @@ public class JasminGenerator {
         }
         var type = returnInst.getReturnType();
         switch (type.getTypeOfElement()) {
-            case INT32, BOOLEAN -> code.append(NL).append("ireturn").append(NL);
-            case VOID -> code.append(NL).append("return").append(NL);
-            case OBJECTREF, CLASS -> code.append(NL).append("areturn").append(NL);
+            case INT32, BOOLEAN -> code.append("ireturn").append(NL);
+            case VOID -> code.append("return").append(NL);
+            case OBJECTREF, CLASS -> code.append("areturn").append(NL);
         }
 
         code.append(NL);
