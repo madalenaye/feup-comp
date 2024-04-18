@@ -193,6 +193,7 @@ public class JasminGenerator {
                 if (reg > 3) code.append("astore ").append(reg).append(NL);
                 else code.append("astore_").append(reg).append(NL);
             }
+            case VOID -> {}
             default -> throw new NotImplementedException(type.name());
         }
         ;
@@ -376,11 +377,21 @@ public class JasminGenerator {
     }
 
     private String getImportedClassName(String basicClassName) {
-        if (basicClassName.equals("this")) return ollirResult.getOllirClass().getClassName();
 
-        for (String importedClass : ollirResult.getOllirClass().getImports()){
-            if (importedClass.endsWith(basicClassName)) return normalizeClassName(importedClass);
+        if (basicClassName.equals("this"))
+            return this.ollirResult.getOllirClass().getClassName();
+
+        String realClass = "." + basicClassName;
+
+        if (ollirResult.getOllirClass().getImportedClasseNames().contains(basicClassName)){
+            for (var imp: ollirResult.getOllirClass().getImports()) {
+                if (imp.endsWith(realClass)) {
+                    return normalizeClassName(imp);
+                }
+            }
         }
+
+
         return basicClassName;
     }
 
