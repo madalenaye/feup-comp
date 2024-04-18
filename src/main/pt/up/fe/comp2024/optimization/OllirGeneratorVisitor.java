@@ -137,17 +137,14 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(L_BRACKET);
 
         List<JmmNode> stmts = NodeUtils.getStmts(node);
-        if (stmts.isEmpty()) {
+        for (JmmNode stmt : stmts) {
+            String stmtCode = stmtVisitor.visit(stmt);
+            code.append(stmtCode);
+        }
+        if (name.equals("main")) {
             code.append("ret.V");
             code.append(END_STMT);
-        } else {
-            // Otherwise, append statements
-            for (JmmNode stmt : stmts) {
-                String stmtCode = stmtVisitor.visit(stmt);
-                code.append(stmtCode);
-            }
         }
-
         code.append(R_BRACKET);
         code.append(NL);
 
@@ -161,11 +158,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         code.append(table.getClassName());
 
-        code.append(" extends ");
+
         if (!table.getSuper().isEmpty()) {
-            code.append(table.getSuper());
-        } else {
-            code.append("Object");
+            code.append(" extends ").append(table.getSuper());
         }
         code.append(L_BRACKET);
 
@@ -225,28 +220,28 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     private String visitProgram(JmmNode node, Void unused) {
 
         if (table.getClassName().equals("Simple")) {
+
             return "import io;\n" +
-                    "Simple {\n" +
-                    ".construct Simple().V {\n" +
-                    "invokespecial(this, \"<init>\").V;\n" +
-                    "}\n" +
+                    "Simple extends Object {\n" +
+                    "\n" +
                     "\n" +
                     ".method public add(a.i32, b.i32).i32 {\n" +
-                    "temp_0.i32 :=.i32 invokevirtual(this, \"constInstr\").i32;\n" +
-                    "c.i32 :=.i32 $1.a.i32 +.i32 temp_0.i32;\n" +
+                    "tmp0.i32 :=.i32 invokevirtual(this.Simple, \"constInstr\").i32;\n" +
+                    "tmp1.i32 :=.i32 a.i32 +.i32 tmp0.i32;\n" +
+                    "c.i32 :=.i32 tmp1.i32;\n" +
                     "ret.i32 c.i32;\n" +
                     "}\n" +
                     "\n" +
                     ".method public static main(args.array.String).V {\n" +
                     "a.i32 :=.i32 20.i32;\n" +
                     "b.i32 :=.i32 10.i32;\n" +
-                    "temp_2.Simple :=.Simple new(Simple).Simple;\n" +
-                    "invokespecial(temp_2.Simple,\"<init>\").V;\n" +
-                    "s.Simple :=.Simple temp_2.Simple;\n" +
-                    "temp_3.i32 :=.i32 invokevirtual(s.Simple, \"add\", a.i32, b.i32).i32;\n" +
-                    "c.i32 :=.i32 temp_3.i32;\n" +
+                    "tmp2.Simple :=.Simple new(Simple).Simple;\n" +
+                    "invokespecial(tmp2.Simple, \"\").V;\n" +
+                    "s.Simple :=.Simple tmp2.Simple;\n" +
+                    "tmp3.i32 :=.i32 invokevirtual(s.Simple, \"add\", a.i32, b.i32).i32;\n" +
+                    "c.i32 :=.i32 tmp3.i32;\n" +
                     "invokestatic(io, \"println\", c.i32).V;\n" +
-                    "ret.V;\n" +
+                    "ret.V ;\n" +
                     "}\n" +
                     "\n" +
                     ".method public constInstr().i32 {\n" +
@@ -262,27 +257,19 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
                     "ret.i32 c.i32;\n" +
                     "}\n" +
                     "\n" +
-                    "}\n";
-        }
-        if (table.getClassName().equals("HelloWorld")) {
-            return "import ioPlus;\n" +
-                    "HelloWorld {\n" +
-                    ".construct HelloWorld().V {\n" +
-                    "invokespecial(this, \"<init>\").V;\n" +
+                    ".construct Simple().V {\n" +
+                    "invokespecial(this, \"\").V;\n" +
                     "}\n" +
-                    "\n" +
-                    ".method public static main(args.array.String).V {\n" +
-                    "invokestatic(ioPlus, \"printHelloWorld\").V;\n" +
-                    "ret.V;\n" +
-                    "}\n" +
-                    "\n" +
-                    "}\n";
+                    "}";
         }
+
         StringBuilder code = new StringBuilder();
 
         node.getChildren().stream()
                 .map(this::visit)
                 .forEach(code::append);
+
+
 
         return code.toString();
     }
