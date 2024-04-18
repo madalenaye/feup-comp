@@ -1,6 +1,8 @@
 class MultipleReturns {
 
     int x;
-    boolean x;
+    public int foo() {
 
+        return 1;
+    }
 }

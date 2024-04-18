@@ -82,6 +82,10 @@ public class TypeUtils {
                 return table.getReturnType(method);
         }
 
+        if (!node.getKind().equals("MethodExpr")) {
+            return null;
+        }
+
         Type nodeType = getMethodExprType(node, table, currentMethod);
         if (nodeType == null) {
             return null;
