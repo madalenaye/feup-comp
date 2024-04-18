@@ -55,7 +55,7 @@ public class ArrayVerifier extends AnalysisVisitor {
 
         // Assigned type check
         JmmNode assigned = arrayStmt.getObject("array", JmmNode.class);
-        Type assignedType = TypeUtils.getExprType(assigned, table, currentMethod);
+        Type assignedType = TypeUtils.getExprType(assigned,table, currentMethod);
 
         assert assignedType != null;
         if (TypeUtils.isIntType(assignedType)) {
@@ -149,7 +149,7 @@ public class ArrayVerifier extends AnalysisVisitor {
         String length = expr.get("len");
 
         if (!length.equals("length")) {
-            String message = "Incorrect usage of length expression";
+            String message = String.format("Incorrect usage of length expression");
             addReport(Report.newError(
                     Stage.SEMANTIC,
                     NodeUtils.getLine(expr),
