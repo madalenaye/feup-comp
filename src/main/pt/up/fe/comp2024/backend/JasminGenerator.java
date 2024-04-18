@@ -79,7 +79,7 @@ public class JasminGenerator {
         var defaultConstructor = new StringBuilder();
         defaultConstructor.append(".method public <init>()V").append(NL).append(TAB).append("aload_0").append(NL).append(TAB);
 
-        if (classUnit.getSuperClass() == null) {
+        if (classUnit.getSuperClass() == null || classUnit.getSuperClass().equals("Object")) {
             code.append(".super java/lang/Object").append(NL);
             defaultConstructor.append("invokespecial java/lang/Object/<init>()V");
         } else {
@@ -157,7 +157,7 @@ public class JasminGenerator {
             code.append(instCode);
         }
 
-        code.append(".end method\n");
+        code.append(".end method").append(NL);
 
         // unset method
         currentMethod = null;
@@ -268,9 +268,9 @@ public class JasminGenerator {
         }
         var type = returnInst.getReturnType();
         switch (type.getTypeOfElement()) {
-            case INT32, BOOLEAN -> code.append(NL).append("ireturn").append(NL);
-            case VOID -> code.append(NL).append("return").append(NL);
-            case OBJECTREF, CLASS -> code.append(NL).append("areturn").append(NL);
+            case INT32, BOOLEAN -> code.append("ireturn").append(NL);
+            case VOID -> code.append("return").append(NL);
+            case OBJECTREF, CLASS -> code.append("areturn").append(NL);
         }
 
         code.append(NL);
@@ -294,7 +294,8 @@ public class JasminGenerator {
             case NEW -> {
                 var objectClass = (Operand) callInstruction.getCaller();
                 var className = objectClass.getName();
-                code.append("new ").append(className).append(NL).append("dup").append(NL);
+                var fullClassName = getImportedClassName(className);
+                code.append("new ").append(fullClassName).append(NL).append("dup").append(NL);
             }
             case invokespecial -> {
                 var objectClass = (Operand) callInstruction.getCaller();
@@ -321,6 +322,7 @@ public class JasminGenerator {
 
                 callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
                 code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+
             }
             default -> throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
 

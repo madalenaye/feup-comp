@@ -2,20 +2,18 @@ package pt.up.fe.comp2024.analysis.passes;
 
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
-import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
-import pt.up.fe.comp2024.ast.TypeUtils;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SymbolTableVerifier extends AnalysisVisitor {
+public class DuplicateVerifier extends AnalysisVisitor {
 
     @Override
     public void buildVisitor() {
@@ -64,7 +62,7 @@ public class SymbolTableVerifier extends AnalysisVisitor {
             );
             return null;
         }
-        
+
         return null;
     }
 
@@ -72,7 +70,7 @@ public class SymbolTableVerifier extends AnalysisVisitor {
 
         String message;
 
-        // duplicate import classes 
+        // duplicate import classes
         if (hasDuplicate(table.getImports())) {
             message = "Duplicated import classes";
             addReport(Report.newError(
@@ -86,7 +84,7 @@ public class SymbolTableVerifier extends AnalysisVisitor {
         }
 
         // duplicate fields
-        var fields = table.getFields().stream().map(Symbol::getName).toList();
+        List<String> fields = table.getFields().stream().map(Symbol::getName).toList();
 
         if (hasDuplicate(fields)) {
             message = "Duplicated fields";
