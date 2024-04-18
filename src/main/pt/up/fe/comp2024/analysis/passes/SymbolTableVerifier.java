@@ -17,54 +17,50 @@ import java.util.Set;
 
 public class SymbolTableVerifier extends AnalysisVisitor {
 
+    private String currentMethod;
+
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.PROGRAM, this::visitProgram);
     }
 
-    private <T> boolean hasDuplicate(List<T> list) {
-        Set<T> set = new HashSet<>();
-        for (T i : list) {
-            if (set.contains(i))
-                return true;
+    private Void visitMethodDecl(JmmNode method, SymbolTable table) {
+        currentMethod = method.get("name");
+
+        String message;
+        // param duplicates
+        Set<Symbol> set = new HashSet<>();
+        for (Symbol i : table.getParameters(currentMethod)) {
+            if (set.contains(i)) {
+                message = "duplicate params";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(method),
+                        NodeUtils.getColumn(method),
+                        message,
+                        null)
+                );
+                return null;
+            }
             set.add(i);
         }
-        return false;
-    }
 
-    private Void visitMethodDecl(JmmNode method, SymbolTable table) {
-        String currentMethod = method.get("name");
-        String message;
-
-        // duplicate parameters
-        var parameters = table.getParameters(currentMethod).stream().map(Symbol::getName).toList();
-        if (hasDuplicate(parameters)) {
-            message = String.format("'%s' method has duplicate parameters", currentMethod);
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(method),
-                    NodeUtils.getColumn(method),
-                    message,
-                    null)
-            );
-            return null;
+        for (Symbol i : table.getLocalVariables(currentMethod)) {
+            if (set.contains(i)) {
+                message = "duplicate params";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(method),
+                        NodeUtils.getColumn(method),
+                        message,
+                        null)
+                );
+                return null;
+            }
+            set.add(i);
         }
 
-        // duplicate local variables
-        var locals = table.getLocalVariables(currentMethod).stream().map(Symbol::getName).toList();
-        if (hasDuplicate(locals)) {
-            message = String.format("'%s' method has duplicate local variables", currentMethod);
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(method),
-                    NodeUtils.getColumn(method),
-                    message,
-                    null)
-            );
-            return null;
-        }
-        
         return null;
     }
 
@@ -72,46 +68,58 @@ public class SymbolTableVerifier extends AnalysisVisitor {
 
         String message;
 
-        // duplicate import classes 
-        if (hasDuplicate(table.getImports())) {
-            message = "Duplicated import classes";
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(program),
-                    NodeUtils.getColumn(program),
-                    message,
-                    null)
-            );
-            return null;
+        // imports duplicates
+        Set<String> set = new HashSet<>();
+        for (String i : table.getImports()) {
+            if (set.contains(i)) {
+                message = "duplicate imports";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(program),
+                        NodeUtils.getColumn(program),
+                        message,
+                        null)
+                );
+                return null;
+            }
+            set.add(i);
         }
 
-        // duplicate fields
-        var fields = table.getFields().stream().map(Symbol::getName).toList();
-
-        if (hasDuplicate(fields)) {
-            message = "Duplicated fields";
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(program),
-                    NodeUtils.getColumn(program),
-                    message,
-                    null)
-            );
-            return null;
+        // field duplicates
+        Set<Symbol> fields = new HashSet<Symbol>();
+        for (Symbol i : table.getFields()) {
+            if (fields.contains(i)) {
+                message = "duplicate fields";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(program),
+                        NodeUtils.getColumn(program),
+                        message,
+                        null)
+                );
+                return null;
+            } else
+                fields.add(i);
         }
 
         // method duplicates
-        if (hasDuplicate(table.getMethods())) {
-            message = "Duplicated methods";
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(program),
-                    NodeUtils.getColumn(program),
-                    message,
-                    null)
-            );
-            return null;
+        Set<String> methods = new HashSet<>();
+        for (String i : table.getMethods()) {
+            if (methods.contains(i)) {
+                message = "duplicate method";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(program),
+                        NodeUtils.getColumn(program),
+                        message,
+                        null)
+                );
+                return null;
+            } else
+                methods.add(i);
         }
+
+
 
         return null;
     }
