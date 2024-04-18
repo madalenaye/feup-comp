@@ -1,14 +1,22 @@
-import C;
+import io;
 
-class Test {
+class Simple {
 
-    int foo() {
-        return 0;
+    int field_1;
+    Foo mc;
+    Simple s2;
+
+    public int add(int a, int b){
+        int c;
+        c = a + this.constInstr();
+        return c;
     }
 
-    int bar() {
-        int a;
-        a = this.foo() + C.foo();
-        return 0;
+    public int constInstr(){
+        return 1 + field_1;
+    }
+
+    public static void main(String[] args) {
+        io.println((((((new Simple()))))).add(10+12*2, 3) + 3);
     }
 }

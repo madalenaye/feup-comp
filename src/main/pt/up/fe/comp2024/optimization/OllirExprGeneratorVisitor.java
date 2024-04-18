@@ -83,7 +83,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             default -> "";
         };
 
-
         OllirExprResult lhs = visit(left);
         OllirExprResult rhs = visit(right);
 
@@ -190,23 +189,17 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
     private OllirExprResult visitMethodExpr(JmmNode node, Void unused){
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
+        String method = node.get("method");
+        String ollirReturnType = "";
 
         JmmNode object = node.getObject("object", JmmNode.class);
         Type objectType = TypeUtils.getExprType(object, table, currMethod);
         String tipo = OptUtils.toOllirType(objectType);
 
-        String method = node.get("method");
-
-        String ollirReturnType = "";
-
-        if (object.getKind().equals("ParensExpr")) {
-            object = object.getJmmChild(0);
-            objectType = TypeUtils.getExprType(object, table, currMethod);
-            tipo = OptUtils.toOllirType(objectType);
-        }
-
+        while (object.getKind().equals("ParensExpr")) object = object.getJmmChild(0);
 
         if (object.getKind().equals("MethodExpr")) {
+
 
             OllirExprResult left = visit(object);
             computation.append(left.getComputation());
@@ -277,7 +270,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         else if (object.getKind().equals("VarRefExpr")) {
             assert objectType != null;
 
-
             // imported class
             if (objectType.hasAttribute("isExternal") && !objectType.hasAttribute("isInstance")) {
 
@@ -323,7 +315,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 Type argumentType = TypeUtils.getExprType(argument, table, currMethod);
                 String invoke = argumentCode.getCode();
                 String ollirType;
-                assert argumentType != null;
                 if (argumentType.hasAttribute("isExternal") || table.getClassName().equals(argumentType.getName())) {
                     argumentType = table.getParameters(method).get(0).getType();
                     ollirType = OptUtils.toOllirType(argumentType);
