@@ -148,6 +148,10 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
             }
         }
 
+        if(retType.equals(".V")){
+            code.append("ret.V").append(END_STMT);
+        }
+
         code.append(R_BRACKET);
         code.append(NL);
 
