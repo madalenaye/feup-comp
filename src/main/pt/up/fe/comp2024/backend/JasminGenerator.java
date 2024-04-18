@@ -193,6 +193,7 @@ public class JasminGenerator {
                 if (reg > 3) code.append("astore ").append(reg).append(NL);
                 else code.append("astore_").append(reg).append(NL);
             }
+            case VOID -> {}
             default -> throw new NotImplementedException(type.name());
         }
         ;
@@ -314,11 +315,12 @@ public class JasminGenerator {
             case invokevirtual -> {
                 var object = (Operand) callInstruction.getCaller();
                 var elementName = ((ClassType) object.getType()).getName();
+                var fullElementName = getImportedClassName(elementName);
                 var methodName = callInstruction.getMethodName();
                 code.append(generators.apply(object)).append(NL);
 
                 callInstruction.getArguments().forEach((op) -> code.append(generators.apply(op)));
-                code.append("invokevirtual ").append(elementName).append("/").append(generators.apply(methodName));
+                code.append("invokevirtual ").append(fullElementName).append("/").append(generators.apply(methodName));
 
                 callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
                 code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
@@ -375,11 +377,21 @@ public class JasminGenerator {
     }
 
     private String getImportedClassName(String basicClassName) {
-        if (basicClassName.equals("this")) return ollirResult.getOllirClass().getClassName();
 
-        for (String importedClass : ollirResult.getOllirClass().getImports()){
-            if (importedClass.endsWith(basicClassName)) return normalizeClassName(importedClass);
+        if (basicClassName.equals("this"))
+            return this.ollirResult.getOllirClass().getClassName();
+
+        String realClass = "." + basicClassName;
+
+        if (ollirResult.getOllirClass().getImportedClasseNames().contains(basicClassName)){
+            for (var imp: ollirResult.getOllirClass().getImports()) {
+                if (imp.endsWith(realClass)) {
+                    return normalizeClassName(imp);
+                }
+            }
         }
+
+
         return basicClassName;
     }
 
