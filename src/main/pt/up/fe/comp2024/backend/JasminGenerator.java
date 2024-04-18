@@ -155,6 +155,9 @@ public class JasminGenerator {
                     .collect(Collectors.joining(NL + TAB, TAB, NL));
 
             code.append(instCode);
+            if (inst.getInstType() == InstructionType.CALL &&
+                    ((CallInstruction) inst).getReturnType().getTypeOfElement() != ElementType.VOID)
+                code.append("pop").append(NL);
         }
 
         code.append(".end method").append(NL);
