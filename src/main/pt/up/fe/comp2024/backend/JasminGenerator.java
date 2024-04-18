@@ -282,83 +282,53 @@ public class JasminGenerator {
         var code = new StringBuilder();
         var invocationType = callInstruction.getInvocationType();
 
-        switch (invocationType) {
-            case invokestatic:
-                Operand first = (Operand) callInstruction.getOperands().get(0);
-                LiteralElement second = (LiteralElement) callInstruction.getOperands().get(1);
-                for (var op : callInstruction.getArguments()) {
-                    code.append(generators.apply(op));
-                }
-                code.append("invokestatic ").append(getImportedClassName(generators.apply(callInstruction.getCaller()))).append("/").append(generators.apply(callInstruction.getMethodName()));
-                //code.append("(");
-                for (var arg : callInstruction.getArguments()) {
-                    code.append(ollirTypeToJasmin(arg.getType()));
-                }
-                code.append(")");
-                code.append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
-                break;
-            case invokespecial:
-                code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
-                var elemType = callInstruction.getOperands().get(0).getType();
-                code.append("invokespecial ");
-                if (elemType.getTypeOfElement() == ElementType.THIS){
-                    code.append(ollirResult.getOllirClass().getSuperClass());
-                }
-                else {
-                    code.append(getImportedClassName(((ClassType) elemType).getName()));
-                }
-                code.append("/<init>(");
+        switch (invocationType){
+            case invokestatic -> {
+                callInstruction.getArguments().forEach((arg) -> code.append(generators.apply(arg)));
+                var calledObject = callInstruction.getCaller();
+                var methodName = callInstruction.getMethodName();
+                code.append("invokestatic ").append(getImportedClassName(generators.apply(calledObject))).append("/").append(generators.apply(methodName));
 
+                callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
+                code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+            }
+            case NEW -> {
+                callInstruction.getArguments().forEach((obj) -> code.append(generators.apply(obj)));
+                var objectClass = (Operand) callInstruction.getCaller();
+                var className = objectClass.getName();
+                var fullClassName = getImportedClassName(className);
+                code.append("new ").append(fullClassName).append(NL).append("dup").append(NL);
+            }
+            case invokespecial -> {
+                var objectClass = (Operand) callInstruction.getCaller();
+                var elementType = objectClass.getType();
+                var elementName = ((ClassType) elementType).getName();
+                code.append(generators.apply(objectClass)).append("invokespecial ");
+                if (elementType.getTypeOfElement() == ElementType.THIS) code.append(ollirResult.getOllirClass().getSuperClass());
+                else code.append(getImportedClassName(elementName));
+                code.append("/<init>").append("(");
 
-                for (var elem: callInstruction.getArguments()){
-                    code.append(ollirTypeToJasmin(elem.getType()));
-                }
-                code.append(")");
-                code.append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+                callInstruction.getArguments().forEach((op) -> code.append(ollirTypeToJasmin(op.getType())));
+                code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+                if (!elementName.equals(ollirResult.getOllirClass().getSuperClass())) code.append("pop");
 
-                break;
-            case NEW:
-                for (Element objetElement : callInstruction.getArguments())
-                    code.append(generators.apply(objetElement));
-                code.append(NL).append("new ").append(getImportedClassName(((Operand) callInstruction.getOperands().get(0)).getName())).append(NL);
-                //code.append("dup").append(NL);
-                break;
-            case invokevirtual:
-                code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
-                Operand firstVirtual = (Operand) callInstruction.getOperands().get(0);
-                LiteralElement secondVirtual = (LiteralElement) callInstruction.getOperands().get(1);
-                for (var op : callInstruction.getArguments()) {
-                    code.append(generators.apply(op));
-                }
-                code.append("invokevirtual ").append(getImportedClassName(((ClassType) firstVirtual.getType()).getName())).append("/").append(generators.apply(callInstruction.getMethodName()));
-                //code.append("(");
-                for (var arg : callInstruction.getArguments()) {
-                    code.append(ollirTypeToJasmin(arg.getType()));
-                }
-                code.append(")");
-                code.append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
-                break;
-            case arraylength:
-                code.append(generators.apply(callInstruction.getOperands().get(0)));
-                code.append(" arraylength").append(NL);
-                break;
-            case invokeinterface:
-                code.append(generators.apply(callInstruction.getOperands().get(0))).append(NL);
-                Operand firstInterface = (Operand) callInstruction.getOperands().get(0);
-                LiteralElement secondInterface = (LiteralElement) callInstruction.getOperands().get(1);
-                for (var op : callInstruction.getArguments()) {
-                    code.append(generators.apply(op));
-                }
-                code.append("invokeinterface ").append(getImportedClassName(((ClassType) firstInterface.getType()).getName())).append("/").append(secondInterface.getLiteral().replace("\"", ""));
-                code.append("(");
-                for (var arg : callInstruction.getArguments()) {
-                    code.append(ollirTypeToJasmin(arg.getType()));
-                }
-                code.append(")");
-                code.append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
-                break;
-            default:
-                throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
+            }
+            case invokevirtual -> {
+                var object = (Operand) callInstruction.getCaller();
+                var elementName = ((ClassType) object.getType()).getName();
+                var fullElementName = getImportedClassName(elementName);
+                var methodName = callInstruction.getMethodName();
+                code.append(generators.apply(object)).append(NL);
+
+                callInstruction.getArguments().forEach((op) -> code.append(generators.apply(op)));
+                code.append("invokevirtual ").append(fullElementName).append("/").append(generators.apply(methodName));
+
+                callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
+                code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+
+            }
+            default -> throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
+
         }
         return code.toString();
     }
@@ -396,7 +366,7 @@ public class JasminGenerator {
         return switch (type.getTypeOfElement()) {
             case INT32 -> "I";
             case BOOLEAN -> "Z";
-            case STRING -> "Ljava/lang/String;";
+            case STRING -> "[Ljava/lang/String;";
             case OBJECTREF, CLASS -> getObjectType(type);
             case VOID -> "V";
             default -> null;
@@ -427,6 +397,6 @@ public class JasminGenerator {
     }
 
     private String getObjectType (Type type){
-        return "L" + getImportedClassName(type.getTypeOfElement().toString()) + ";";
+        return "L" + getImportedClassName(((ClassType) type).getName()) + ";";
     }
 }
