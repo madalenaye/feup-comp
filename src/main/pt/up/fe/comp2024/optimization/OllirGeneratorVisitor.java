@@ -60,20 +60,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private String visitVarDecl(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
-        code.append(".field ");
-
-        boolean isPublic = NodeUtils.getBooleanAttribute(node, "isPublic", "false");
-
-        if (isPublic) {
-            code.append("public ");
-        }
-
-        boolean isStatic = NodeUtils.getBooleanAttribute(node, "isStatic", "false");
-
-        if (isStatic) {
-            code.append("static ");
-        }
-
+        code.append(".field public ");
 
         var typeCode = OptUtils.toOllirType(node.getJmmChild(0));
         var id = node.get("name");
@@ -116,18 +103,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         List<String> parameters = params.stream().map(this::visit).toList();
         String paramsCode = String.join(", ", parameters);
         code.append(paramsCode);
-
-        //before
-        /*if(!params.isEmpty()){
-            String paramCode = visit(params.get(0));
-            code.append(paramCode);
-
-            for (int i = 1; i < params.size(); i++) {
-                code.append(", ");
-                paramCode = visit(params.get(i));
-                code.append(paramCode);
-            }
-        }*/
 
         code.append(")");
 
