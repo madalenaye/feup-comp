@@ -65,10 +65,11 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
 
             // static method call from imported class
             if (type.hasAttribute("isExternal")) {;
+                exprCode = exprCode.substring(0, exprCode.lastIndexOf(".")) + varOllirType;
                 String newTmp = OptUtils.getTemp() + varOllirType;
                 code.append(newTmp)
                         .append(SPACE).append(ASSIGN).append(varOllirType).append(SPACE)
-                        .append(exprCode);
+                        .append(exprCode).append(END_STMT);
                 exprCode = newTmp;
             }
 
