@@ -1,0 +1,11 @@
+import A.B.C;
+
+class test{
+
+    public int foo() {
+        C c1;
+        int d;
+        d = C.foo();
+        return 1;
+    }
+}
