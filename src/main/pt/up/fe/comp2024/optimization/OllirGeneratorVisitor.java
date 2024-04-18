@@ -62,6 +62,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         StringBuilder code = new StringBuilder();
         code.append(".field public ");
 
+
         var typeCode = OptUtils.toOllirType(node.getJmmChild(0));
         var id = node.get("name");
 
@@ -104,6 +105,18 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         String paramsCode = String.join(", ", parameters);
         code.append(paramsCode);
 
+        //before
+        /*if(!params.isEmpty()){
+            String paramCode = visit(params.get(0));
+            code.append(paramCode);
+
+            for (int i = 1; i < params.size(); i++) {
+                code.append(", ");
+                paramCode = visit(params.get(i));
+                code.append(paramCode);
+            }
+        }*/
+
         code.append(")");
 
         // type
@@ -134,10 +147,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         code.append(table.getClassName());
 
-
         if (!table.getSuper().isEmpty()) {
             code.append(" extends ").append(table.getSuper());
-        } else code.append(" extends ").append("Object");
+        }
         code.append(L_BRACKET);
 
         code.append(NL);

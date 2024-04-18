@@ -133,10 +133,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String id = node.get("name");
         Type type = TypeUtils.getExprType(node, table, currMethod);
         assert type != null;
-        if(id.equals(type.getName())){
-            code = id;
-            return new OllirExprResult(code,computation);
-        }
         String ollirType = OptUtils.toOllirType(type);
 
 
@@ -246,7 +242,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
 
             // imported class
-            if (objectType.hasAttribute("isExternal") && !objectType.hasAttribute("isInstance") && table.getReturnType(method) == null) {
+            if (objectType.hasAttribute("isExternal") && !objectType.hasAttribute("isInstance")) {
+
                 ollirReturnType = ".V";
 
                 code.append("invokestatic")
@@ -261,7 +258,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     ollirReturnType = OptUtils.toOllirType(returnType);
                 }
                 else {
-                    Type returnType = table.getReturnType(node.get("method"));
+                    Type returnType = TypeUtils.getExprType(object, table, currMethod);
                     assert returnType != null;
                     ollirReturnType = OptUtils.toOllirType(returnType);
                 }
@@ -286,13 +283,12 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             computation.append(argumentCode.getComputation());
             if(argument.getKind().equals("MethodExpr")){
                 String temp = OptUtils.getTemp();
-                Type argumentType= table.getReturnType(argument.get("method"));
-                String ollirType;
-                if (argumentType == null) {
+                Type argumentType = TypeUtils.getExprType(argument, table, currMethod);
+                assert argumentType != null;
+                String ollirType = OptUtils.toOllirType(argumentType);
+                if (argumentType.hasAttribute("isExternal")) {
                     ollirType = ".V";
-                } else ollirType = OptUtils.toOllirType(argumentType);
-
-
+                }
                 computation.append(temp).append(ollirType).append(SPACE).append(ASSIGN)
                         .append(ollirType).append(SPACE).append(argumentCode.getCode());
 
