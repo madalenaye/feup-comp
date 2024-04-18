@@ -46,7 +46,6 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         StringBuilder code = new StringBuilder();
 
-        // variable
         String variable = node.get("name");
 
         Type varType = TypeUtils.getVariableType(variable, table, currMethod);
@@ -56,20 +55,34 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         JmmNode exprNode = node.getJmmChild(0);
 
         var expr = exprVisitor.visit(exprNode);
+        code.append(expr.getComputation());
 
         String exprCode = expr.getCode();
 
         if (exprNode.getKind().equals("MethodExpr")) {
             Type type = TypeUtils.getExprType(exprNode, table, currMethod);
-            String ollirType = OptUtils.toOllirType(Objects.requireNonNull(type));
-            String newTmp = OptUtils.getTemp() + ollirType;
-            code.append(newTmp)
-                    .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
-                    .append(exprCode);
-            exprCode = newTmp;
+            assert type != null;
+
+            // static method call from imported class
+            if (type.hasAttribute("isExternal")) {
+                exprCode = exprCode.substring(0, exprCode.length()-4) + varOllirType;
+                String newTmp = OptUtils.getTemp() + varOllirType;
+                code.append(newTmp)
+                        .append(SPACE).append(ASSIGN).append(varOllirType).append(SPACE)
+                        .append(exprCode).append(END_STMT);
+                exprCode = newTmp;
+            }
+            else {
+                String ollirType = OptUtils.toOllirType(type);
+                String newTmp = OptUtils.getTemp() + ollirType;
+                code.append(newTmp)
+                        .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
+                        .append(exprCode);
+                exprCode = newTmp;
+            }
+
         }
 
-        code.append(expr.getComputation());
 
         if (table.getFields().stream().anyMatch(field -> field.getName().equals(variable))) {
             code.append("putfield(this, ")
