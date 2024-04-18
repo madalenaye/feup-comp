@@ -7,7 +7,6 @@ class Main {
 
     public int fee() {
         io.a(this.foo());
-        return 1;
     }
 
     public static void main(String[] args) {
