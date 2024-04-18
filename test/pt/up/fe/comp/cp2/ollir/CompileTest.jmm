@@ -1,11 +1,10 @@
-import A.B.C;
+import io;
 
-class test{
+class Test {
 
-    public int foo() {
-        C c1;
-        int d;
-        d = c1.foo();
-        return 1;
-    }
+	public static void main(String[] args) {
+    	Test test;
+		test = new Test();
+	}
+
 }
