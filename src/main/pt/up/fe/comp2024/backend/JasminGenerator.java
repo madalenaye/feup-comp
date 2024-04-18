@@ -79,7 +79,7 @@ public class JasminGenerator {
         var defaultConstructor = new StringBuilder();
         defaultConstructor.append(".method public <init>()V").append(NL).append(TAB).append("aload_0").append(NL).append(TAB);
 
-        if (classUnit.getSuperClass() == null) {
+        if (classUnit.getSuperClass() == null || classUnit.getSuperClass().equals("Object")) {
             code.append(".super java/lang/Object").append(NL);
             defaultConstructor.append("invokespecial java/lang/Object/<init>()V");
         } else {
