@@ -64,7 +64,7 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
             assert type != null;
 
             // static method call from imported class
-            if (type.hasAttribute("isExternal") || type.hasAttribute("isExternalObject")) {
+            if (type.hasAttribute("isExternal")) {
                 exprCode = exprCode.substring(0, exprCode.lastIndexOf(".")) + varOllirType;
                 String newTmp = OptUtils.getTemp() + varOllirType;
                 code.append(newTmp)
