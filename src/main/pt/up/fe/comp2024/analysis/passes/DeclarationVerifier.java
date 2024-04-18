@@ -74,7 +74,7 @@ public class DeclarationVerifier extends AnalysisVisitor {
                 return null;
             }
 
-            var message = String.format("Method '%s' does not exist.", method);
+            String message = String.format("Method '%s' does not exist.", method);
 
             addReport(Report.newError(
                     Stage.SEMANTIC,
@@ -98,7 +98,7 @@ public class DeclarationVerifier extends AnalysisVisitor {
         }
 
         // Check if exists a parameter or variable declaration with the same name as the variable reference
-        var varRefName = varRefExpr.get("name");
+        String varRefName = varRefExpr.get("name");
 
         // Var is a field, return
         if (table.getFields().stream().anyMatch(param -> param.getName().equals(varRefName))) {
