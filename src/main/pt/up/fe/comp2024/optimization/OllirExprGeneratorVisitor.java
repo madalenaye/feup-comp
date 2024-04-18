@@ -5,6 +5,7 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ollir.OllirUtils;
+import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(NEG_EXPR, this::visitNegExpr);
         addVisit(BOOLEAN_LITERAL, this::visitBoolean);
         addVisit(PARENS_EXPR, this::visitParensExpr);
+        addVisit(THIS_EXPR, this::visitThisExpr);
         setDefaultVisit(this::defaultVisit);
     }
 
@@ -344,7 +346,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
     private OllirExprResult visitNegExpr(JmmNode node, Void unused) {
         StringBuilder computation = new StringBuilder();
 
-
         var expr = this.visit(node.getJmmChild(0));
 
         computation.append(expr.getComputation());
@@ -362,7 +363,13 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         return new OllirExprResult(code,computation);
     }
-        /**
+
+    private OllirExprResult visitThisExpr(JmmNode expr, Void unused) {
+        return new OllirExprResult("this." + table.getClassName(), "");
+    }
+
+
+    /**
          * Default visitor. Visits every child node and return an empty result.
          *
          * @param node
@@ -378,23 +385,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         return OllirExprResult.EMPTY;
     }
 
+
 }
 
-
-/*
-this.foo().foo().foo().f1();
-this.foo().foo().foo()
-
-this.foo().foo()
-
-
-this.foo()
-
-
-this -> class
-tmp0 = invokeVirtual(this.CompileMethodInvocation, "foo")
-invokeVirtual(tmp0, "foo")
-
-
-
- */
