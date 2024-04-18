@@ -35,7 +35,7 @@ public class MethodVerifier extends AnalysisVisitor {
 
 
     private Void visitIdentifier(JmmNode varRefExpr, SymbolTable table) {
-
+        /*
         // only static method
         if (currentMethod.equals("main")) {
             for (var field : table.getFields()) {
@@ -51,7 +51,7 @@ public class MethodVerifier extends AnalysisVisitor {
                     return null;
                 }
             }
-        }
+        }*/
 
         return null;
     }
