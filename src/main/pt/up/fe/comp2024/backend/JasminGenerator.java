@@ -235,6 +235,15 @@ public class JasminGenerator {
             }
         }
         if (currentMethod.getOllirClass().getImports().contains(operandName)) return operandName;
+        String realClass = "." + operandName;
+
+        if (ollirResult.getOllirClass().getImportedClasseNames().contains(operandName)){
+            for (var imp: ollirResult.getOllirClass().getImports()) {
+                if (imp.endsWith(realClass)) {
+                    return operandName;
+                }
+            }
+        }
         return null;
     }
 
@@ -310,7 +319,7 @@ public class JasminGenerator {
 
                 callInstruction.getArguments().forEach((op) -> code.append(ollirTypeToJasmin(op.getType())));
                 code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
-                if (!elementName.equals(ollirResult.getOllirClass().getSuperClass())) code.append("pop");
+                code.append("pop");
 
             }
             case invokevirtual -> {
