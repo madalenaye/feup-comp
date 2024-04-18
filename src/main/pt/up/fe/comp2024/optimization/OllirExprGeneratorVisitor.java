@@ -135,6 +135,10 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String id = node.get("name");
         Type type = TypeUtils.getExprType(node, table, currMethod);
         assert type != null;
+        if(id.equals(type.getName())){
+            code = id;
+            return new OllirExprResult(code,computation);
+        }
         String ollirType = OptUtils.toOllirType(type);
 
 
@@ -243,7 +247,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             assert objectType != null;
 
             // imported class
-            if (objectType.hasAttribute("isExternal")) {
+            if (objectType.hasAttribute("isExternal") && table.getReturnType(method) == null) {
                 ollirReturnType = ".V";
                 code.append("invokestatic")
                         .append("(").append(objectType.getName())
@@ -257,7 +261,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     ollirReturnType = OptUtils.toOllirType(returnType);
                 }
                 else {
-                    Type returnType = TypeUtils.getExprType(object, table, currMethod);
+                    Type returnType = table.getReturnType(node.get("method"));
                     assert returnType != null;
                     ollirReturnType = OptUtils.toOllirType(returnType);
                 }
@@ -283,12 +287,13 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             computation.append(argumentCode.getComputation());
             if(argument.getKind().equals("MethodExpr")){
                 String temp = OptUtils.getTemp();
-                Type argumentType = TypeUtils.getExprType(argument, table, currMethod);
-                assert argumentType != null;
-                String ollirType = OptUtils.toOllirType(argumentType);
-                if (argumentType.hasAttribute("isExternal")) {
+                Type argumentType= table.getReturnType(argument.get("method"));
+                String ollirType;
+                if (argumentType == null) {
                     ollirType = ".V";
-                }
+                } else ollirType = OptUtils.toOllirType(argumentType);
+
+
                 computation.append(temp).append(ollirType).append(SPACE).append(ASSIGN)
                         .append(ollirType).append(SPACE).append(argumentCode.getCode());
 

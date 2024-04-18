@@ -1,19 +1,14 @@
-import io;
+import A.B.C;
 
-class Main {
-    int c;
+class test{
 
-    public int foo(int a, int b) {
-        return 2;
+    public int foo() {
+        int d;
+        d = C.foo();
+        this.bar(this.bar(2+4));
+        return 1;
     }
-
-    public int fee() {
-        int a;
-        c= this.foo(c,this.foo(this.foo(c,this.foo(c+c*c,c)),c));
-        return a;
-    }
-
-    public static void main(String[] args) {
-
+    public int bar(int a) {
+        return 1;
     }
 }
