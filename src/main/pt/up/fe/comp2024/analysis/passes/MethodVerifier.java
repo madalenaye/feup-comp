@@ -35,11 +35,14 @@ public class MethodVerifier extends AnalysisVisitor {
 
 
     private Void visitIdentifier(JmmNode varRefExpr, SymbolTable table) {
-        /*
+
         // only static method
         if (currentMethod.equals("main")) {
-            for (var field : table.getFields()) {
-                if (field.getName().equals(varRefExpr.get("name"))) {
+
+            String variable = varRefExpr.get("name");
+            if (table.getFields().stream().anyMatch(field -> field.getName().equals(variable))) {
+            //for (var field : table.getFields()) {
+              //  if (field.getName().equals(varRefExpr.get("name"))) {
                     String message = String.format("Call to non-static field '%s' in a static method", varRefExpr.get("name"));
                     addReport(Report.newError(
                             Stage.SEMANTIC,
@@ -49,9 +52,9 @@ public class MethodVerifier extends AnalysisVisitor {
                             null)
                     );
                     return null;
-                }
+          //      }
             }
-        }*/
+        }
 
         return null;
     }
