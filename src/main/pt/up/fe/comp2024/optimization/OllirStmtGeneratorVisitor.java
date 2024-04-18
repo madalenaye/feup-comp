@@ -6,6 +6,8 @@ import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
+import java.util.Objects;
+
 import static pt.up.fe.comp2024.ast.Kind.*;
 
 /**
@@ -51,26 +53,35 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         assert varType != null;
         String varOllirType = OptUtils.toOllirType(varType);
 
-        var expr = exprVisitor.visit(node.getJmmChild(0));
+        JmmNode exprNode = node.getJmmChild(0);
+
+        var expr = exprVisitor.visit(exprNode);
+
+        String exprCode = expr.getCode();
+
+        if (exprNode.getKind().equals("MethodExpr")) {
+            Type type = TypeUtils.getExprType(exprNode, table, currMethod);
+            String ollirType = OptUtils.toOllirType(Objects.requireNonNull(type));
+            String newTmp = OptUtils.getTemp() + ollirType;
+            code.append(newTmp)
+                    .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
+                    .append(exprCode);
+            exprCode = newTmp;
+        }
+
         code.append(expr.getComputation());
 
-
-        var fields = table.getFields();
-        boolean variableIsField = fields.stream()
-                .anyMatch(field -> field.getName().equals(variable));
-
-        if(variableIsField){
+        if (table.getFields().stream().anyMatch(field -> field.getName().equals(variable))) {
             code.append("putfield(this, ")
                     .append(variable)
                     .append(varOllirType)
                     .append(", ")
-                    .append(expr.getCode())
+                    .append(exprCode)
                     .append(").V");
-        }else{
+        } else{
             code.append(variable).append(varOllirType);
             code.append(SPACE + ASSIGN).append(varOllirType).append(SPACE);
-
-            code.append(expr.getCode());
+            code.append(exprCode);
         }
 
         code.append(END_STMT);

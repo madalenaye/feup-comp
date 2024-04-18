@@ -198,70 +198,12 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         List<String> importPath = node.getObjectAsList("name", String.class);
         String path = String.join(".", importPath);
         code.append(path);
-        /*
-        String importNames = node.get("name");
-        List<String> importList = Arrays.stream(importNames.substring(1, importNames.length() - 1).split(","))
-                .map(String::trim)
-                .toList();
-
-        code.append("import ");
-
-        for (int i = 0; i < importList.size(); i++) {
-            code.append(importList.get(i));
-            if (i < importList.size() - 1) {
-                code.append(".");
-            }
-        } */
-
         code.append(END_STMT);
         return code.toString();
     }
 
     private String visitProgram(JmmNode node, Void unused) {
 
-        if (table.getClassName().equals("Simple")) {
-
-            return "import io;\n" +
-                    "Simple extends Object {\n" +
-                    "\n" +
-                    "\n" +
-                    ".method public add(a.i32, b.i32).i32 {\n" +
-                    "tmp0.i32 :=.i32 invokevirtual(this.Simple, \"constInstr\").i32;\n" +
-                    "tmp1.i32 :=.i32 a.i32 +.i32 tmp0.i32;\n" +
-                    "c.i32 :=.i32 tmp1.i32;\n" +
-                    "ret.i32 c.i32;\n" +
-                    "}\n" +
-                    "\n" +
-                    ".method public static main(args.array.String).V {\n" +
-                    "a.i32 :=.i32 20.i32;\n" +
-                    "b.i32 :=.i32 10.i32;\n" +
-                    "tmp2.Simple :=.Simple new(Simple).Simple;\n" +
-                    "invokespecial(tmp2.Simple, \"\").V;\n" +
-                    "s.Simple :=.Simple tmp2.Simple;\n" +
-                    "tmp3.i32 :=.i32 invokevirtual(s.Simple, \"add\", a.i32, b.i32).i32;\n" +
-                    "c.i32 :=.i32 tmp3.i32;\n" +
-                    "invokestatic(io, \"println\", c.i32).V;\n" +
-                    "ret.V ;\n" +
-                    "}\n" +
-                    "\n" +
-                    ".method public constInstr().i32 {\n" +
-                    "c.i32 :=.i32 0.i32;\n" +
-                    "c.i32 :=.i32 4.i32;\n" +
-                    "c.i32 :=.i32 8.i32;\n" +
-                    "c.i32 :=.i32 14.i32;\n" +
-                    "c.i32 :=.i32 250.i32;\n" +
-                    "c.i32 :=.i32 400.i32;\n" +
-                    "c.i32 :=.i32 1000.i32;\n" +
-                    "c.i32 :=.i32 100474650.i32;\n" +
-                    "c.i32 :=.i32 10.i32;\n" +
-                    "ret.i32 c.i32;\n" +
-                    "}\n" +
-                    "\n" +
-                    ".construct Simple().V {\n" +
-                    "invokespecial(this, \"\").V;\n" +
-                    "}\n" +
-                    "}";
-        }
 
         StringBuilder code = new StringBuilder();
 
