@@ -3,12 +3,12 @@ import io;
 
 class Simple {
 
-    public int foo(){
+    public int foo(int a){
         return 0;
     }
 
     public int bar(){
-        io.foo(this.foo());
+        io.foo((new Simple()).foo(io.foo()));
         return 0;
     }
 
