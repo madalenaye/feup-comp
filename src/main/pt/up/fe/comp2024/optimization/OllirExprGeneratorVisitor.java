@@ -23,6 +23,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
     private static final String ASSIGN = ":=";
     private static final String NEW = "new";
     private static final String INVOKESPECIAL = "invokespecial";
+    private static final String INVOKEVIRTUAL = "invokevirtual";
     private static final String INVOKESTATIC = "invokestatic";
 
 
@@ -200,7 +201,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         if (object.getKind().equals("MethodExpr")) {
 
-
             OllirExprResult left = visit(object);
             computation.append(left.getComputation());
 
@@ -215,9 +215,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             } else {
                 ollirReturnType = OptUtils.toOllirType(objectType);
             }
-                code.append("invokevirtual")
-                        .append("(").append(temp)
-                        .append(", \"").append(method).append("\"");
+                code.append(INVOKEVIRTUAL).append("(").append(temp).append(", \"").append(method).append("\"");
 
                 var arguments = node.getChildren();
                 arguments.remove(0);
@@ -260,50 +258,30 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         }
 
-        else if (object.getKind().equals("ThisExpr")) {
+        else if (object.getKind().equals("ThisExpr") || object.getKind().equals("NewObjectExpr")) {
+            OllirExprResult expr = visit(object);
 
             Type returnType = table.getReturnType(method);
-            ollirReturnType = OptUtils.toOllirType(returnType);
+            if (returnType != null) ollirReturnType = OptUtils.toOllirType(returnType);
 
-            code.append("invokevirtual")
-                    .append("(").append("this.").append(table.getClassName())
+            code.append(INVOKEVIRTUAL)
+                    .append("(").append(expr.getCode())
                     .append(", \"").append(method).append("\"");
 
         }
 
-        else if (object.getKind().equals("ParensExpr")) {
-            OllirExprResult c = visit(object.getJmmChild(0));
-            computation.append(c);
-
-
-        }
-
-        else if (object.getKind().equals("NewObjectExpr")) {
-
-            OllirExprResult newExpr = visit(object);
-            Type returnType = table.getReturnType(method);
-            ollirReturnType = OptUtils.toOllirType(returnType);
-            computation.append(newExpr.getComputation());
-            code.append("invokevirtual")
-                    .append("(").append(newExpr.getCode())
-                    .append(", \"").append(method).append("\"");
-        }
 
         else if (object.getKind().equals("VarRefExpr")) {
-            assert objectType != null;
 
             // imported class
             if (objectType.hasAttribute("isExternal") && !objectType.hasAttribute("isInstance")) {
-
                 ollirReturnType = ".V";
-
-                code.append("invokestatic")
+                code.append(INVOKESTATIC)
                         .append("(").append(objectType.getName())
                         .append(", \"").append(method).append("\"");
             }
 
             else {
-
                 if (objectType.getName().equals(table.getClassName())) {
                     Type returnType = table.getReturnType(method);
                     ollirReturnType = OptUtils.toOllirType(returnType);
