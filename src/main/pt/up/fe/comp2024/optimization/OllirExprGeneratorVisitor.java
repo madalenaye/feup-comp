@@ -224,7 +224,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
             var arguments = node.getChildren();
             arguments.remove(0);
-            OllirExprResult argumentsResult = buildArguments(arguments, method);
+            OllirExprResult argumentsResult = buildArguments(arguments, method, objectType);
 
             computation.append(argumentsResult.getComputation());
             code.append(argumentsResult.getCode()).append(")").append(ollirReturnType).append(END_STMT);
@@ -266,7 +266,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         var arguments = node.getChildren();
         arguments.remove(0);
-        OllirExprResult argumentResult = buildArguments(arguments, method);
+        OllirExprResult argumentResult = buildArguments(arguments, method, objectType);
         computation.append(argumentResult.getComputation());
 
         code.append(", \"").append(method).append("\"")
@@ -277,7 +277,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         return new OllirExprResult(code.toString(), computation);
     }
 
-    private OllirExprResult buildArguments(List<JmmNode> arguments, String method) {
+    private OllirExprResult buildArguments(List<JmmNode> arguments, String method, Type objectType) {
         StringBuilder argCode = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
@@ -291,7 +291,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 String invoke = argumentCode.getCode();
                 Type argumentType = TypeUtils.getExprType(argument, table, currMethod);
                 String ollirType = OptUtils.toOllirType(argumentType);
-                if (table.getMethods().contains(method)) {
+                if (objectType.getName().equals(table.getClassName()) && table.getMethods().contains(method)) {
                     argumentType = table.getParameters(method).get(i).getType();
                     ollirType = OptUtils.toOllirType(argumentType);
                 }

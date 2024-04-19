@@ -3,14 +3,14 @@ import io;
 
 class Simple {
 
-    int c;
-    public int add(int a, int b){
-        int c;
-        c = 1;
+    public int foo(){
+        return 0;
     }
 
-    public int test(int a){
-        c = 2;
-        return 1;
+    public int bar(){
+        io.foo(this.foo());
+        return 0;
     }
+
+
 }

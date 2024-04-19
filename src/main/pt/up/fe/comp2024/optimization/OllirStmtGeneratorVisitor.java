@@ -93,14 +93,36 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
     private String visitReturn(JmmNode node, Void unused) {
 
         StringBuilder code = new StringBuilder();
-        Type retType = table.getReturnType(currMethod);
-        OllirExprResult expr = exprVisitor.visit(node.getJmmChild(0));
 
-        code.append(expr.getComputation())
-            .append("ret")
-            .append(OptUtils.toOllirType(retType))
+        Type retType = table.getReturnType(currMethod);
+        String varOllirType = OptUtils.toOllirType(retType);
+
+        JmmNode exprNode = node.getJmmChild(0);
+        OllirExprResult expr = exprVisitor.visit(exprNode);
+        String exprCode = expr.getCode();
+
+        while(exprNode.getKind().equals("ParensExpr")) exprNode = exprNode.getChild(0);
+
+        code.append(expr.getComputation());
+
+        if (exprNode.getKind().equals("MethodExpr")) {
+            Type type = TypeUtils.getExprType(exprNode, table, currMethod);
+            String newTmp = OptUtils.getTemp() + varOllirType;
+
+            // static method call from imported class
+            if (type.hasAttribute("isExternal")) {
+                exprCode = exprCode.substring(0, exprCode.lastIndexOf(".")) + varOllirType + END_STMT;
+            }
+
+            code.append(newTmp)
+                    .append(SPACE).append(ASSIGN).append(varOllirType).append(SPACE)
+                    .append(exprCode);
+            exprCode = newTmp;
+        }
+            code.append("ret")
+            .append(varOllirType)
             .append(SPACE)
-            .append(expr.getCode())
+            .append(exprCode)
             .append(END_STMT);
 
         return code.toString();
