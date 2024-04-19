@@ -70,7 +70,6 @@ public class TypeUtils {
         }
 
         if (node.getKind().equals("NewObjectExpr")) {
-            // instance of same class
             if (node.get("name").equals(table.getClassName())) {
                 return table.getReturnType(method);
             }

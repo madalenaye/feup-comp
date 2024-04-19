@@ -37,7 +37,7 @@ public class ArrayVerifier extends AnalysisVisitor {
         String variable = arrayStmt.get("name");
         Type varType = TypeUtils.getVariableType(variable, table, currentMethod);
 
-        assert varType != null;
+        if (varType == null) return null;
         if (!varType.getName().equals("int") || !varType.isArray()) {
             message = String.format("Array access on '%s' type", varType.getName());
 
@@ -57,7 +57,7 @@ public class ArrayVerifier extends AnalysisVisitor {
         JmmNode assigned = arrayStmt.getObject("array", JmmNode.class);
         Type assignedType = TypeUtils.getExprType(assigned, table, currentMethod);
 
-        assert assignedType != null;
+        if (assignedType == null) return null;
         if (TypeUtils.isIntType(assignedType)) {
             return null;
         }
@@ -83,7 +83,7 @@ public class ArrayVerifier extends AnalysisVisitor {
         JmmNode variable = expr.getObject("array", JmmNode.class);
         Type varType = TypeUtils.getExprType(variable, table, currentMethod);
 
-        assert varType != null;
+        if (varType == null) return null;
         if (varType.getName().equals("int") && varType.isArray()) {
             return null;
         }
@@ -107,7 +107,7 @@ public class ArrayVerifier extends AnalysisVisitor {
         List<JmmNode> elements = array.getChildren();
         for (JmmNode element : elements) {
             Type type = TypeUtils.getExprType(element, table, currentMethod);
-            assert type != null;
+            if (type == null) return null;
             if (!TypeUtils.isIntType(type)) {
                 String message = String.format("Array expects elements of type integer ('%s' given)", type.getName() + (type.isArray() ? "[]" : ""));
                 addReport(Report.newError(
@@ -129,7 +129,7 @@ public class ArrayVerifier extends AnalysisVisitor {
         JmmNode index = expr.getObject("index", JmmNode.class);
         Type indexType = TypeUtils.getExprType(index, table, currentMethod);
 
-        assert indexType != null;
+        if (indexType == null) return null;
         if (!TypeUtils.isIntType(indexType)) {
             String message = String.format("Array access index expects an expression of type integer ('%s' given)", indexType.getName() + (indexType.isArray() ? "[]" : ""));
 

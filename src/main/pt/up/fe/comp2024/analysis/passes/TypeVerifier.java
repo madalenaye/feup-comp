@@ -131,7 +131,7 @@ public class TypeVerifier extends AnalysisVisitor {
                 Type actualType = TypeUtils.getExprType(actualParams.get(i), table, currentMethod);
                 Type expectedType = expectedParams.get(i).getType();
                 if (!expectedType.equals(actualType)) {
-                    assert actualType != null;
+                    if (actualType == null) return;
                     message = String.format("Incompatible argument types ('%s' expected, '%s' given)", expectedType.getName() + (expectedType.isArray() ? "[]" : ""), actualType.getName() + (actualType.isArray() ? "[]" : ""));
                     addReport(Report.newError(
                             Stage.SEMANTIC,
@@ -148,7 +148,7 @@ public class TypeVerifier extends AnalysisVisitor {
                 Type actualType = TypeUtils.getExprType(actualParams.get(i), table, currentMethod);
                 Type expectedType = expectedParams.get(i).getType();
                 if (!expectedType.equals(actualType)) {
-                    assert actualType != null;
+                    if (actualType == null) return ;
                     message = String.format("Incompatible argument types ('%s' expected, '%s' given)", expectedType.getName() + (expectedType.isArray() ? "[]" : ""), actualType.getName() + (actualType.isArray() ? "[]" : ""));
                     addReport(Report.newError(
                             Stage.SEMANTIC,
@@ -169,7 +169,7 @@ public class TypeVerifier extends AnalysisVisitor {
             // Only one vararg argument, return is int[]
             if (actualParams.size() == expectedParams.size()) {
                 Type actualType = TypeUtils.getExprType(actualParams.get(i--), table, currentMethod);
-                assert actualType != null;
+                if (actualType == null) return;
                 if (actualType.getName().equals("int") && actualType.isArray()) {
                     return;
                 }
@@ -178,7 +178,7 @@ public class TypeVerifier extends AnalysisVisitor {
             // Vararg arguments, must be in int type
             for (int j = i; j < actualParams.size(); j++) {
                 Type actualType = TypeUtils.getExprType(actualParams.get(j), table, currentMethod);
-                assert actualType != null;
+                if (actualType == null) return;
                 if (!TypeUtils.isIntType(actualType)) {
                     message = String.format("Vararg argument must be of type 'int' ('%s' given)", actualType.getName() + (actualType.isArray() ? "[]" : ""));
                     addReport(Report.newError(

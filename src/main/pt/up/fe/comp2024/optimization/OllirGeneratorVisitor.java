@@ -62,7 +62,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         StringBuilder code = new StringBuilder();
         code.append(".field public ");
 
-
         var typeCode = OptUtils.toOllirType(node.getJmmChild(0));
         var id = node.get("name");
 
