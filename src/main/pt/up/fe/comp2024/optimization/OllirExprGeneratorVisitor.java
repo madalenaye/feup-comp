@@ -233,10 +233,10 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         else if (object.getKind().equals("ThisExpr") || object.getKind().equals("NewObjectExpr")) {
             OllirExprResult expr = visit(object);
-
+            String className = TypeUtils.getExprType(object, table, currMethod).getName();
             computation.append(expr.getComputation());
             Type returnType = table.getReturnType(method);
-            if (returnType != null) ollirReturnType = OptUtils.toOllirType(returnType);
+            if (className.equals(table.getClassName()) && returnType != null) ollirReturnType = OptUtils.toOllirType(returnType);
             else ollirReturnType = "." + object.get("name");
 
             code.append(INVOKEVIRTUAL).append("(").append(expr.getCode());

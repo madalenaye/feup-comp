@@ -65,6 +65,11 @@ public class TypeUtils {
         JmmNode node = expr.getChild(0);
         String method = expr.get("method");
 
+        while (node.getKind().equals("ParensExpr")) {
+            node = node.getChild(0);
+        }
+
+
         if (node.getKind().equals("ThisExpr")) {
             return table.getReturnType(method);
         }
@@ -79,9 +84,6 @@ public class TypeUtils {
             return type;
         }
 
-        if (node.getKind().equals("ParensExpr")) {
-            return getExprType(node.getChild(0), table, currentMethod);
-        }
 
         if (node.getKind().equals("VarRefExpr")) {
             Type varType = getVarExprType(node, table, currentMethod);

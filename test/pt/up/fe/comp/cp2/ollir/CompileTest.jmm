@@ -8,7 +8,7 @@ class Simple {
     }
 
     public int bar(){
-        io.foo((new Simple()).foo(io.foo()));
+        io.foo((new Simple()).foo(1));
         return 0;
     }
 
