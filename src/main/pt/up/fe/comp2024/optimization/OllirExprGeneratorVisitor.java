@@ -202,8 +202,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         while (object.getKind().equals("ParensExpr")) object = object.getJmmChild(0);
 
+        // recursive call
         if (object.getKind().equals("MethodExpr")) {
-
             OllirExprResult left = visit(object);
             computation.append(left.getComputation());
 
@@ -236,6 +236,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
             Type returnType = table.getReturnType(method);
             if (returnType != null) ollirReturnType = OptUtils.toOllirType(returnType);
+            else ollirReturnType = "." + object.get("name");
 
             code.append(INVOKEVIRTUAL).append("(").append(expr.getCode());
         }
@@ -288,8 +289,13 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             if(argument.getKind().equals("MethodExpr")) {
                 String temp = OptUtils.getTemp();
                 String invoke = argumentCode.getCode();
-                Type argumentType = table.getParameters(method).get(i).getType();
+                Type argumentType = TypeUtils.getExprType(argument, table, currMethod);
                 String ollirType = OptUtils.toOllirType(argumentType);
+                if (table.getMethods().contains(method)) {
+                    argumentType = table.getParameters(method).get(i).getType();
+                    ollirType = OptUtils.toOllirType(argumentType);
+                }
+
                 invoke = invoke.substring(0, invoke.lastIndexOf(".")) + ollirType + ";\n";
 
                 computation.append(temp).append(ollirType).append(SPACE).append(ASSIGN)

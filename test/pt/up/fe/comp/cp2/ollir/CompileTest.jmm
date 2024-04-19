@@ -1,22 +1,21 @@
+import imp.Obj;
 import io;
 
 class Simple {
 
-    int field_1;
-    Foo mc;
-    Simple s2;
-
     public int add(int a, int b){
         int c;
-        c = a + this.constInstr();
+        boolean flag;
+        Simple s;
+        Obj obj;
+        s = new Simple();
+        obj = new Obj();
+        c = this.test((new Obj()).f(1+3*2, s.test(1)));
+        flag = io.test();
         return c;
     }
 
-    public int constInstr(){
-        return 1 + field_1;
-    }
-
-    public static void main(String[] args) {
-        io.println((new Simple()).add(10+12*2, 3) + 3);
+    public int test(int a){
+        return 1;
     }
 }
