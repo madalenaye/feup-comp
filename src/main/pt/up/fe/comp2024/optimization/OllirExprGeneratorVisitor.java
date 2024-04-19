@@ -152,11 +152,11 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String ollirType = OptUtils.toOllirType(type);
 
 
-        var fields = table.getFields();
-        boolean variableIsField = fields.stream()
-                .anyMatch(field -> field.getName().equals(id));
+        boolean isField = table.getFields().stream().anyMatch(field -> field.getName().equals(id));
+        boolean isLocal = table.getLocalVariables(currMethod).stream().anyMatch(local -> local.getName().equals(id));
+        boolean isParam = table.getParameters(currMethod).stream().anyMatch(param -> param.getName().equals(id));
 
-        if(variableIsField){
+        if(isField && !(isLocal || isParam)){
             code = OptUtils.getTemp() + ollirType;
             computation.append(code)
                     .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)

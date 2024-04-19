@@ -69,7 +69,6 @@ public class TypeUtils {
             node = node.getChild(0);
         }
 
-
         if (node.getKind().equals("ThisExpr")) {
             return table.getReturnType(method);
         }

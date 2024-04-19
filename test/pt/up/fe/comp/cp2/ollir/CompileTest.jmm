@@ -3,14 +3,16 @@ import io;
 
 class Simple {
 
+    int x;
     public boolean foo(boolean a, int b){
-        return 0;
+        return true;
     }
 
     public int bar(){
-        boolean test;
-        Simple x;
-        x = (new Simple());
+        int x;
+        x = 10;
+
+        io.println(x+x);
         return 0;
     }
 
