@@ -226,10 +226,32 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 for (var argument : arguments) {
                     OllirExprResult argumentCode = visit(argument);
                     computation.append(argumentCode.getComputation());
-                    argCode.append(", ").append(argumentCode.getCode());
+                    if(argument.getKind().equals("MethodExpr")) {
+                        String tmp = OptUtils.getTemp();
+                        Type argumentType = TypeUtils.getExprType(argument, table, currMethod);
+                        String invoke = argumentCode.getCode();
+                        String ollirType;
+                        if (argumentType.hasAttribute("isExternal") || table.getClassName().equals(argumentType.getName())) {
+                            argumentType = table.getParameters(method).get(0).getType();
+                            ollirType = OptUtils.toOllirType(argumentType);
+                            invoke = invoke.substring(0, invoke.lastIndexOf(".")) + ollirType + ";\n";
+                        }
+                        else {
+                            ollirType = OptUtils.toOllirType(argumentType);
+                        }
+
+                        computation.append(tmp).append(ollirType).append(SPACE).append(ASSIGN)
+                                .append(ollirType).append(SPACE).append(invoke);
+
+                        argCode.append(", ").append(tmp).append(ollirType);
+                    }
+                    else{
+                        argCode.append(", ").append(argumentCode.getCode());
+                    }
                 }
 
-                code.append(argCode)
+
+            code.append(argCode)
                         .append(")").append(ollirReturnType)
                         .append(END_STMT);
 
