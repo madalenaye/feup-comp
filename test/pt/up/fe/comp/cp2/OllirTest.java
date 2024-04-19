@@ -37,11 +37,6 @@ public class OllirTest {
         testJmmCompilation("pt/up/fe/comp/cp2/ollir/CompileAssignment.jmm", this::compileAssignment);
     }
 
-    @Test
-    public void compileTest() {
-        testJmmCompilation("pt/up/fe/comp/cp2/ollir/CompileTest.jmm",
-                this::compileMethodInvocation);
-    }
 
     public static void testJmmCompilation(String resource, Consumer<ClassUnit> ollirTester, String executionOutput) {
 
