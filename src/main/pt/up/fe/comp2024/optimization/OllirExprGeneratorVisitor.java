@@ -96,6 +96,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String leftCode = lhs.getCode();
         String rightCode = rhs.getCode();
 
+        while (left.getKind().equals("ParensExpr")) left = left.getChild(0);
+        while (right.getKind().equals("ParensExpr")) right = right.getChild(0);
+
         if (left.getKind().equals("MethodExpr")) {
             if (Objects.requireNonNull(TypeUtils.getExprType(left, table, currMethod)).hasAttribute("isExternal")) {
                 leftCode = leftCode.substring(0, leftCode.lastIndexOf(".")) + ollirType + END_STMT;
@@ -267,9 +270,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             code.append(INVOKEVIRTUAL)
                     .append("(").append(expr.getCode())
                     .append(", \"").append(method).append("\"");
-
         }
-
 
         else if (object.getKind().equals("VarRefExpr")) {
 
@@ -283,62 +284,60 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
             else {
                 if (objectType.getName().equals(table.getClassName())) {
-                    Type returnType = table.getReturnType(method);
-                    ollirReturnType = OptUtils.toOllirType(returnType);
+                    ollirReturnType = OptUtils.toOllirType(table.getReturnType(method));
                 }
                 else {
                     Type returnType = TypeUtils.getExprType(object, table, currMethod);
                     assert returnType != null;
                     ollirReturnType = OptUtils.toOllirType(returnType);
                 }
-                    OllirExprResult objectResult = visit(object);
 
-                    code.append("invokevirtual")
+                OllirExprResult objectResult = visit(object);
+
+                code.append(INVOKEVIRTUAL)
                             .append("(").append(objectResult.getCode())
                             .append(", \"").append(method).append("\"");
-
                 }
             }
 
-
-
-
         var arguments = node.getChildren();
         arguments.remove(0);
+        OllirExprResult argumentResult = buildArguments(arguments, method);
+        computation.append(argumentResult.getComputation());
 
+        code.append(argumentResult.getCode())
+            .append(")").append(ollirReturnType)
+            .append(END_STMT);
+
+        return new OllirExprResult(code.toString(), computation);
+    }
+
+    private OllirExprResult buildArguments(List<JmmNode> arguments, String method) {
         StringBuilder argCode = new StringBuilder();
-        for (var argument : arguments) {
+        StringBuilder computation = new StringBuilder();
+
+        for (int i = 0; i < arguments.size(); i++) {
+            JmmNode argument = arguments.get(i);
             OllirExprResult argumentCode = visit(argument);
             computation.append(argumentCode.getComputation());
+
             if(argument.getKind().equals("MethodExpr")) {
                 String temp = OptUtils.getTemp();
-                Type argumentType = TypeUtils.getExprType(argument, table, currMethod);
                 String invoke = argumentCode.getCode();
-                String ollirType;
-                if (argumentType.hasAttribute("isExternal") || table.getClassName().equals(argumentType.getName())) {
-                    argumentType = table.getParameters(method).get(0).getType();
-                    ollirType = OptUtils.toOllirType(argumentType);
-                    invoke = invoke.substring(0, invoke.lastIndexOf(".")) + ollirType + ";\n";
-                }
-                else {
-                    ollirType = OptUtils.toOllirType(argumentType);
-                }
+                Type argumentType = table.getParameters(method).get(i).getType();
+                String ollirType = OptUtils.toOllirType(argumentType);
+                invoke = invoke.substring(0, invoke.lastIndexOf(".")) + ollirType + ";\n";
 
                 computation.append(temp).append(ollirType).append(SPACE).append(ASSIGN)
                         .append(ollirType).append(SPACE).append(invoke);
 
                 argCode.append(", ").append(temp).append(ollirType);
             }
-            else{
+            else {
                 argCode.append(", ").append(argumentCode.getCode());
             }
         }
-
-        code.append(argCode)
-                .append(")").append(ollirReturnType)
-                .append(END_STMT);
-
-        return new OllirExprResult(code.toString(), computation);
+        return new OllirExprResult(argCode.toString(), computation.toString());
     }
 
     private OllirExprResult visitParensExpr(JmmNode node, Void unused) {

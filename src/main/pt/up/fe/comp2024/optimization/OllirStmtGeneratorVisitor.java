@@ -54,6 +54,8 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(expr.getComputation());
         String exprCode = expr.getCode();
 
+        while (exprNode.getKind().equals("ParensExpr")) exprNode = exprNode.getChild(0);
+
         if (exprNode.getKind().equals("MethodExpr")) {
             Type type = TypeUtils.getExprType(exprNode, table, currMethod);
             String newTmp = OptUtils.getTemp() + varOllirType;
