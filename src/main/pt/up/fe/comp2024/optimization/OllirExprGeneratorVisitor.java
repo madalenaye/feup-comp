@@ -184,7 +184,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         computation.append(INVOKESPECIAL+"(")
                 .append(code)
-                .append(", \"\").V")
+                .append(", \"<init>\").V")
                 .append(END_STMT);
 
         return new OllirExprResult(code, computation);
