@@ -20,8 +20,7 @@ public class JmmAnalysisImpl implements JmmAnalysis {
     private final List<AnalysisPass> analysisPasses;
 
     public JmmAnalysisImpl() {
-        //this.analysisPasses = List.of(new DuplicateVerifier(), new MethodVerifier(), new VarargsVerifier(), new DeclarationVerifier(), new TypeVerifier(), new ArrayVerifier());
-        this.analysisPasses = List.of(new BruteForce());
+        this.analysisPasses = List.of(new DuplicateVerifier(), new MethodVerifier(), new VarargsVerifier(), new DeclarationVerifier(), new TypeVerifier(), new ArrayVerifier());
     }
 
     @Override
