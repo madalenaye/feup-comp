@@ -31,7 +31,6 @@ public class OptUtils {
     }
 
     public static int getNextTempNum() {
-
         tempNumber += 1;
         return tempNumber;
     }

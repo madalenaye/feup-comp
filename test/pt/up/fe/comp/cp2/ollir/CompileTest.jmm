@@ -1,21 +1,21 @@
-import io;
+import B;
 
-class Simple {
-
-    int field_1;
-    Foo mc;
-    Simple s2;
-
-    public int add(int a, int b){
-        this.f1().add(this.add(a,b), 1);
-        return 1;
-    }
-
-    public Simple f1(){
-        return this;
-    }
+class ObjectAssignmentPassExtends extends B {
 
     public static void main(String[] args) {
 
+    }
+
+    public ObjectAssignmentPassExtends foo() {
+        ObjectAssignmentPassExtends a;
+        B b;
+
+        a = new ObjectAssignmentPassExtends();
+        b = new B();
+
+        // ObjectAssignmentPassExtends extends B
+        b = a;
+
+        return a;
     }
 }
