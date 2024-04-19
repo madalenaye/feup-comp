@@ -215,50 +215,20 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             if (objectType.getName().equals(table.getClassName())) {
                 Type returnType = table.getReturnType(method);
                 ollirReturnType = OptUtils.toOllirType(returnType);
-            } else {
+            }
+            else {
                 ollirReturnType = OptUtils.toOllirType(objectType);
             }
-                code.append(INVOKEVIRTUAL).append("(").append(temp).append(", \"").append(method).append("\"");
 
-                var arguments = node.getChildren();
-                arguments.remove(0);
+            code.append(INVOKEVIRTUAL).append("(").append(temp).append(", \"").append(method).append("\"");
 
-                StringBuilder argCode = new StringBuilder();
-                for (var argument : arguments) {
-                    OllirExprResult argumentCode = visit(argument);
-                    computation.append(argumentCode.getComputation());
-                    if(argument.getKind().equals("MethodExpr")) {
-                        String tmp = OptUtils.getTemp();
-                        Type argumentType = TypeUtils.getExprType(argument, table, currMethod);
-                        String invoke = argumentCode.getCode();
-                        String ollirType;
-                        if (argumentType.hasAttribute("isExternal") || table.getClassName().equals(argumentType.getName())) {
-                            argumentType = table.getParameters(method).get(0).getType();
-                            ollirType = OptUtils.toOllirType(argumentType);
-                            invoke = invoke.substring(0, invoke.lastIndexOf(".")) + ollirType + ";\n";
-                        }
-                        else {
-                            ollirType = OptUtils.toOllirType(argumentType);
-                        }
+            var arguments = node.getChildren();
+            arguments.remove(0);
+            OllirExprResult argumentsResult = buildArguments(arguments, method);
 
-                        computation.append(tmp).append(ollirType).append(SPACE).append(ASSIGN)
-                                .append(ollirType).append(SPACE).append(invoke);
-
-                        argCode.append(", ").append(tmp).append(ollirType);
-                    }
-                    else{
-                        argCode.append(", ").append(argumentCode.getCode());
-                    }
-                }
-
-
-            code.append(argCode)
-                        .append(")").append(ollirReturnType)
-                        .append(END_STMT);
-
-                return new OllirExprResult(code.toString(), computation.toString());
-
-
+            computation.append(argumentsResult.getComputation());
+            code.append(argumentsResult.getCode()).append(")").append(ollirReturnType).append(END_STMT);
+            return new OllirExprResult(code.toString(), computation.toString());
         }
 
         else if (object.getKind().equals("ThisExpr") || object.getKind().equals("NewObjectExpr")) {
@@ -267,9 +237,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             Type returnType = table.getReturnType(method);
             if (returnType != null) ollirReturnType = OptUtils.toOllirType(returnType);
 
-            code.append(INVOKEVIRTUAL)
-                    .append("(").append(expr.getCode())
-                    .append(", \"").append(method).append("\"");
+            code.append(INVOKEVIRTUAL).append("(").append(expr.getCode());
         }
 
         else if (object.getKind().equals("VarRefExpr")) {
@@ -277,9 +245,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             // imported class
             if (objectType.hasAttribute("isExternal") && !objectType.hasAttribute("isInstance")) {
                 ollirReturnType = ".V";
-                code.append(INVOKESTATIC)
-                        .append("(").append(objectType.getName())
-                        .append(", \"").append(method).append("\"");
+                code.append(INVOKESTATIC).append("(").append(objectType.getName());
             }
 
             else {
@@ -293,10 +259,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 }
 
                 OllirExprResult objectResult = visit(object);
-
-                code.append(INVOKEVIRTUAL)
-                            .append("(").append(objectResult.getCode())
-                            .append(", \"").append(method).append("\"");
+                code.append(INVOKEVIRTUAL).append("(").append(objectResult.getCode());
                 }
             }
 
@@ -305,7 +268,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         OllirExprResult argumentResult = buildArguments(arguments, method);
         computation.append(argumentResult.getComputation());
 
-        code.append(argumentResult.getCode())
+        code.append(", \"").append(method).append("\"")
+            .append(argumentResult.getCode())
             .append(")").append(ollirReturnType)
             .append(END_STMT);
 
