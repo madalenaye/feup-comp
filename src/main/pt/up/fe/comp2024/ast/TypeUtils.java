@@ -140,7 +140,6 @@ public class TypeUtils {
         for (var local : table.getLocalVariables(method)) {
             if (local.getName().equals(variable)) {
                 return local.getType();
-
             }
         }
 
@@ -156,7 +155,6 @@ public class TypeUtils {
         for (var field : table.getFields()) {
             if (field.getName().equals(variable)) {
                 return field.getType();
-
             }
         }
 
@@ -182,12 +180,6 @@ public class TypeUtils {
     }
 
     public static Type getVariableType(String variable, SymbolTable table, String method) {
-        // Var is a field
-        for (var field : table.getFields()) {
-            if (field.getName().equals(variable)) {
-                return field.getType();
-            }
-        }
 
         // Var is a local
         for (var local : table.getLocalVariables(method)) {
@@ -203,6 +195,12 @@ public class TypeUtils {
             }
         }
 
+        // Var is a field
+        for (var field : table.getFields()) {
+            if (field.getName().equals(variable)) {
+                return field.getType();
+            }
+        }
         return null;
     }
 

@@ -3,10 +3,10 @@ import io;
 class Simple {
     int a;
 
-    public int foo(int a) {
-        boolean a;
+    public int foo(boolean a) {
+        int x;
+        a = false;
         io.println(a);
-        a = 11;
         return 0;
     }
 
@@ -26,7 +26,7 @@ class Simple {
         int a;
         a = 1999;
         s = new Simple();
-        s.foo(a); // print(1999)
+        s.foo(true); // print(1999)
         s.print(); // print(0)
         x = s.bar(1);
         s.print(); // print(10)
