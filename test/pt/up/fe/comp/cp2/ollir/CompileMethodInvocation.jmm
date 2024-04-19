@@ -1,14 +1,18 @@
-import A.B.C;
+import io;
 
-class test{
+class CompileMethodInvocation {
+
+    public static void main(String[] args) {
+
+    }
 
     public int foo() {
-        int d;
-        d = C.foo();
-        this.bar(C.foo());
-        return 1;
-    }
-    public int bar(int a) {
-        return 1;
+        int a;
+
+        a = 1;
+
+        io.println(a);
+
+        return 0;
     }
 }

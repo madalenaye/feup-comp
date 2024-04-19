@@ -22,9 +22,13 @@ class Simple {
     public static void main(String[] args) {
         Simple s;
         int x;
+        int a;
+        a = 1999;
         s = new Simple();
-        s.foo(100);
+        s.foo(a);
+        s.print();
         x = s.bar(1);
+        s.print();
     }
 
 
