@@ -244,23 +244,25 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         else if (object.getKind().equals("VarRefExpr")) {
 
-            // imported class
+            OllirExprResult objectResult = visit(object);
+
+            // static imported class
             if (objectType.hasAttribute("isExternal") && !objectType.hasAttribute("isInstance")) {
                 ollirReturnType = ".V";
                 code.append(INVOKESTATIC).append("(").append(objectType.getName());
             }
 
             else {
+                // current class object
                 if (objectType.getName().equals(table.getClassName())) {
                     ollirReturnType = OptUtils.toOllirType(table.getReturnType(method));
                 }
+
+                // external object
                 else {
-                    Type returnType = TypeUtils.getExprType(object, table, currMethod);
-                    assert returnType != null;
-                    ollirReturnType = OptUtils.toOllirType(returnType);
+                    ollirReturnType = ".V";
                 }
 
-                OllirExprResult objectResult = visit(object);
                 code.append(INVOKEVIRTUAL).append("(").append(objectResult.getCode());
                 }
             }

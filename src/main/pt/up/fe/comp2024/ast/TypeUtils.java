@@ -136,17 +136,11 @@ public class TypeUtils {
 
         String variable = varRefExpr.get("name");
 
-        // Var is a field
-        for (var field : table.getFields()) {
-            if (field.getName().equals(variable)) {
-                return field.getType();
-            }
-        }
-
         // Var is a local
         for (var local : table.getLocalVariables(method)) {
             if (local.getName().equals(variable)) {
                 return local.getType();
+
             }
         }
 
@@ -154,6 +148,15 @@ public class TypeUtils {
         for (var param : table.getParameters(method)) {
             if (param.getName().equals(variable)) {
                 return param.getType();
+
+            }
+        }
+
+        // Var is a field
+        for (var field : table.getFields()) {
+            if (field.getName().equals(variable)) {
+                return field.getType();
+
             }
         }
 
