@@ -1,0 +1,36 @@
+import io;
+
+class Simple {
+    int a;
+
+    public int foo(int a) {
+        boolean a;
+        io.println(a);
+        a = 11;
+        return 0;
+    }
+
+    public int bar(int b) {
+        a = 10;
+        return b;
+    }
+
+    public int print() {
+        io.println(a);
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        Simple s;
+        int x;
+        int a;
+        a = 1999;
+        s = new Simple();
+        s.foo(a); // print(1999)
+        s.print(); // print(0)
+        x = s.bar(1);
+        s.print(); // print(10)
+    }
+
+
+}

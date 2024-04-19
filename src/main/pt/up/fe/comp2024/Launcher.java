@@ -12,6 +12,7 @@ import pt.up.fe.comp2024.parser.JmmParserImpl;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsSystem;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class Launcher {
@@ -56,6 +57,8 @@ public class Launcher {
 
         // Print Jasmin code
         //System.out.println(jasminResult.getJasminCode());
+
+        TestUtils.runJasmin(jasminResult.getJasminCode(), Collections.emptyMap());
     }
 
 }
