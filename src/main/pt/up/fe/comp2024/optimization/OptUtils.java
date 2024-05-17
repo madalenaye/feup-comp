@@ -20,6 +20,8 @@ import static pt.up.fe.comp2024.ast.Kind.TYPES;
 public class OptUtils {
     private static int tempNumber = -1;
 
+    private static int ifNumber = 0;
+
     public static String getTemp() {
 
         return getTemp("tmp");
@@ -34,6 +36,22 @@ public class OptUtils {
         tempNumber += 1;
         return tempNumber;
     }
+
+    public static String getIf() {
+
+        return "if" + getNextIfNum();
+    }
+
+    public static String getEndIf() {
+
+        return "endif" + ifNumber;
+    }
+
+    public static int getNextIfNum() {
+        ifNumber += 1;
+        return ifNumber;
+    }
+
 
     public static String toOllirBool(String boolValue) {
 

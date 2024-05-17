@@ -51,6 +51,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(BOOLEAN_LITERAL, this::visitBoolean);
         addVisit(PARENS_EXPR, this::visitParensExpr);
         addVisit(THIS_EXPR, this::visitThisExpr);
+        addVisit(NEW_ARRAY_EXPR, this::visitNewArrayExpr);
         setDefaultVisit(this::defaultVisit);
     }
 
@@ -342,6 +343,19 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         return new OllirExprResult("this." + table.getClassName(), "");
     }
 
+    private OllirExprResult visitNewArrayExpr(JmmNode node, Void unused){
+        StringBuilder code = new StringBuilder();
+        StringBuilder computation = new StringBuilder();
+
+        Type varType= TypeUtils.getVariableType(node.getParent().get("name"), table, currMethod);
+        String varOllirType = OptUtils.toOllirType(varType);
+
+        var expr= visit(node.getJmmChild(0));
+
+        code.append(NEW).append("(array, ").append(expr.getCode()).append(")").append(varOllirType);
+
+        return new OllirExprResult(code.toString(), expr.getComputation());
+    }
 
     /**
          * Default visitor. Visits every child node and return an empty result.
