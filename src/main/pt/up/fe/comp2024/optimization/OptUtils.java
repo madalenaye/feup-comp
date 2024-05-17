@@ -21,6 +21,7 @@ public class OptUtils {
     private static int tempNumber = -1;
 
     private static int ifNumber = 0;
+    private static int whileNumber = 0;
 
     public static String getTemp() {
 
@@ -37,6 +38,11 @@ public class OptUtils {
         return tempNumber;
     }
 
+    public static int getNextIfNum() {
+        ifNumber += 1;
+        return ifNumber;
+    }
+
     public static String getIf() {
 
         return "if" + getNextIfNum();
@@ -47,11 +53,25 @@ public class OptUtils {
         return "endif" + ifNumber;
     }
 
-    public static int getNextIfNum() {
-        ifNumber += 1;
-        return ifNumber;
+    public static int getNextWhileNum() {
+        whileNumber += 1;
+        return whileNumber;
     }
 
+    public static String getWhileCond() {
+
+        return "whileLoop" + getNextWhileNum();
+    }
+
+    public static String getWhileLoop() {
+
+        return "whileCond" + whileNumber;
+    }
+
+    public static String getWhileEnd() {
+
+        return "whileEnd" + whileNumber;
+    }
 
     public static String toOllirBool(String boolValue) {
 
