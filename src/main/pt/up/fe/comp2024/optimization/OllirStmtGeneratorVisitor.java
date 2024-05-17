@@ -4,8 +4,10 @@ import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
+import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
+import java.util.List;
 import java.util.Objects;
 
 import static pt.up.fe.comp2024.ast.Kind.*;
@@ -38,6 +40,8 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
         addVisit(EXPR_STMT, this::visitExprStmt);
         addVisit(IF_STMT, this::visitIfStmt);
+        addVisit(STMTS, this::visitStmts);
+
         setDefaultVisit(this::defaultVisit);
     }
 
@@ -140,22 +144,46 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         var condition = exprVisitor.visit(node.getJmmChild(0));
 
-
-        code.append("if (").append(OptUtils.getTemp()).append(".bool").append("goto ").append(OptUtils.getIf()).append(END_STMT);
-
+        String ifNumber= OptUtils.getIf();
+        String endIfNumber= OptUtils.getEndIf();
 
 
         code.append(condition.getComputation());
+        code.append("if (").append(OptUtils.getTemp()).append(".bool) ").append("goto ").append(ifNumber).append(END_STMT);
 
+        var statement2 = this.visit(node.getJmmChild(2));
+        code.append(statement2);
+
+        code.append("goto ").append(endIfNumber).append(END_STMT);
+
+        code.append(ifNumber).append(":\n");
+
+        var statement1 = exprVisitor.visit(node.getJmmChild(1));
+        code.append(statement1.getCode());
+
+        code.append(endIfNumber).append(":\n");
+
+        return code.toString();
     }
 
-    /**
-     * Default visitor. Visits every child node and return an empty result.
-     *
-     * @param node
-     * @param unused
-     * @return
-     */
+    private String visitStmts(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+        List<JmmNode> stmts = NodeUtils.getStmts(node);
+        for (JmmNode stmt : stmts) {
+            String stmtCode = this.visit(stmt);
+            code.append(stmtCode);
+        }
+
+        return code.toString();
+    }
+
+        /**
+         * Default visitor. Visits every child node and return an empty result.
+         *
+         * @param node
+         * @param unused
+         * @return
+         */
     private String defaultVisit(JmmNode node, Void unused) {
 
         for (var child : node.getChildren()) {
