@@ -125,7 +125,23 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             rightCode = newTmp;
         }
 
+        if(left.getKind().equals("ArrayElemExpr")){
+            String newTmp = OptUtils.getTemp() + ollirType;
 
+            computation.append(newTmp)
+                    .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
+                    .append(leftCode).append(END_STMT);
+            leftCode = newTmp;
+        }
+
+        if(right.getKind().equals("ArrayElemExpr")){
+            String newTmp = OptUtils.getTemp() + ollirType;
+
+            computation.append(newTmp)
+                    .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
+                    .append(rightCode).append(END_STMT);
+            rightCode = newTmp;
+        }
 
         // code to compute self
         Type resType = TypeUtils.getExprType(node, table, currMethod);
@@ -144,6 +160,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         return new OllirExprResult(code, computation);
     }
+
 
 
     private OllirExprResult visitVarRef(JmmNode node, Void unused) {
