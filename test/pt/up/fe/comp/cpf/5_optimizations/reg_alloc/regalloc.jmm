@@ -1,10 +1,16 @@
+import A;
 class RegAlloc {
+    int xD;
     public int soManyRegisters(int arg){
        int a;
        int b;
        int c;
        int d;
-       a = 0;
+       if (arg < 0) {
+          a = 1;
+       } else {
+          a = 2;
+       }
        b = a;
        c = b;
        d = c;
