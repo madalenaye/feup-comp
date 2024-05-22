@@ -127,7 +127,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         if(left.getKind().equals("ArrayElemExpr")){
             String newTmp = OptUtils.getTemp() + ollirType;
-
             computation.append(newTmp)
                     .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
                     .append(leftCode).append(END_STMT);
