@@ -152,17 +152,13 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(condition.getComputation());
         code.append("if (").append(OptUtils.getTemp()).append(".bool) ").append("goto ").append(ifNumber).append(END_STMT);
 
-        var statement2 = this.visit(node.getJmmChild(2));
-        code.append(statement2);
+        if(node.getChildren().size()==3){
+            var statement2 = this.visit(node.getJmmChild(2));
+            code.append(statement2);
+            code.append("goto ").append(endIfNumber).append(END_STMT);
+            code.append(endIfNumber).append(":\n");
+        }
 
-        code.append("goto ").append(endIfNumber).append(END_STMT);
-
-        code.append(ifNumber).append(":\n");
-
-        var statement1 = exprVisitor.visit(node.getJmmChild(1));
-        code.append(statement1.getCode());
-
-        code.append(endIfNumber).append(":\n");
 
         return code.toString();
     }
