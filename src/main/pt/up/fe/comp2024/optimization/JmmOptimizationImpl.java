@@ -19,6 +19,10 @@ public class JmmOptimizationImpl implements JmmOptimization {
     @Override
     public OllirResult toOllir(JmmSemanticsResult semanticsResult) {
 
+        // convert vararg types
+        VarargsConverter varargsConverter = new VarargsConverter();
+        varargsConverter.visit(semanticsResult.getRootNode(), semanticsResult.getSymbolTable());
+
         var visitor = new OllirGeneratorVisitor(semanticsResult.getSymbolTable());
         var ollirCode = visitor.visit(semanticsResult.getRootNode());
 
@@ -30,9 +34,6 @@ public class JmmOptimizationImpl implements JmmOptimization {
         if (!CompilerConfig.getOptimize(semanticsResult.getConfig())) {
             return semanticsResult;
         }
-
-        VarargsConverter varargsConverter = new VarargsConverter();
-        varargsConverter.visit(semanticsResult.getRootNode(), semanticsResult.getSymbolTable());
 
         boolean hasFolded, hasPropagated, canBeOptimized = true;
         ConstFoldVisitor constFoldVisitor = new ConstFoldVisitor();

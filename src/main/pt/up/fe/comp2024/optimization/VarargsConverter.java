@@ -25,6 +25,10 @@ public class VarargsConverter extends AJmmVisitor<SymbolTable, Void>  {
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
         currentMethod = method.get("name");
 
+        if (hasVarargs(currentMethod, table)) {
+            method.putObject("hasVararg", true);
+        }
+
         for (JmmNode child : method.getChildren()) {
             visit(child, table);
         }

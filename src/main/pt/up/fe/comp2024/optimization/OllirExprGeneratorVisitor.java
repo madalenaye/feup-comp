@@ -122,7 +122,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         }
 
 
-
         // code to compute self
         Type resType = TypeUtils.getExprType(node, table, currMethod);
         assert resType != null;

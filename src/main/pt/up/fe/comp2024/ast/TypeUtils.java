@@ -20,13 +20,7 @@ public class TypeUtils {
     public static boolean isArray(JmmNode type) {
         return Boolean.parseBoolean(type.get("isArray"));
     }
-    /**
-     * Gets the {@link Type} of an arbitrary expression.
-     *
-     * @param expr
-     * @param table
-     * @return
-     */
+
     public static Type getExprType(JmmNode expr, SymbolTable table, String method) {
 
         if (expr.hasAttribute("notDeclared")) {
@@ -83,7 +77,7 @@ public class TypeUtils {
             return type;
         }
 
-
+        // case base
         if (node.getKind().equals("VarRefExpr")) {
             Type varType = getVarExprType(node, table, currentMethod);
             if (varType == null) {
@@ -114,8 +108,9 @@ public class TypeUtils {
         }
 
         String className = nodeType.getName();
-        if (className.equals(table.getClassName()))
+        if (className.equals(table.getClassName())) {
             return table.getReturnType(method);
+        }
 
         return null;
     }
@@ -147,7 +142,6 @@ public class TypeUtils {
         for (var param : table.getParameters(method)) {
             if (param.getName().equals(variable)) {
                 return param.getType();
-
             }
         }
 
