@@ -1,10 +1,12 @@
-class PropSimple {
-    public int foo(){
-	  int a;
-	  a = 10 + 5;
-	  return a;
-	}
-    public static void main(String[] args) {
+class Varargs {
 
+    public int foo() {
+        int a;
+        a = this.varargs(10, 20, 30);
+        return a;
+    }
+
+    public int varargs(int... a) {
+        return a[0];
     }
 }

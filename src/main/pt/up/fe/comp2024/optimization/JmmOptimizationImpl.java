@@ -31,6 +31,9 @@ public class JmmOptimizationImpl implements JmmOptimization {
             return semanticsResult;
         }
 
+        VarargsConverter varargsConverter = new VarargsConverter();
+        varargsConverter.visit(semanticsResult.getRootNode(), semanticsResult.getSymbolTable());
+
         boolean hasFolded, hasPropagated, canBeOptimized = true;
         ConstFoldVisitor constFoldVisitor = new ConstFoldVisitor();
         ConstPropagationVisitor constPropagationVisitor = new ConstPropagationVisitor();
@@ -38,7 +41,8 @@ public class JmmOptimizationImpl implements JmmOptimization {
         while (canBeOptimized) {
             hasFolded = constFoldVisitor.visit(semanticsResult.getRootNode());
             hasPropagated = constPropagationVisitor.visit(semanticsResult.getRootNode());
-            canBeOptimized = hasFolded || hasPropagated;
+            //canBeOptimized = hasFolded || hasPropagated;
+            canBeOptimized = false;
         }
 
         return semanticsResult;
@@ -92,7 +96,6 @@ public class JmmOptimizationImpl implements JmmOptimization {
         }
         return set;
     }
-
 
     private List<HashSet<String>> livenessAnalysis(Method method) {
         var nodes = method.getInstructions();

@@ -5,7 +5,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
 import pt.up.fe.comp2024.ast.Kind;
 
-public class ConstFoldVisitor extends AJmmVisitor<Boolean, Boolean>  {
+public class ConstFoldVisitor extends AJmmVisitor<Void, Boolean>  {
 
     @Override
     public void buildVisitor() {
@@ -15,23 +15,26 @@ public class ConstFoldVisitor extends AJmmVisitor<Boolean, Boolean>  {
         setDefaultVisit(this::defaultVisit);
     }
 
-    private Boolean visitBinaryExpr(JmmNode expr, Boolean flag) {
+    private Boolean visitBinaryExpr(JmmNode expr, Void unused) {
+
+        boolean hasChanged = false;
 
         JmmNode left = expr.getChild(0);
         JmmNode right = expr.getChild(1);
 
-        visit(left);
-        visit(right);
+        hasChanged |= visit(left);
+        hasChanged |= visit(right);
 
         String operator = expr.get("op");
 
-        flag = switch (operator) {
+        hasChanged |= switch (operator) {
             case "+", "*", "-", "/" -> handleArithmetic(expr, operator);
             case "<" -> handleComparison(expr);
             case "&&" -> handleShortCircuit(expr);
             default -> false;
         };
-        return flag;
+
+        return hasChanged;
     }
 
     private Boolean handleArithmetic(JmmNode expr, String operator) {
@@ -42,6 +45,7 @@ public class ConstFoldVisitor extends AJmmVisitor<Boolean, Boolean>  {
             int leftVal = Integer.parseInt(left.get("value"));
             int rightVal = Integer.parseInt(right.get("value"));
 
+            // what if rightVal = 0 in a division?
             int val = switch (operator) {
                 case "+" -> leftVal + rightVal;
                 case "*" -> leftVal * rightVal;
@@ -100,10 +104,10 @@ public class ConstFoldVisitor extends AJmmVisitor<Boolean, Boolean>  {
         return false;
     }
 
-    private Boolean visitNegExpr(JmmNode expr, Boolean flag) {
+    private Boolean visitNegExpr(JmmNode expr, Void unused) {
         JmmNode child = expr.getChild(0);
 
-        visit(child);
+        boolean hasChanged = visit(child);
 
         if (child.getKind().equals("BooleanLiteral")) {
             boolean val = !Boolean.parseBoolean(child.get("value"));
@@ -115,13 +119,13 @@ public class ConstFoldVisitor extends AJmmVisitor<Boolean, Boolean>  {
 
             return true;
         }
-        return false;
+        return hasChanged;
     }
 
-    private Boolean visitParensExpr(JmmNode expr, Boolean flag) {
+    private Boolean visitParensExpr(JmmNode expr, Void unused) {
         JmmNode child = expr.getChild(0);
 
-        visit(child);
+        boolean hasChanged = visit(child);
 
         if (child.getKind().equals("BooleanLiteral") || child.getKind().equals("IntegerLiteral")) {
             JmmNodeImpl newExpr = new JmmNodeImpl(child.getKind());
@@ -131,12 +135,13 @@ public class ConstFoldVisitor extends AJmmVisitor<Boolean, Boolean>  {
 
             return true;
         }
-        return false;
+        return hasChanged;
     }
-    private Boolean defaultVisit(JmmNode node, Boolean flag) {
+    private Boolean defaultVisit(JmmNode node, Void unused) {
+        boolean hasChanged = false;
         for(JmmNode child : node.getChildren()) {
-            visit(child, flag);
+            hasChanged |= visit(child);
         }
-        return flag;
+        return hasChanged;
     }
 }

@@ -1,6 +1,5 @@
 package pt.up.fe.comp2024.graph;
 
-import org.specs.comp.ollir.ClassType;
 import org.specs.comp.ollir.Descriptor;
 import org.specs.comp.ollir.VarScope;
 import pt.up.fe.comp.jmm.ollir.OllirResult;

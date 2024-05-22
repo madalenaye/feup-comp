@@ -168,8 +168,8 @@ public class Cpf5_Optimizations {
 
         String filename = "const_prop/PropSimple.jmm";
 
-        JasminResult original = getJasminResult(filename);
         JasminResult optimized = getJasminResultOpt(filename);
+        JasminResult original = getJasminResult(filename);
 
         CpUtils.assertNotEquals("Expected code to change with -o flag\n\nOriginal code:\n" + original.getJasminCode(),
                 original.getJasminCode(), optimized.getJasminCode(),
