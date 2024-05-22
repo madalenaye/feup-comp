@@ -18,6 +18,7 @@ public class VarargsConverter extends AJmmVisitor<SymbolTable, Void>  {
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.METHOD_EXPR, this::visitMethodExpr);
+        addVisit(Kind.VARARG_TYPE, this::visitVarargType);
         setDefaultVisit(this::defaultVisit);
     }
 
@@ -79,6 +80,11 @@ public class VarargsConverter extends AJmmVisitor<SymbolTable, Void>  {
 
         Type lastParameter = parameters.get(parameters.size() - 1).getType();
         return lastParameter.hasAttribute("isVararg");
+    }
+
+    private Void visitVarargType(JmmNode varargType, SymbolTable table) {
+        varargType.replace(new JmmNodeImpl("ArrayType"));
+        return null;
     }
 
     private Void defaultVisit(JmmNode node, SymbolTable table) {
