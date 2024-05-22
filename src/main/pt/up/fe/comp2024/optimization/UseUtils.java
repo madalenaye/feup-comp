@@ -70,14 +70,20 @@ public class UseUtils {
     private static HashSet<String> useReturn(ReturnInstruction instruction) {
         HashSet<String> set = new HashSet<>();
         var operand = instruction.getOperand();
-        if (!(operand instanceof Operand) ) return set;
-        set.add(((Operand) operand).getName());
+        if (operand instanceof Operand op && !op.getName().equals("this")) {
+            set.add(op.getName());
+        }
         return set;
     }
 
     private static HashSet<String> useBranch(CondBranchInstruction instruction) {
         HashSet<String> set = new HashSet<>();
-
+        var operands = instruction.getOperands();
+        for (var operand : operands) {
+            if (operand instanceof Operand op && !op.getName().equals("this")) {
+                set.add(op.getName());
+            }
+        }
         return set;
     }
 

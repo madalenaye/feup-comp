@@ -5,8 +5,10 @@ import pt.up.fe.comp.jmm.ollir.JmmOptimization;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import org.specs.comp.ollir.*;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp.jmm.report.Stage;
+import pt.up.fe.comp2024.CompilerConfig;
+import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.graph.Graph;
-import pt.up.fe.comp2024.graph.Vertex;
 
 import java.util.*;
 
@@ -24,10 +26,29 @@ public class JmmOptimizationImpl implements JmmOptimization {
     }
 
     @Override
+    public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
+        if (!CompilerConfig.getOptimize(semanticsResult.getConfig())) {
+            return semanticsResult;
+        }
+
+        boolean hasFolded, hasPropagated, canBeOptimized = true;
+        ConstFoldVisitor constFoldVisitor = new ConstFoldVisitor();
+        ConstPropagationVisitor constPropagationVisitor = new ConstPropagationVisitor();
+
+        while (canBeOptimized) {
+            hasFolded = constFoldVisitor.visit(semanticsResult.getRootNode());
+            hasPropagated = constPropagationVisitor.visit(semanticsResult.getRootNode());
+            canBeOptimized = hasFolded || hasPropagated;
+        }
+
+        return semanticsResult;
+    }
+
+    @Override
     public OllirResult optimize(OllirResult ollirResult) {
 
-        int k = getRegisterAllocation(ollirResult.getConfig());
-        if (k == -1)  {
+        int n = getRegisterAllocation(ollirResult.getConfig());
+        if (n == -1)  {
             return ollirResult;
         }
 
@@ -36,12 +57,20 @@ public class JmmOptimizationImpl implements JmmOptimization {
         List<Method> methods = ollirResult.getOllirClass().getMethods();
         for (Method method : methods) {
             var interferences = livenessAnalysis(method);
-            Graph graph = new Graph(method.getVarTable(), interferences);
-            Stack<Vertex> stack = graph.colorWithKColors(k);
-            if (stack.size() == graph.getVertices().size()) {
-                graph.allocateRegisters(k, stack);
+            Graph graph = new Graph(method.getVarTable(), interferences, method.getMethodName());
+            int min = graph.minRegisters();
+            if (n == 0 || n >= min) {
+                graph.allocateRegisters(min);
+                graph.reportMapping(ollirResult, method.getMethodName());
+            } else {
+                String message = String.format("Can't allocate %d registers, %d required", n, min);
+                ollirResult.getReports().add(Report.newError(
+                        Stage.OPTIMIZATION,
+                        1,1,
+                        message,
+                        null));
+                return ollirResult;
             }
-
 
         }
 

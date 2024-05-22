@@ -55,22 +55,22 @@ public class Vertex {
         return false;
     }
 
-    public void allocateRegister(int k) {
-        int min = k;
-        int max = 1;
+    public void allocateRegister(int min, int max) {
+
+        boolean[] usedRegs = new boolean[max - min + 1];
 
         for (Edge edge : edges) {
             int reg = edge.getDest().getDescriptor().getVirtualReg();
-            if (reg != 0) {
-                min = Math.min(min, reg);
-                max = Math.max(max, reg);
+            if (reg >= min && reg <= max) {
+                usedRegs[reg - min] = true;
             }
         }
 
-        if (min > 1) {
-            this.descriptor.setVirtualReg(1);
-        } else {
-            this.descriptor.setVirtualReg(max+1);
+        for (int i = 0; i < usedRegs.length; i++) {
+            if (!usedRegs[i]) {
+                this.descriptor.setVirtualReg(min + i);
+                return;
+            }
         }
     }
 }
