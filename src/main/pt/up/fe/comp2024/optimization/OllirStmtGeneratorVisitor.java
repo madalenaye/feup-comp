@@ -4,8 +4,10 @@ import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
+import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
+import java.util.List;
 import java.util.Objects;
 
 import static pt.up.fe.comp2024.ast.Kind.*;
@@ -37,6 +39,10 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
         addVisit(EXPR_STMT, this::visitExprStmt);
+        addVisit(IF_STMT, this::visitIfStmt);
+        addVisit(WHILE_STMT, this::visitWhileStmt);
+        addVisit(STMTS, this::visitStmts);
+
         setDefaultVisit(this::defaultVisit);
     }
 
@@ -133,13 +139,74 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         return expr.getComputation() + expr.getCode();
     }
 
-    /**
-     * Default visitor. Visits every child node and return an empty result.
-     *
-     * @param node
-     * @param unused
-     * @return
-     */
+    private String visitIfStmt(JmmNode node, Void unused) {
+        StringBuilder computation = new StringBuilder();
+        StringBuilder code = new StringBuilder();
+
+        var condition = exprVisitor.visit(node.getJmmChild(0));
+
+        String ifNumber= OptUtils.getIf();
+        String endIfNumber= OptUtils.getEndIf();
+
+
+        code.append(condition.getComputation());
+        code.append("if (").append(OptUtils.getTemp()).append(".bool) ").append("goto ").append(ifNumber).append(END_STMT);
+
+        if(node.getChildren().size()==3){
+            var statement2 = this.visit(node.getJmmChild(2));
+            code.append(statement2);
+            code.append("goto ").append(endIfNumber).append(END_STMT);
+            code.append(endIfNumber).append(":\n");
+        }
+
+
+        return code.toString();
+    }
+
+    private String visitStmts(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+        List<JmmNode> stmts = NodeUtils.getStmts(node);
+        for (JmmNode stmt : stmts) {
+            String stmtCode = this.visit(stmt);
+            code.append(stmtCode);
+        }
+
+        return code.toString();
+    }
+
+    private String visitWhileStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        String whileCond= OptUtils.getWhileCond();
+        String whileLoop= OptUtils.getWhileLoop();
+        String whileEnd= OptUtils.getWhileEnd();
+
+
+        code.append(whileCond).append(":\n");
+
+        var condition = exprVisitor.visit(node.getJmmChild(0));
+        code.append(condition.getComputation());
+        code.append("if (").append(OptUtils.getTemp()).append(".bool) ").append("goto ").append(whileLoop).append(END_STMT);
+
+        code.append("goto ").append(whileEnd).append(END_STMT);
+
+        var statement = this.visit(node.getJmmChild(1));
+
+        code.append(whileLoop).append(":\n").append(statement);
+
+        code.append("goto ").append(whileCond).append(END_STMT);
+        code.append(whileEnd).append(":\n");
+
+        return code.toString();
+    }
+
+        /**
+         * Default visitor. Visits every child node and return an empty result.
+         *
+         * @param node
+         * @param unused
+         * @return
+         */
     private String defaultVisit(JmmNode node, Void unused) {
 
         for (var child : node.getChildren()) {
