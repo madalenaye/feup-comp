@@ -104,77 +104,114 @@ public class JasminInstructionGenerator {
     }
 
     private String generateCallInstruction(CallInstruction callInstruction){
+        return switch (callInstruction.getInvocationType()){
+            case invokestatic -> handleStaticCall(callInstruction);
+            case NEW -> handleNewCall(callInstruction);
+            case invokespecial -> handleSpecialCall(callInstruction);
+            case invokevirtual -> handleVirtualCall(callInstruction);
+            default -> throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
+        };
+    }
+
+    private String handleStaticCall(CallInstruction callInstruction) {
         StringBuilder code = new StringBuilder();
 
-        switch (callInstruction.getInvocationType()){
-            case invokestatic -> {
+        callInstruction.getArguments().forEach((arg) -> code.append(operandGenerator.generate(arg)));
+        code.append("invokestatic ");
 
-                callInstruction.getArguments().forEach((arg) -> code.append(operandGenerator.generate(arg)));
-                var calledObject = callInstruction.getCaller();
-                var methodName = callInstruction.getMethodName();
-                code.append("invokestatic ").append(JasminUtils.getImportedClassName(operandGenerator.generate(calledObject))).append("/").append(operandGenerator.generate(methodName));
+        Element caller = callInstruction.getCaller();
+        String callerCode = operandGenerator.generate(caller);
+        code.append(getImportedClassName(callerCode)).append("/");
 
-                callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
-                code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
-            }
-            case NEW -> {
-                callInstruction.getArguments().forEach((obj) -> code.append(operandGenerator.generate(obj)));
-                var objectClass = (Operand) callInstruction.getCaller();
-                var className = objectClass.getName();
-                var fullClassName = getImportedClassName(className);
-                code.append("new ").append(fullClassName).append(NL).append("dup").append(NL);
-            }
-            case invokespecial -> {
-                var objectClass = (Operand) callInstruction.getCaller();
-                var elementType = objectClass.getType();
-                var elementName = ((ClassType) elementType).getName();
-                code.append(operandGenerator.generate(objectClass)).append("invokespecial ");
-                if (elementType.getTypeOfElement() == ElementType.THIS) code.append(ollirResult.getOllirClass().getSuperClass());
-                else code.append(getImportedClassName(elementName));
-                code.append("/<init>").append("(");
+        Element methodName = callInstruction.getMethodName();
+        String methodCode = operandGenerator.generate(methodName);
+        code.append(methodCode);
 
-                callInstruction.getArguments().forEach((op) -> code.append(ollirTypeToJasmin(op.getType())));
-                code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
-                code.append("pop");
+        callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
 
-            }
-            case invokevirtual -> {
-                var object = (Operand) callInstruction.getCaller();
-                var elementName = ((ClassType) object.getType()).getName();
-                var fullElementName = getImportedClassName(elementName);
-                var methodName = callInstruction.getMethodName();
-                code.append(operandGenerator.generate(object)).append(NL);
+        code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
 
-                callInstruction.getArguments().forEach((op) -> code.append(operandGenerator.generate(op)));
-                code.append("invokevirtual ").append(fullElementName).append("/").append(operandGenerator.generate(methodName));
+        return code.toString();
+    }
 
-                callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
-                code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+    private String handleNewCall(CallInstruction callInstruction) {
+        StringBuilder code = new StringBuilder();
 
-            }
-            default -> throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
+        callInstruction.getArguments().forEach((obj) -> code.append(operandGenerator.generate(obj)));
 
-        }
+        String className = ((Operand) callInstruction.getCaller()).getName();
+        String fullClassName = getImportedClassName(className);
+        code.append("new ").append(fullClassName).append(NL).append("dup").append(NL);
+
+        return code.toString();
+    }
+
+    private String handleSpecialCall(CallInstruction callInstruction) {
+        StringBuilder code = new StringBuilder();
+
+        var objectClass = (Operand) callInstruction.getCaller();
+        var elementType = objectClass.getType();
+        var elementName = ((ClassType) elementType).getName();
+        code.append(operandGenerator.generate(objectClass)).append("invokespecial ");
+        if (elementType.getTypeOfElement() == ElementType.THIS) code.append(ollirResult.getOllirClass().getSuperClass());
+        else code.append(getImportedClassName(elementName));
+        code.append("/<init>").append("(");
+
+        callInstruction.getArguments().forEach((op) -> code.append(ollirTypeToJasmin(op.getType())));
+        code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+        code.append("pop");
+
+        return code.toString();
+    }
+
+    private String handleVirtualCall(CallInstruction callInstruction) {
+        StringBuilder code = new StringBuilder();
+
+        Operand object = (Operand) callInstruction.getCaller();
+        String elementName = ((ClassType) object.getType()).getName();
+        String fullElementName = getImportedClassName(elementName);
+        code.append(operandGenerator.generate(object)).append(NL);
+
+        Element methodName = callInstruction.getMethodName();
+        callInstruction.getArguments().forEach((op) -> code.append(operandGenerator.generate(op)));
+        code.append("invokevirtual ").append(fullElementName).append("/").append(operandGenerator.generate(methodName));
+
+        callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
+        code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+
         return code.toString();
     }
 
     private String generatePutFieldInstruction(PutFieldInstruction instruction){
-        var code = new StringBuilder();
-        code.append(operandGenerator.generate(instruction.getObject())).append(operandGenerator.generate(instruction.getValue())).append("putfield ");
+        StringBuilder code = new StringBuilder();
 
-        var className = ((ClassType) instruction.getObject().getType()).getName();
-        var fieldName = instruction.getField().getName();
-        var fieldType = ollirTypeToJasmin(instruction.getField().getType());
+        Element object = instruction.getObject();
+        String objectCode = operandGenerator.generate(object);
+        code.append(objectCode);
 
-        code.append(className).append("/").append(fieldName).append(" ").append(fieldType).append(NL);
+        Element value = instruction.getValue();
+        String valueCode = operandGenerator.generate(value);
+        code.append(valueCode);
+
+        String className = ((ClassType) instruction.getObject().getType()).getName();
+        String fieldName = instruction.getField().getName();
+        String fieldType = ollirTypeToJasmin(instruction.getField().getType());
+
+        code.append("putfield ").append(className).append("/").append(fieldName).append(" ").append(fieldType).append(NL);
+
         return code.toString();
     }
     private String generateGetFieldInstruction(GetFieldInstruction instruction){
-        var code = new StringBuilder();
-        var className = ((ClassType) instruction.getObject().getType()).getName();
-        var fieldName = instruction.getField().getName();
-        var fieldType = ollirTypeToJasmin(instruction.getField().getType());
-        code.append(operandGenerator.generate(instruction.getObject())).append("getfield ").append(className).append("/").append(fieldName).append(" ").append(fieldType).append(NL);
+        StringBuilder code = new StringBuilder();
+
+        Element object = instruction.getObject();
+        String objectCode = operandGenerator.generate(object);
+        code.append(objectCode);
+
+        String className = ((ClassType) instruction.getObject().getType()).getName();
+        String fieldName = instruction.getField().getName();
+        String fieldType = ollirTypeToJasmin(instruction.getField().getType());
+        code.append("getfield ").append(className).append("/").append(fieldName).append(" ").append(fieldType).append(NL);
 
         return code.toString();
     }

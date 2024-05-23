@@ -54,10 +54,10 @@ public class JasminGenerator {
 
     private String generateClassUnit(ClassUnit classUnit) {
 
-        var code = new StringBuilder();
+        StringBuilder code = new StringBuilder();
 
         // generate class name
-        var className = ollirResult.getOllirClass().getClassName();
+        String className = ollirResult.getOllirClass().getClassName();
         code.append(".class ").append(className).append(NL).append(NL);
 
         var defaultConstructor = new StringBuilder();
@@ -73,15 +73,15 @@ public class JasminGenerator {
 
         var classFields = ollirResult.getOllirClass().getFields();
         for (var field : classFields) {
-            var accessModifierName = field.getFieldAccessModifier().name();
+            String accessModifierName = field.getFieldAccessModifier().name();
             String newAccessModifierName = switch (accessModifierName) {
                 case "PUBLIC" -> "public";
                 case "PRIVATE" -> "private";
                 case "DEFAULT" -> "";
                 default -> throw new IllegalStateException("Unexpected value: " + accessModifierName);
             };
-            var fieldName = field.getFieldName();
-            var fieldType = ollirTypeToJasmin(field.getFieldType());
+            String fieldName = field.getFieldName();
+            String fieldType = ollirTypeToJasmin(field.getFieldType());
             code.append(".field ").append(newAccessModifierName).append(" ").append(fieldName).append(" ").append(fieldType).append(NL);
         }
 
@@ -115,7 +115,7 @@ public class JasminGenerator {
 
         var parameters = method.getParams();
         for (var parameter : parameters) {
-            var parameterType = ollirTypeToJasmin(parameter.getType());
+            String parameterType = ollirTypeToJasmin(parameter.getType());
             code.append(parameterType);
         }
 
