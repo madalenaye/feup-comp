@@ -42,6 +42,7 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(IF_STMT, this::visitIfStmt);
         addVisit(WHILE_STMT, this::visitWhileStmt);
         addVisit(STMTS, this::visitStmts);
+        addVisit(ARRAY_ASSIGN_STMT,this::visitArrayAssignStmt);
 
         setDefaultVisit(this::defaultVisit);
     }
@@ -201,6 +202,66 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         code.append("goto ").append(whileCond).append(END_STMT);
         code.append(whileEnd).append(":\n");
+
+        return code.toString();
+    }
+
+    private String visitArrayAssignStmt(JmmNode node, Void unused) {
+
+        StringBuilder code = new StringBuilder();
+
+        String variable = node.get("name");
+        Type varType = TypeUtils.getVariableType(variable, table, currMethod);
+        String varOllirType = OptUtils.toOllirType(varType);
+
+        JmmNode left = node.getJmmChild(0);
+        var lhs = exprVisitor.visit(left);
+        JmmNode right = node.getJmmChild(1);
+        var rhs = exprVisitor.visit(right);
+
+        code.append(lhs.getComputation());
+        String leftCode = lhs.getCode();
+        String rightCode = rhs.getCode();
+
+        while (left.getKind().equals("ParensExpr")) left = left.getChild(0);
+        while (left.getKind().equals("ParensExpr")) left = left.getChild(1);
+
+        if (left.getKind().equals("MethodExpr")) {
+            Type type = TypeUtils.getExprType(left, table, currMethod);
+            String newTmp = OptUtils.getTemp() + varOllirType;
+
+            // static method call from imported class
+            if (type.hasAttribute("isExternal")) {
+                leftCode = leftCode.substring(0, leftCode.lastIndexOf(".")) + varOllirType + END_STMT;
+            }
+
+            code.append(newTmp)
+                    .append(SPACE).append(ASSIGN).append(varOllirType).append(SPACE)
+                    .append(leftCode);
+            leftCode = newTmp;
+        }
+
+        if (right.getKind().equals("MethodExpr")) {
+            Type type = TypeUtils.getExprType(right, table, currMethod);
+            String newTmp = OptUtils.getTemp() + varOllirType;
+
+            // static method call from imported class
+            if (type.hasAttribute("isExternal")) {
+                rightCode = rightCode.substring(0, rightCode.lastIndexOf(".")) + varOllirType + END_STMT;
+            }
+
+            code.append(newTmp)
+                    .append(SPACE).append(ASSIGN).append(varOllirType).append(SPACE)
+                    .append(rightCode);
+            rightCode = newTmp;
+        }
+
+
+        code.append(variable).append("[").append(leftCode).append("]").append(varOllirType);
+        code.append(SPACE + ASSIGN).append(varOllirType).append(SPACE);
+        code.append(rightCode);
+
+        code.append(END_STMT);
 
         return code.toString();
     }

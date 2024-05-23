@@ -56,7 +56,7 @@ public class BinExprUtils {
         String newTmp = OptUtils.getTemp() + ollirType;
             computation.append(newTmp)
                     .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
-                    .append(code);
+                    .append(code).append(";\n");
             code = newTmp;
 
         return new OllirExprResult(code,computation.toString());
