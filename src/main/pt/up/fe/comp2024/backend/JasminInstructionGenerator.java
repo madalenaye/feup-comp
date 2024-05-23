@@ -104,15 +104,15 @@ public class JasminInstructionGenerator {
     }
 
     private String generateCallInstruction(CallInstruction callInstruction){
-        var code = new StringBuilder();
-        var invocationType = callInstruction.getInvocationType();
+        StringBuilder code = new StringBuilder();
 
-        switch (invocationType){
+        switch (callInstruction.getInvocationType()){
             case invokestatic -> {
+
                 callInstruction.getArguments().forEach((arg) -> code.append(operandGenerator.generate(arg)));
                 var calledObject = callInstruction.getCaller();
                 var methodName = callInstruction.getMethodName();
-                code.append("invokestatic ").append(JasminUtils.getImportedClassName(operandGenerator.generate(calledObject))).append("/").append(instructionGenerator.apply(methodName));
+                code.append("invokestatic ").append(JasminUtils.getImportedClassName(operandGenerator.generate(calledObject))).append("/").append(operandGenerator.generate(methodName));
 
                 callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
                 code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
