@@ -69,7 +69,7 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
 
     private Boolean visitWhileStmt(JmmNode whileStmt, SymbolTable table) {
 
-        var condition = whileStmt.getObject("condition", JmmNode.class);
+        var condition = whileStmt.getChild(0);
         var stmts = whileStmt.getChildren(); stmts.remove(condition);
         var out1 = new HashMap<>(in);
 
@@ -136,7 +136,7 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
 
     private Boolean visitIfStmt(JmmNode ifStmt, SymbolTable table) {
 
-        JmmNode condition = ifStmt.getObject("condition", JmmNode.class);
+        JmmNode condition = ifStmt.getChild(0);
         boolean hasChanged = visit(condition, table);
 
         var initialIn = new HashMap<>(out);
