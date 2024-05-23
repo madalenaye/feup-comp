@@ -268,7 +268,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
                 code.append(INVOKEVIRTUAL).append("(").append(objectResult.getCode());
                 }
-            }
+        }
 
         var arguments = node.getChildren();
         arguments.remove(0);
@@ -402,9 +402,32 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String resOllirType = OptUtils.toOllirType(resType);
 
         computation.append(expr.getComputation());
-        code.append(expr.getCode()).append("]").append(resOllirType);
 
-        return new OllirExprResult(code.toString(), "");
+        if(node.getJmmChild(1).getKind().equals("MethodExpr")){
+            String temp = OptUtils.getTemp() + resOllirType;
+            computation.append(temp).append(SPACE).append(ASSIGN).append(resOllirType).append(SPACE).append(expr.getCode());
+            code.append(temp).append("]").append(resOllirType);
+        } else if(node.getJmmChild(1).getKind().equals("ArrayElemExpr")){
+            String temp = OptUtils.getTemp() + resOllirType;
+            computation.append(temp).append(SPACE).append(ASSIGN).append(resOllirType).append(SPACE).append(expr.getCode()).append(END_STMT);
+            code.append(temp).append("]").append(resOllirType);
+        }else{
+            code.append(expr.getCode()).append("]").append(resOllirType);
+        }
+
+        JmmNode parent= node.getParent();
+        while (parent.getKind().equals("ParensExpr")) parent = parent.getParent();
+        if(parent.getKind().equals("MethodExpr") || node.getParent().getKind().equals("ArrayElemExpr")){
+            String temp = OptUtils.getTemp() + resOllirType;
+            computation.append(temp).append(SPACE).append(ASSIGN).append(resOllirType).append(SPACE).append(code.toString()).append(";\n");
+
+            code = new StringBuilder();
+            code.append(temp);
+        }
+
+
+
+        return new OllirExprResult(code.toString(), computation.toString());
     }
 
     /**
