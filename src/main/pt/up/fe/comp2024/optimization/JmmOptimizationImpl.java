@@ -46,6 +46,7 @@ public class JmmOptimizationImpl implements JmmOptimization {
             canBeOptimized = hasFolded || hasPropagated;
         }
 
+        String res = semanticsResult.getRootNode().toTree();
         return semanticsResult;
     }
 
