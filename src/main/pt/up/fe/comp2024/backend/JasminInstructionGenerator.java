@@ -31,6 +31,7 @@ public class JasminInstructionGenerator {
         instructionGenerator.put(OpCondInstruction.class, this::generateOpCondInst);
         instructionGenerator.put(GotoInstruction.class, this::generateGotoInst);
         instructionGenerator.put(SingleOpCondInstruction.class, this::generateSingleOpCondInst);
+        instructionGenerator.put(UnaryOpInstruction.class, this::generateUnaryOpInst);
     }
 
     public void setMethod(Method method){
@@ -262,6 +263,15 @@ public class JasminInstructionGenerator {
         if (type == InstructionType.NOPER){
             code.append(operandGenerator.generate(condition.getSingleOperand())).append("ifne ").append(singleOpCondInstruction.getLabel());
         }
+        return code.toString();
+    }
+
+    private String generateUnaryOpInst(UnaryOpInstruction unaryOpInstruction){
+        var code = new StringBuilder();
+        var operation = unaryOpInstruction.getOperation();
+        unaryOpInstruction.getOperands().forEach((op) -> code.append(operandGenerator.generate(op)));
+        if (operation.getOpType() == OperationType.NOTB)
+            code.append("iconst_1").append(NL).append("ixor").append(NL);
         return code.toString();
     }
 }
