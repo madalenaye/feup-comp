@@ -177,12 +177,7 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
         if (in.containsKey(varName)) {
             String kind = in.get(varName).getKind();
             if (!kind.equals("T") && !kind.equals("F")) {
-                var constant = in.get(varName);
-                var parent = varRefExpr.getParent();
-                if (parent.getKind().equals("IfStmt") || parent.getKind().equals("WhileStmt")) {
-                    parent.putObject("condition", constant);
-                }
-                varRefExpr.replace(constant);
+                varRefExpr.replace(in.get(varName));
                 return true;
             }
         }
