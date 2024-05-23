@@ -12,8 +12,6 @@ public class ConstFoldVisitor extends AJmmVisitor<Void, Boolean>  {
         addVisit(Kind.BINARY_EXPR, this::visitBinaryExpr);
         addVisit(Kind.NEG_EXPR, this::visitNegExpr);
         addVisit(Kind.PARENS_EXPR, this::visitParensExpr);
-        addVisit(Kind.WHILE_STMT, this::visitWhileStmt);
-        addVisit(Kind.IF_STMT, this::visitIfStmt);
         setDefaultVisit(this::defaultVisit);
     }
 
@@ -124,29 +122,6 @@ public class ConstFoldVisitor extends AJmmVisitor<Void, Boolean>  {
         return hasChanged;
     }
 
-    private Boolean visitIfStmt(JmmNode ifStmt, Void unused) {
-        JmmNode condition = ifStmt.getObject("condition", JmmNode.class);
-        JmmNode thenStmt = ifStmt.getChild(1);
-        JmmNode elseStmt = ifStmt.getChild(2);
-
-        boolean hasChanged = visit(condition);
-
-        if (condition.getKind().equals("BooleanLiteral")) {
-            boolean val = Boolean.parseBoolean(condition.get("value"));
-            if (val) {
-                ifStmt.replace(thenStmt);
-            } else {
-                ifStmt.replace(elseStmt);
-            }
-            return true;
-        }
-
-        hasChanged |= visit(thenStmt);
-        hasChanged |= visit(elseStmt);
-
-        return hasChanged;
-    }
-
     private Boolean visitParensExpr(JmmNode expr, Void unused) {
         JmmNode child = expr.getChild(0);
 
@@ -163,24 +138,6 @@ public class ConstFoldVisitor extends AJmmVisitor<Void, Boolean>  {
         return hasChanged;
     }
 
-    private Boolean visitWhileStmt(JmmNode whileStmt, Void unused) {
-        JmmNode condition = whileStmt.getObject("condition", JmmNode.class);
-        JmmNode body = whileStmt.getChild(1);
-
-        boolean hasChanged = visit(condition);
-
-        if (condition.getKind().equals("BooleanLiteral")) {
-            boolean val = Boolean.parseBoolean(condition.get("value"));
-            if (!val) {
-                whileStmt.replace(body);
-                return true;
-            }
-        }
-
-        hasChanged |= visit(body);
-
-        return hasChanged;
-    }
     private Boolean defaultVisit(JmmNode node, Void unused) {
         boolean hasChanged = false;
         for(JmmNode child : node.getChildren()) {

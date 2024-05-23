@@ -52,6 +52,7 @@ public class Cpf4_Jasmin {
 
         var result = TestUtils.backend(ollirResult);
 
+        System.out.println(result.getJasminCode());
         return result;
 
     }

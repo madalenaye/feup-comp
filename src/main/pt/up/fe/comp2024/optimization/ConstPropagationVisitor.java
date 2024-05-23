@@ -18,6 +18,7 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
     private HashMap<String, JmmNode> out;
     private String currentMethod;
     private boolean inWhile;
+    private boolean processingWhile;
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
@@ -68,28 +69,45 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
 
     private Boolean visitWhileStmt(JmmNode whileStmt, SymbolTable table) {
 
-        this.inWhile = true;
+        var condition = whileStmt.getChild(0);
+        var stmts = whileStmt.getChildren(); stmts.remove(condition);
         var out1 = new HashMap<>(in);
 
-        var condition = whileStmt.getObject("condition", JmmNode.class);
-        var stmts = whileStmt.getChildren(); stmts.remove(condition);
+        boolean hasChanged = false;
+
+        this.processingWhile = true;
 
         for (JmmNode stmt : stmts) {
             initSets(table);
             visit(stmt, table);
         }
 
+        this.processingWhile = false;
+
         var out2 = new HashMap<>(out);
+        this.out = meetSets(out1, out2);
+
+        this.inWhile = true;
+
+        initSets(table);
+        hasChanged |= visit(condition, table);
+
+        for (JmmNode stmt : stmts) {
+            initSets(table);
+            hasChanged |= visit(stmt, table);
+        }
+
         this.inWhile = false;
 
-        this.out = meetSets(out1, out2);
-        initSets(table);
-        visit(condition, table);
-
-        return true;
+        return hasChanged;
     }
 
     private Boolean visitAssignStmt(JmmNode assignStmt, SymbolTable table) {
+
+        if (this.inWhile) {
+            return false;
+        }
+
         String assignee = assignStmt.get("name");
         JmmNode assigned = assignStmt.getChild(0);
 
@@ -118,7 +136,7 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
 
     private Boolean visitIfStmt(JmmNode ifStmt, SymbolTable table) {
 
-        JmmNode condition = ifStmt.getObject("condition", JmmNode.class);
+        JmmNode condition = ifStmt.getChild(0);
         boolean hasChanged = visit(condition, table);
 
         var initialIn = new HashMap<>(out);
@@ -150,7 +168,7 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
 
     private Boolean visitVarRefExpr(JmmNode varRefExpr, SymbolTable table) {
 
-        if (this.inWhile) {
+        if (this.processingWhile) {
             return false;
         }
 
@@ -244,3 +262,4 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
         return hasChanged;
     }
 }
+
