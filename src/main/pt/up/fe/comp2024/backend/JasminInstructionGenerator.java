@@ -28,6 +28,8 @@ public class JasminInstructionGenerator {
         instructionGenerator.put(GetFieldInstruction.class, this::generateGetFieldInstruction);
         instructionGenerator.put(BinaryOpInstruction.class, this::generateBinaryOp);
         instructionGenerator.put(ReturnInstruction.class, this::generateReturn);
+        instructionGenerator.put(OpCondInstruction.class, this::generateOpCondInst);
+        instructionGenerator.put(GotoInstruction.class, this::generateGotoInst);
     }
 
     public void setMethod(Method method){
@@ -159,7 +161,6 @@ public class JasminInstructionGenerator {
 
         callInstruction.getArguments().forEach((op) -> code.append(ollirTypeToJasmin(op.getType())));
         code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
-        code.append("pop");
 
         return code.toString();
     }
@@ -216,4 +217,40 @@ public class JasminInstructionGenerator {
         return code.toString();
     }
 
+    private String generateOpCondInst(OpCondInstruction opCondInstruction){
+        var code = new StringBuilder();
+        var condition = opCondInstruction.getCondition();
+        var type = condition.getInstType();
+        switch (type){
+            case BINARYOPER -> code.append(generateBinaryOpCond((BinaryOpInstruction) condition));
+            case UNARYOPER -> code.append(generateUnaryOpCond((UnaryOpInstruction) condition));
+        }
+        code.append(opCondInstruction.getLabel()).append(NL);
+        return code.toString();
+    }
+    private String generateGotoInst(GotoInstruction gotoInstruction){
+        return "goto " + gotoInstruction.getLabel() + "\n";
+    }
+
+    private String generateBinaryOpCond(BinaryOpInstruction binaryOpInstruction){
+        var code = new StringBuilder();
+        var type = binaryOpInstruction.getOperation().getOpType();
+        var rightOp = binaryOpInstruction.getRightOperand();
+        var leftOp = binaryOpInstruction.getLeftOperand();
+        if (type == OperationType.LTH)
+            code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("if_icmplt ");
+        else if (type == OperationType.GTE)
+            code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("if_icmpge ");
+        else if (type == OperationType.ANDB)
+            code.append(instructionGenerator.apply(binaryOpInstruction)).append("ifne ");
+        else return null;
+        return code.toString();
+    }
+    private String generateUnaryOpCond(UnaryOpInstruction unaryOpInstruction){
+        var code = new StringBuilder();
+        var op = unaryOpInstruction.getOperation();
+        var type = op.getOpType();
+        if (type == OperationType.NOTB) code.append(operandGenerator.generate(unaryOpInstruction.getOperand())).append("ifeq ");
+        return code.toString();
+    }
 }
