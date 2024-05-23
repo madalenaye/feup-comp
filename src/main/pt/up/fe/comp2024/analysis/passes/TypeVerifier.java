@@ -170,7 +170,7 @@ public class TypeVerifier extends AnalysisVisitor {
             if (actualParams.size() == expectedParams.size()) {
                 Type actualType = TypeUtils.getExprType(actualParams.get(i--), table, currentMethod);
                 if (actualType == null) return;
-                if (actualType.getName().equals("int") && actualType.isArray()) {
+                if (actualType.getName().equals("int")) {
                     return;
                 }
             }
