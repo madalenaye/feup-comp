@@ -61,4 +61,32 @@ public class BinExprUtils {
 
         return new OllirExprResult(code,computation.toString());
     }
+
+    public OllirExprResult shortCircuit(JmmNode left, OllirExprResult lhs, JmmNode right, OllirExprResult rhs){
+        if(!right.getKind().equals("MethodExpr")){
+            return new OllirExprResult("","");
+        }
+        StringBuilder computation = new StringBuilder();
+        computation.append(lhs.getComputation());
+
+        String temp = OptUtils.getTemp() + ".bool";
+
+        String ifNumber= OptUtils.getIf();
+        String endIfNumber= OptUtils.getEndIf();
+
+        computation.append("if(").append(lhs.getCode()).append(") goto ").append(ifNumber).append(";\n");
+
+        computation.append(temp).append(SPACE).append(ASSIGN).append(".bool").append(SPACE).append("0.bool").append(";\n");
+        computation.append("goto ").append(endIfNumber).append(";\n");
+        computation.append(ifNumber).append(":\n");
+
+        computation.append(rhs.getComputation());
+        computation.append(temp).append(SPACE).append(ASSIGN).append(".bool").append(SPACE).append(rhs.getCode());
+
+        computation.append(endIfNumber).append(":\n");
+
+        String code= temp;
+
+        return new OllirExprResult(code,computation.toString());
+    }
 }

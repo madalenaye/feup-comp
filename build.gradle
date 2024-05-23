@@ -36,7 +36,7 @@ installDist {
 dependencies {
     implementation "junit:junit:4.11"
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.10'
-    antlr "org.antlr:antlr4:4.5.3"
+    antlr "org.antlr:antlr4:4.9.2"
     // https://mvnrepository.com/artifact/org.fusesource.jansi/jansi
     implementation 'org.fusesource.jansi:jansi:2.4.0'
 
