@@ -1,8 +1,10 @@
 package pt.up.fe.comp2024.backend;
 
+import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.jasmin.JasminBackend;
 import pt.up.fe.comp.jmm.jasmin.JasminResult;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
+import pt.up.fe.comp2024.CompilerConfig;
 
 public class JasminBackendImpl implements JasminBackend {
 
@@ -14,5 +16,6 @@ public class JasminBackendImpl implements JasminBackend {
 
         return new JasminResult(ollirResult, jasminCode, jasminGenerator.getReports());
     }
+
 
 }
