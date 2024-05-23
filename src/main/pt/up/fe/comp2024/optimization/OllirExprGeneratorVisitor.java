@@ -88,6 +88,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             default -> "";
         };
 
+        BinExprUtils binExpUtils = new BinExprUtils(table,currMethod,ollirType);
+
         OllirExprResult lhs = visit(left);
         OllirExprResult rhs = visit(right);
 
@@ -103,43 +105,17 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         while (left.getKind().equals("ParensExpr")) left = left.getChild(0);
         while (right.getKind().equals("ParensExpr")) right = right.getChild(0);
 
-        if (left.getKind().equals("MethodExpr")) {
-            if (Objects.requireNonNull(TypeUtils.getExprType(left, table, currMethod)).hasAttribute("isExternal")) {
-                leftCode = leftCode.substring(0, leftCode.lastIndexOf(".")) + ollirType + END_STMT;
-            }
-            String newTmp = OptUtils.getTemp() + ollirType;
-            computation.append(newTmp)
-                    .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
-                    .append(leftCode);
-            leftCode = newTmp;
+        OllirExprResult leftHelper = binExpUtils.exprHandler(left,leftCode);
+        OllirExprResult rightHelper = binExpUtils.exprHandler(right,rightCode);
+
+        if(!leftHelper.getCode().isEmpty()){
+            leftCode=leftHelper.getCode();
+            computation.append(leftHelper.getComputation());
         }
 
-        if (right.getKind().equals("MethodExpr")) {
-            if (Objects.requireNonNull(TypeUtils.getExprType(right, table, currMethod)).hasAttribute("isExternal")) {
-                rightCode = rightCode.substring(0, rightCode.lastIndexOf(".")) + ollirType + END_STMT;
-            }
-            String newTmp = OptUtils.getTemp() + ollirType;
-            computation.append(newTmp)
-                    .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
-                    .append(rightCode);
-            rightCode = newTmp;
-        }
-
-        if(left.getKind().equals("ArrayElemExpr")){
-            String newTmp = OptUtils.getTemp() + ollirType;
-            computation.append(newTmp)
-                    .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
-                    .append(leftCode).append(END_STMT);
-            leftCode = newTmp;
-        }
-
-        if(right.getKind().equals("ArrayElemExpr")){
-            String newTmp = OptUtils.getTemp() + ollirType;
-
-            computation.append(newTmp)
-                    .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
-                    .append(rightCode).append(END_STMT);
-            rightCode = newTmp;
+        if(!rightHelper.getCode().isEmpty()){
+            rightCode=rightHelper.getCode();
+            computation.append(rightHelper.getComputation());
         }
 
         // code to compute self
