@@ -10,10 +10,11 @@ public class JasminOperandGenerator {
     private final OllirResult ollirResult;
     private final FunctionClassMap<TreeNode, String> operandGenerator;
     private Method currentMethod;
+    private final JasminInstructionGenerator instructionGenerator;
 
-    public JasminOperandGenerator(OllirResult ollirResult) {
+    public JasminOperandGenerator(OllirResult ollirResult, JasminInstructionGenerator instructionGenerator) {
         this.ollirResult = ollirResult;
-
+        this.instructionGenerator = instructionGenerator;
         this.operandGenerator = new FunctionClassMap<>();
         operandGenerator.put(LiteralElement.class, this::generateLiteral);
         operandGenerator.put(Operand.class, this::generateOperand);
@@ -45,10 +46,15 @@ public class JasminOperandGenerator {
     }
 
     private String generateOperand(Operand operand) {
-        var operandName = operand.getName();
+
+        instructionGenerator.pushToStack();
+
+        if (operand instanceof ArrayOperand) return generateArrayOperand((ArrayOperand) operand);
+
+        String operandName = operand.getName();
         if (currentMethod.getVarTable().containsKey(operandName)) {
-            var reg = currentMethod.getVarTable().get(operandName).getVirtualReg();
-            var type = operand.getType().getTypeOfElement().name();
+            int reg = currentMethod.getVarTable().get(operandName).getVirtualReg();
+            String type = operand.getType().getTypeOfElement().name();
             if (type.equals("INT32") || type.equals("BOOLEAN")) {
                 if (reg > 3) return "iload " + reg + NL;
                 return "iload_" + reg + NL;
@@ -66,6 +72,23 @@ public class JasminOperandGenerator {
             }
         }
         return null;
+    }
+
+    private String generateArrayOperand(ArrayOperand arrayOperand) {
+        instructionGenerator.pushToStack();
+
+        StringBuilder code = new StringBuilder();
+
+        String arrayName = arrayOperand.getName();
+        var index = arrayOperand.getIndexOperands().get(0);
+        int reg = getVariableRegister(currentMethod, arrayName);
+
+        if (reg > 3) code.append("aload ").append(reg).append(NL);
+        else code.append("aload_").append(reg).append(NL);
+
+        code.append(generate(index)).append(NL);
+        code.append("iaload").append(NL);
+        return code.toString();
     }
 
 }

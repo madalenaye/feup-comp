@@ -16,10 +16,13 @@ public class JasminInstructionGenerator {
     private final FunctionClassMap<TreeNode, String> instructionGenerator;
     private final JasminOperandGenerator operandGenerator;
     private Method currentMethod;
+    private int stackSize;
+    private int maxStackSize;
+
 
     public JasminInstructionGenerator(OllirResult ollirResult) {
         this.ollirResult = ollirResult;
-        this.operandGenerator = new JasminOperandGenerator(ollirResult);
+        this.operandGenerator = new JasminOperandGenerator(ollirResult, this);
         this.instructionGenerator = new FunctionClassMap<>();
         instructionGenerator.put(AssignInstruction.class, this::generateAssign);
         instructionGenerator.put(CallInstruction.class, this::generateCallInstruction);
@@ -28,12 +31,32 @@ public class JasminInstructionGenerator {
         instructionGenerator.put(GetFieldInstruction.class, this::generateGetFieldInstruction);
         instructionGenerator.put(BinaryOpInstruction.class, this::generateBinaryOp);
         instructionGenerator.put(ReturnInstruction.class, this::generateReturn);
+        instructionGenerator.put(OpCondInstruction.class, this::generateOpCondInst);
+        instructionGenerator.put(GotoInstruction.class, this::generateGotoInst);
+        instructionGenerator.put(SingleOpCondInstruction.class, this::generateSingleOpCondInst);
+        instructionGenerator.put(UnaryOpInstruction.class, this::generateUnaryOpInst);
     }
 
     public void setMethod(Method method){
         this.currentMethod = method;
         this.operandGenerator.setCurrentMethod(method);
+        this.stackSize = 0;
+        this.maxStackSize = 0;
     }
+
+    public int getMaxStackSize() {
+        return maxStackSize;
+    }
+
+    public void pushToStack(){
+        stackSize++;
+        if (stackSize > maxStackSize) maxStackSize = stackSize;
+    }
+
+    public void popFromStack(int values){
+        stackSize -= values;
+    }
+
 
     public String generate(Instruction instruction) {
         String code = instructionGenerator.apply(instruction);
@@ -43,26 +66,39 @@ public class JasminInstructionGenerator {
     private String generateAssign(AssignInstruction assign) {
         StringBuilder code = new StringBuilder();
 
+        Operand lhs = (Operand) assign.getDest();
+
         String assignedCode = instructionGenerator.apply(assign.getRhs());
-        code.append(assignedCode);
-
-        // store value in the stack in destination
-        var lhs = assign.getDest();
-
-        if (!(lhs instanceof Operand operand)) {
-            throw new NotImplementedException(lhs.getClass());
-        }
 
         // get register
-        var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
+        var reg = currentMethod.getVarTable().get(lhs.getName()).getVirtualReg();
 
-        var type = operand.getType().getTypeOfElement();
+        if (lhs instanceof ArrayOperand arrayOperand) {
+            if (reg > 3) code.append("aload ").append(reg).append(NL);
+            else code.append("aload_").append(reg).append(NL);
+            pushToStack();
+            code.append(operandGenerator.generate(arrayOperand.getIndexOperands().get(0)));
+
+            code.append(assignedCode);
+            code.append("iastore").append(NL);
+            popFromStack(3);
+            return code.toString();
+        }
+
+        code.append(assignedCode);
+
+
+        // get register
+
+        var type = lhs.getType().getTypeOfElement();
         switch (type) {
             case INT32, BOOLEAN -> {
+                popFromStack(1);
                 if (reg > 3) code.append("istore ").append(reg).append(NL);
                 else code.append("istore_").append(reg).append(NL);
             }
-            case CLASS, OBJECTREF, STRING -> {
+            case CLASS, OBJECTREF, STRING, ARRAYREF -> {
+                popFromStack(1);
                 if (reg > 3) code.append("astore ").append(reg).append(NL);
                 else code.append("astore_").append(reg).append(NL);
             }
@@ -86,6 +122,8 @@ public class JasminInstructionGenerator {
 
         String op = getBinaryOp(binaryOp.getOperation().getOpType());
         code.append(op).append(NL);
+
+        popFromStack(1);
 
         return code.toString();
     }
@@ -139,9 +177,19 @@ public class JasminInstructionGenerator {
 
         callInstruction.getArguments().forEach((obj) -> code.append(operandGenerator.generate(obj)));
 
-        String className = ((Operand) callInstruction.getCaller()).getName();
+        Operand caller = (Operand) callInstruction.getCaller();
+
+        if (caller.getType() instanceof ArrayType) {
+            code.append("newarray int").append(NL);
+            return code.toString();
+        }
+
+        String className = caller.getName();
         String fullClassName = getImportedClassName(className);
         code.append("new ").append(fullClassName).append(NL).append("dup").append(NL);
+
+        pushToStack();
+        pushToStack();
 
         return code.toString();
     }
@@ -159,13 +207,14 @@ public class JasminInstructionGenerator {
 
         callInstruction.getArguments().forEach((op) -> code.append(ollirTypeToJasmin(op.getType())));
         code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
-        code.append("pop");
 
         return code.toString();
     }
 
     private String handleVirtualCall(CallInstruction callInstruction) {
         StringBuilder code = new StringBuilder();
+
+        popFromStack(1);
 
         Operand object = (Operand) callInstruction.getCaller();
         String elementName = ((ClassType) object.getType()).getName();
@@ -178,6 +227,8 @@ public class JasminInstructionGenerator {
 
         callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
         code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+
+        popFromStack(callInstruction.getArguments().size());
 
         return code.toString();
     }
@@ -199,6 +250,8 @@ public class JasminInstructionGenerator {
 
         code.append("putfield ").append(className).append("/").append(fieldName).append(" ").append(fieldType).append(NL);
 
+        popFromStack(2);
+
         return code.toString();
     }
     private String generateGetFieldInstruction(GetFieldInstruction instruction){
@@ -216,4 +269,59 @@ public class JasminInstructionGenerator {
         return code.toString();
     }
 
+    private String generateOpCondInst(OpCondInstruction opCondInstruction){
+        var code = new StringBuilder();
+        var condition = opCondInstruction.getCondition();
+        var type = condition.getInstType();
+        switch (type){
+            case BINARYOPER -> code.append(generateBinaryOpCond((BinaryOpInstruction) condition));
+            case UNARYOPER -> code.append(generateUnaryOpCond((UnaryOpInstruction) condition));
+        }
+        code.append(opCondInstruction.getLabel()).append(NL);
+        return code.toString();
+    }
+    private String generateGotoInst(GotoInstruction gotoInstruction){
+        return "goto " + gotoInstruction.getLabel() + "\n";
+    }
+
+    private String generateBinaryOpCond(BinaryOpInstruction binaryOpInstruction){
+        var code = new StringBuilder();
+        var type = binaryOpInstruction.getOperation().getOpType();
+        var rightOp = binaryOpInstruction.getRightOperand();
+        var leftOp = binaryOpInstruction.getLeftOperand();
+        if (type == OperationType.LTH)
+            code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("if_icmplt ");
+        else if (type == OperationType.GTE)
+            code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("if_icmpge ");
+        else if (type == OperationType.ANDB)
+            code.append(instructionGenerator.apply(binaryOpInstruction)).append("ifne ");
+        else return null;
+        return code.toString();
+    }
+    private String generateUnaryOpCond(UnaryOpInstruction unaryOpInstruction){
+        var code = new StringBuilder();
+        var op = unaryOpInstruction.getOperation();
+        var type = op.getOpType();
+        if (type == OperationType.NOTB) code.append(operandGenerator.generate(unaryOpInstruction.getOperand())).append("ifeq ");
+        return code.toString();
+    }
+
+    private String generateSingleOpCondInst(SingleOpCondInstruction singleOpCondInstruction){
+        var code = new StringBuilder();
+        var condition = singleOpCondInstruction.getCondition();
+        var type = condition.getInstType();
+        if (type == InstructionType.NOPER){
+            code.append(operandGenerator.generate(condition.getSingleOperand())).append("ifne ").append(singleOpCondInstruction.getLabel());
+        }
+        return code.toString();
+    }
+
+    private String generateUnaryOpInst(UnaryOpInstruction unaryOpInstruction){
+        var code = new StringBuilder();
+        var operation = unaryOpInstruction.getOperation();
+        unaryOpInstruction.getOperands().forEach((op) -> code.append(operandGenerator.generate(op)));
+        if (operation.getOpType() == OperationType.NOTB)
+            code.append("iconst_1").append(NL).append("ixor").append(NL);
+        return code.toString();
+    }
 }

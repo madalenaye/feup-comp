@@ -122,25 +122,33 @@ public class JasminGenerator {
         var returnType = ollirTypeToJasmin(method.getReturnType());
         code.append(")").append(returnType).append(NL);
 
-        // Add limits
+
+        StringBuilder instructionCode = new StringBuilder();
+        for (Instruction inst : method.getInstructions()) {
+
+            for (var label : method.getLabels().entrySet()){
+                if (label.getValue() == inst)
+                    instructionCode.append(label.getKey()).append(":").append(NL);
+            }
+            String instCode = instructionGenerator.generate(inst);
+            instructionCode.append(instCode);
+
+            if (inst.getInstType() == InstructionType.CALL &&
+                    ((CallInstruction) inst).getReturnType().getTypeOfElement() != ElementType.VOID)
+                instructionCode.append("pop").append(NL);
+        }
+
+        int stackSize = instructionGenerator.getMaxStackSize();
         code.append(TAB).append(".limit stack 99").append(NL);
 
         int localSize = getLocalSize(method);
         code.append(TAB).append(".limit locals ").append(localSize).append(NL);
 
-        for (Instruction inst : method.getInstructions()) {
-
-            String instCode = instructionGenerator.generate(inst);
-            code.append(instCode);
-
-            if (inst.getInstType() == InstructionType.CALL &&
-                    ((CallInstruction) inst).getReturnType().getTypeOfElement() != ElementType.VOID)
-                code.append("pop").append(NL);
-        }
-
+        code.append(instructionCode);
         code.append(".end method").append(NL);
 
         return code.toString();
     }
+
 
 }
