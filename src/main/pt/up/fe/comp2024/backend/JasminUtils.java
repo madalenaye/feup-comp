@@ -37,7 +37,7 @@ public class JasminUtils {
             ElementType elementType = arrayType.getElementType().getTypeOfElement();
             return switch (elementType) {
                 case STRING -> "[Ljava/lang/String;";
-                case INT32 -> "LI";
+                case INT32 -> "[I";
                 default -> null;
             };
         }
@@ -68,9 +68,14 @@ public class JasminUtils {
         return switch (type) {
             case INT32, BOOLEAN -> "ireturn";
             case VOID -> "return";
-            case OBJECTREF, CLASS -> "areturn";
+            case OBJECTREF, CLASS, ARRAYREF-> "areturn";
             default -> "";
         };
+    }
+
+    public static int getVariableRegister(Method method, String variableName) {
+        var variables = method.getVarTable();
+        return variables.get(variableName).getVirtualReg();
     }
 
     public static int getLocalSize(Method method) {
