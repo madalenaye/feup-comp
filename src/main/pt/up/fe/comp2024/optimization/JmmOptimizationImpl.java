@@ -41,12 +41,15 @@ public class JmmOptimizationImpl implements JmmOptimization {
 
         while (canBeOptimized) {
             var root = semanticsResult.getRootNode();
+
             hasFolded = constFoldVisitor.visit(root);
             hasPropagated = constPropagationVisitor.visit(root, table);
+
             canBeOptimized = hasFolded || hasPropagated;
         }
 
         String res = semanticsResult.getRootNode().toTree();
+        System.out.println(res);
         return semanticsResult;
     }
 
