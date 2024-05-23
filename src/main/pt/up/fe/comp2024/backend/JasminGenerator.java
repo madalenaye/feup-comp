@@ -126,6 +126,10 @@ public class JasminGenerator {
         StringBuilder instructionCode = new StringBuilder();
         for (Instruction inst : method.getInstructions()) {
 
+            for (var label : method.getLabels().entrySet()){
+                if (label.getValue() == inst)
+                    code.append(label.getKey()).append(":").append(NL);
+            }
             String instCode = instructionGenerator.generate(inst);
             instructionCode.append(instCode);
 
