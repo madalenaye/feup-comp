@@ -8,6 +8,7 @@ import pt.up.fe.comp2024.ast.Kind;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  {
 
@@ -30,19 +31,17 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
 
     private Boolean visitMethodDecl(JmmNode method, SymbolTable table) {
 
+        this.out = null;
+
         currentMethod = method.get("name");
+        boolean hasChanged = false;
 
-        var stmts = method.getChildren();
-        stmts.remove(0);
-        stmts.removeAll(method.getChildren("Param"));
-        stmts.removeAll(method.getChildren("VarDecl"));
-
-        for(JmmNode stmt : stmts) {
+        for(JmmNode stmt : getStatements(method)) {
             initSets(table);
-            visit(stmt, table);
+            hasChanged |= visit(stmt, table);
         }
 
-        return false;
+        return hasChanged;
     }
 
     private void initSets(SymbolTable table) {
@@ -72,7 +71,7 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
         this.inWhile = true;
         var out1 = new HashMap<>(in);
 
-        var condition = whileStmt.getChild(0);
+        var condition = whileStmt.getObject("condition", JmmNode.class);
         var stmts = whileStmt.getChildren(); stmts.remove(condition);
 
         for (JmmNode stmt : stmts) {
@@ -149,6 +148,25 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
         return hasChanged;
     }
 
+    private Boolean visitVarRefExpr(JmmNode varRefExpr, SymbolTable table) {
+
+        if (this.inWhile) {
+            return false;
+        }
+
+        String varName = varRefExpr.get("name");
+
+        if (in.containsKey(varName)) {
+            String kind = in.get(varName).getKind();
+            if (!kind.equals("T") && !kind.equals("F")) {
+                varRefExpr.replace(in.get(varName));
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private HashMap<String, JmmNode> joinSets(HashMap<String, JmmNode> set1, HashMap<String, JmmNode> set2) {
         HashMap<String, JmmNode> result = new HashMap<>();
 
@@ -210,25 +228,14 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
         return result;
     }
 
-    private Boolean visitVarRefExpr(JmmNode varRefExpr, SymbolTable table) {
+    private List<JmmNode> getStatements(JmmNode method) {
+        var stmts = method.getChildren();
+        stmts.remove(0);
+        stmts.removeAll(method.getChildren("Param"));
+        stmts.removeAll(method.getChildren("VarDecl"));
+        return stmts;
 
-        if (this.inWhile) {
-            return false;
-        }
-
-        String varName = varRefExpr.get("name");
-
-        if (in.containsKey(varName)) {
-            String kind = in.get(varName).getKind();
-            if (!kind.equals("T") && !kind.equals("F")) {
-                varRefExpr.replace(in.get(varName));
-                return true;
-            }
-        }
-
-        return false;
     }
-
     private Boolean defaultVisit(JmmNode node, SymbolTable table) {
         boolean hasChanged = false;
         for(JmmNode child : node.getChildren()) {

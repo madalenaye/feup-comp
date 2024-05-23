@@ -399,7 +399,6 @@ public class JasminGenerator {
             }
         }
 
-
         return basicClassName;
     }
 
