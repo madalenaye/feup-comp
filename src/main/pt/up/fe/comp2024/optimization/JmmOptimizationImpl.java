@@ -7,7 +7,6 @@ import org.specs.comp.ollir.*;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.CompilerConfig;
-import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.graph.Graph;
 
 import java.util.*;
@@ -38,14 +37,16 @@ public class JmmOptimizationImpl implements JmmOptimization {
         boolean hasFolded, hasPropagated, canBeOptimized = true;
         ConstFoldVisitor constFoldVisitor = new ConstFoldVisitor();
         ConstPropagationVisitor constPropagationVisitor = new ConstPropagationVisitor();
+        var table = semanticsResult.getSymbolTable();
 
         while (canBeOptimized) {
-            hasFolded = constFoldVisitor.visit(semanticsResult.getRootNode());
-            hasPropagated = constPropagationVisitor.visit(semanticsResult.getRootNode());
-            //canBeOptimized = hasFolded || hasPropagated;
-            canBeOptimized = false;
+            var root = semanticsResult.getRootNode();
+            hasFolded = constFoldVisitor.visit(root);
+            hasPropagated = constPropagationVisitor.visit(root, table);
+            canBeOptimized = hasFolded || hasPropagated;
         }
 
+        String res = semanticsResult.getRootNode().toTree();
         return semanticsResult;
     }
 
@@ -68,7 +69,7 @@ public class JmmOptimizationImpl implements JmmOptimization {
                 graph.allocateRegisters(min);
                 graph.reportMapping(ollirResult, method.getMethodName());
             } else {
-                String message = String.format("Can't allocate %d registers, %d required", n, min);
+                String message = String.format("Can't allocate %d registers, minimum %d required", n, min);
                 ollirResult.getReports().add(Report.newError(
                         Stage.OPTIMIZATION,
                         1,1,
@@ -97,7 +98,6 @@ public class JmmOptimizationImpl implements JmmOptimization {
         }
         return set;
     }
-
     private List<HashSet<String>> livenessAnalysis(Method method) {
         var nodes = method.getInstructions();
 

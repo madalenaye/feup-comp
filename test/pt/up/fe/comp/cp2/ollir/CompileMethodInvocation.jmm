@@ -7,11 +7,11 @@ class CompileMethodInvocation {
     }
 
     public int foo() {
-        int a;
+        io a;
 
-        a = 1;
+        a = new io();
 
-        io.println(a);
+        a.b();
 
         return 0;
     }
