@@ -166,13 +166,10 @@ public class TypeVerifier extends AnalysisVisitor {
                 return;
             } 
 
-            // Only one vararg argument, return is int[]
+            // Only one vararg argument, return is int[] or int
             if (actualParams.size() == expectedParams.size()) {
                 Type actualType = TypeUtils.getExprType(actualParams.get(i--), table, currentMethod);
-                if (actualType == null) return;
-                if (actualType.getName().equals("int") && actualType.isArray()) {
-                    return;
-                }
+                if (actualType == null || actualType.getName().equals("int")) return;
             }
 
             // Vararg arguments, must be in int type

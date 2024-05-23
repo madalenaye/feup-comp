@@ -1,4 +1,5 @@
-import io;
+import io.io.io.io.io;
+import A;
 
 class CompileMethodInvocation {
 
@@ -7,11 +8,17 @@ class CompileMethodInvocation {
     }
 
     public int foo() {
-        int a;
+        CompileMethodInvocation b;
+        A a;
 
-        a = 1;
+        b.fee();
+        io.print();
+        a.ok();
 
-        io.println(a);
+        return 0;
+    }
+
+    public int fee() {
 
         return 0;
     }
