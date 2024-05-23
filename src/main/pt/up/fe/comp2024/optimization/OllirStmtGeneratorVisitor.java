@@ -156,9 +156,14 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
             var statement2 = this.visit(node.getJmmChild(2));
             code.append(statement2);
             code.append("goto ").append(endIfNumber).append(END_STMT);
+
+            code.append(ifNumber).append(":\n");
+
+            var statement1 = this.visit(node.getJmmChild(1));
+            code.append(statement1);
+
             code.append(endIfNumber).append(":\n");
         }
-
 
         return code.toString();
     }
