@@ -73,6 +73,15 @@ public class JasminUtils {
         };
     }
 
+    public static int getLocalSize(Method method) {
+        var variables = method.getVarTable();
+        int max = 0;
+        for (var variable : variables.values()) {
+            max = Math.max(max, variable.getVirtualReg());
+        }
+        return max + 1;
+    }
+
     private static String normalizeClassName(String className) {
         return className.replace(".", "/");
     }
@@ -80,5 +89,7 @@ public class JasminUtils {
     private static String getObjectType (Type type){
         return "L" + getImportedClassName(((ClassType) type).getName()) + ";";
     }
+
+
 
 }

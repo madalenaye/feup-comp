@@ -124,7 +124,9 @@ public class JasminGenerator {
 
         // Add limits
         code.append(TAB).append(".limit stack 99").append(NL);
-        code.append(TAB).append(".limit locals 99").append(NL);
+
+        int localSize = getLocalSize(method);
+        code.append(TAB).append(".limit locals ").append(localSize).append(NL);
 
         for (Instruction inst : method.getInstructions()) {
 
