@@ -67,45 +67,44 @@ public class JasminInstructionGenerator {
         StringBuilder code = new StringBuilder();
 
         Operand lhs = (Operand) assign.getDest();
-
         String assignedCode = instructionGenerator.apply(assign.getRhs());
-
-        // get register
-        var reg = currentMethod.getVarTable().get(lhs.getName()).getVirtualReg();
+        int reg = getVariableRegister(currentMethod, lhs.getName());
 
         if (lhs instanceof ArrayOperand arrayOperand) {
+
+            pushToStack();
+
             if (reg > 3) code.append("aload ").append(reg).append(NL);
             else code.append("aload_").append(reg).append(NL);
-            pushToStack();
-            code.append(operandGenerator.generate(arrayOperand.getIndexOperands().get(0)));
+
+            for (var index : arrayOperand.getIndexOperands()) {
+                code.append(operandGenerator.generate(index));
+            }
 
             code.append(assignedCode);
             code.append("iastore").append(NL);
+
             popFromStack(3);
-            return code.toString();
-        }
 
-        code.append(assignedCode);
+        } else {
+            code.append(assignedCode);
 
-
-        // get register
-
-        var type = lhs.getType().getTypeOfElement();
-        switch (type) {
-            case INT32, BOOLEAN -> {
-                popFromStack(1);
-                if (reg > 3) code.append("istore ").append(reg).append(NL);
-                else code.append("istore_").append(reg).append(NL);
+            var type = lhs.getType().getTypeOfElement();
+            switch (type) {
+                case INT32, BOOLEAN -> {
+                    popFromStack(1);
+                    if (reg > 3) code.append("istore ").append(reg).append(NL);
+                    else code.append("istore_").append(reg).append(NL);
+                }
+                case CLASS, OBJECTREF, STRING, ARRAYREF -> {
+                    popFromStack(1);
+                    if (reg > 3) code.append("astore ").append(reg).append(NL);
+                    else code.append("astore_").append(reg).append(NL);
+                }
+                case VOID -> {}
+                default -> throw new NotImplementedException(type.name());
             }
-            case CLASS, OBJECTREF, STRING, ARRAYREF -> {
-                popFromStack(1);
-                if (reg > 3) code.append("astore ").append(reg).append(NL);
-                else code.append("astore_").append(reg).append(NL);
-            }
-            case VOID -> {}
-            default -> throw new NotImplementedException(type.name());
         }
-
         return code.toString();
     }
 
