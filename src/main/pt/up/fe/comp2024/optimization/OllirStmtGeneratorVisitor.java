@@ -81,12 +81,22 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
             exprCode = newTmp;
         }
 
+        if (exprNode.getKind().equals("NewArrayExpr")) {
+            Type type = TypeUtils.getExprType(exprNode, table, currMethod);
+            String newTmp = OptUtils.getTemp() + varOllirType;
+
+            code.append(newTmp)
+                    .append(SPACE).append(ASSIGN).append(varOllirType).append(SPACE)
+                    .append(exprCode).append(END_STMT);
+            exprCode = newTmp;
+        }
+
         boolean isField = table.getFields().stream().anyMatch(field -> field.getName().equals(variable));
         boolean isLocal = table.getLocalVariables(currMethod).stream().anyMatch(local -> local.getName().equals(variable));
         boolean isParam = table.getParameters(currMethod).stream().anyMatch(param -> param.getName().equals(variable));
 
         if (isField && !(isLocal || isParam))  {
-            code.append("putfield(this, ").append(variable)
+            code.append("putfield(this.").append(table.getClassName()).append(", ").append(variable)
                     .append(varOllirType).append(", ").append(exprCode).append(").V");
         } else {
             code.append(variable).append(varOllirType);
