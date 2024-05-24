@@ -92,6 +92,11 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
             code.append("static ");
         }
 
+        boolean hasVararg = node.hasAttribute("hasVararg");
+        if (hasVararg) {
+            code.append("vararg ");
+        }
+
         // name
         String name = node.get("name");
         code.append(name);
