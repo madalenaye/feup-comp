@@ -264,7 +264,6 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
             rightCode = newTmp;
         }
 
-
         code.append(variable).append("[").append(leftCode).append("]").append(varOllirType);
         code.append(SPACE + ASSIGN).append(varOllirType).append(SPACE);
         code.append(rightCode);
@@ -274,19 +273,17 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         return code.toString();
     }
 
-        /**
-         * Default visitor. Visits every child node and return an empty result.
-         *
-         * @param node
-         * @param unused
-         * @return
-         */
+    /**
+     * Default visitor. Visits every child node and return an empty result.
+     *
+     * @param node
+     * @param unused
+     * @return
+     */
     private String defaultVisit(JmmNode node, Void unused) {
-
         for (var child : node.getChildren()) {
             visit(child);
         }
-
         return "";
     }
 

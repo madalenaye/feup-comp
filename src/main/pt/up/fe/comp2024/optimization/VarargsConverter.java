@@ -1,6 +1,5 @@
 package pt.up.fe.comp2024.optimization;
 
-import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
@@ -8,8 +7,6 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.TypeUtils;
-
-import java.util.List;
 
 public class VarargsConverter extends AJmmVisitor<SymbolTable, Void>  {
 
@@ -62,11 +59,8 @@ public class VarargsConverter extends AJmmVisitor<SymbolTable, Void>  {
                 varargParam.detach();
                 arrayExpr.add(varargParam);
             }
-
             methodExpr.add(arrayExpr);
-
         }
-
         return null;
     }
 
@@ -78,9 +72,7 @@ public class VarargsConverter extends AJmmVisitor<SymbolTable, Void>  {
 
         var parameters = table.getParameters(method);
 
-        if (parameters.isEmpty()) {
-            return false;
-        }
+        if (parameters.isEmpty()) return false;
 
         Type lastParameter = parameters.get(parameters.size() - 1).getType();
         return lastParameter.hasAttribute("isVararg");

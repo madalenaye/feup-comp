@@ -19,19 +19,15 @@ import static pt.up.fe.comp2024.ast.Kind.TYPES;
 
 public class OptUtils {
     private static int tempNumber = -1;
-
     private static int ifNumber = 0;
     private static int whileNumber = 0;
-
     private static int varArgsNumber = 0;
 
     public static String getTemp() {
-
         return getTemp("tmp");
     }
 
     public static String getTemp(String prefix) {
-
         return prefix + getNextTempNum();
     }
 
@@ -46,12 +42,10 @@ public class OptUtils {
     }
 
     public static String getIf() {
-
         return "if" + getNextIfNum();
     }
 
     public static String getEndIf() {
-
         return "endif" + ifNumber;
     }
 
@@ -61,43 +55,29 @@ public class OptUtils {
     }
 
     public static String getWhileCond() {
-
         return "whileCond" + getNextWhileNum();
     }
 
     public static String getWhileLoop() {
-
         return "whileLoop" + whileNumber;
     }
 
     public static String getWhileEnd() {
-
         return "whileEnd" + whileNumber;
     }
 
-    public static String getVarArgs(){
-        varArgsNumber++;
-        return "__varargs_array_"+varArgsNumber+".array.i32";
-    }
-
     public static String toOllirBool(String boolValue) {
-
-        if(Objects.equals(boolValue, "true")) return "1";
+        if (Objects.equals(boolValue, "true")) return "1";
         else if (Objects.equals(boolValue, "false")) return "0";
-
         return null;
     }
 
     public static String toOllirType(JmmNode typeNode) {
-
         Kind.checkOrThrow(typeNode, TYPES);
-
         String typeName = typeNode.get("name");
-
         if (TypeUtils.isArray(typeNode)) {
             return ".array" + toOllirType(typeName);
         }
-
         return toOllirType(typeName);
     }
 
@@ -109,15 +89,12 @@ public class OptUtils {
     }
 
     private static String toOllirType(String typeName) {
-
         String type = "." + switch (typeName) {
             case "int" -> "i32";
             case "boolean" -> "bool";
             case "void" -> "V";
             default -> typeName;
         };
-
         return type;
     }
-
 }
