@@ -180,6 +180,17 @@ public class Cpf5_Optimizations {
 
 
     @Test
+    public void test() {
+
+        String filename = "reg_alloc/test.jmm";
+        int expectedNumReg = 5;
+
+        JasminResult optimized = getJasminResultReg(filename, expectedNumReg);
+        System.out.println("---------------------- Jasmin ----------------------");
+        System.out.println(optimized.getReports().get(0));
+    }
+
+    @Test
     public void section3_ConstProp_WithLoop() {
 
         String filename = "const_prop/PropWithLoop.jmm";

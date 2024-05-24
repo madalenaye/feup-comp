@@ -113,17 +113,34 @@ public class JasminInstructionGenerator {
     }
 
     private String generateBinaryOp(BinaryOpInstruction binaryOp) {
+
         StringBuilder code = new StringBuilder();
 
         String leftCode = operandGenerator.generate(binaryOp.getLeftOperand());
         String rightCode = operandGenerator.generate(binaryOp.getRightOperand());
         code.append(leftCode).append(rightCode);
 
-        String op = getBinaryOp(binaryOp.getOperation().getOpType());
-        code.append(op).append(NL);
-
         popFromStack(1);
 
+        var op = binaryOp.getOperation().getOpType();
+        String opType = getBinaryOp(op);
+        if (op == OperationType.LTH) {
+
+            int tmp = getTemp();
+            String trueLabel = "compinchas_" + tmp + "_true";
+            String endLabel = "compinchas_" + tmp + "_end";
+
+            code.append("isub").append(NL)
+                    .append("iflt ").append(trueLabel).append(NL)
+                    .append("\ticonst_0").append(NL)
+                    .append("\tgoto ").append(endLabel).append(NL)
+                    .append(trueLabel).append(":").append(NL)
+                    .append("\ticonst_1").append(NL)
+                    .append(endLabel).append(":").append(NL);
+            return code.toString();
+        }
+
+        code.append(opType).append(NL);
         return code.toString();
     }
 

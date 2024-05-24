@@ -30,6 +30,7 @@ public class JmmOptimizationImpl implements JmmOptimization {
 
     @Override
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
+
         if (!CompilerConfig.getOptimize(semanticsResult.getConfig())) {
             return semanticsResult;
         }
@@ -48,21 +49,18 @@ public class JmmOptimizationImpl implements JmmOptimization {
             canBeOptimized = hasFolded || hasPropagated;
         }
 
-        String res = semanticsResult.getRootNode().toTree();
-        System.out.println(res);
         return semanticsResult;
     }
 
     @Override
     public OllirResult optimize(OllirResult ollirResult) {
 
+        ollirResult.getOllirClass().buildCFGs();
+
         int n = getRegisterAllocation(ollirResult.getConfig());
         if (n == -1)  {
             return ollirResult;
         }
-
-
-        ollirResult.getOllirClass().buildCFGs();
 
         List<Method> methods = ollirResult.getOllirClass().getMethods();
         for (Method method : methods) {
@@ -87,25 +85,32 @@ public class JmmOptimizationImpl implements JmmOptimization {
         return ollirResult;
     }
 
-    private HashMap<Node, HashSet<String>> defs(List<Instruction> instructions) {
+    private HashMap<Node, HashSet<String>> defs(Method method, List<Instruction> instructions) {
         HashMap<Node, HashSet<String>> map = new HashMap<>();
         for (Instruction instruction : instructions) {
-            map.put(instruction, def(instruction));
+            map.put(instruction, def(method, instruction));
         }
         return map;
     }
-    private HashSet<String> def(Instruction instruction) {
+
+    private HashSet<String> def(Method method, Instruction instruction) {
         HashSet<String> set = new HashSet<>();
         if (instruction instanceof AssignInstruction assignInstruction) {
             Operand op = (Operand) assignInstruction.getDest();
-            set.add(op.getName());
+            String name = op.getName();
+            if (method.getVarTable().containsKey(name)) {
+                Descriptor desc = method.getVarTable().get(name);
+                if (desc.getScope().equals(VarScope.LOCAL)) {
+                    set.add(op.getName());
+                }
+            }
         }
         return set;
     }
     private List<HashSet<String>> livenessAnalysis(Method method) {
         var nodes = method.getInstructions();
 
-        HashMap<Node, HashSet<String>> defs = defs(nodes);
+        HashMap<Node, HashSet<String>> defs = defs(method, nodes);
         HashMap<Node, HashSet<String>> uses = UseUtils.uses(nodes);
         HashMap<Node, HashSet<String>> in = new HashMap<>();
         HashMap<Node, HashSet<String>> out = new HashMap<>();
