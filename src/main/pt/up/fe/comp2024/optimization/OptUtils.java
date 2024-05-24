@@ -23,6 +23,8 @@ public class OptUtils {
     private static int ifNumber = 0;
     private static int whileNumber = 0;
 
+    private static int varArgsNumber = 0;
+
     public static String getTemp() {
 
         return getTemp("tmp");
@@ -71,6 +73,11 @@ public class OptUtils {
     public static String getWhileEnd() {
 
         return "whileEnd" + whileNumber;
+    }
+
+    public static String getVarArgs(){
+        varArgsNumber++;
+        return "__varargs_array_"+varArgsNumber+".array.i32";
     }
 
     public static String toOllirBool(String boolValue) {

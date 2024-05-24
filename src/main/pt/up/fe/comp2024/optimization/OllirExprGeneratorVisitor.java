@@ -363,6 +363,23 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
+        String temp = OptUtils.getTemp() + ".array.i32";
+        String varArgsNumber = OptUtils.getVarArgs();
+
+        code.append(temp).append(SPACE).append(ASSIGN).append(".array.i32 ")
+                .append("new(array,").append(node.getChildren().size()).append(".i32).array.i32;\n");
+
+        code.append(varArgsNumber).append(SPACE).append(ASSIGN).append(".array.i32 ").append(temp).append(END_STMT);
+
+        int count=0;
+        for(JmmNode child:node.getChildren()){
+            OllirExprResult childResult = visit(child);
+            computation.append(childResult.getComputation());
+            code.append(varArgsNumber).append("[").append(count).append(".i32").append("].i32 ")
+                    .append(ASSIGN).append(".i32 ").append(childResult.getCode()).append(END_STMT);
+            count++;
+        }
+
         return new OllirExprResult(code.toString(), "");
     }
 
