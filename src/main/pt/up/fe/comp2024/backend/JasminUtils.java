@@ -9,10 +9,17 @@ public class JasminUtils {
     public static final String NL = "\n";
     public static final String TAB = "   ";
 
+    private static int tempNumber = -1;
+
     private static OllirResult ollirResult;
 
     public static void setOllirResult(OllirResult ollirResult) {
         JasminUtils.ollirResult = ollirResult;
+    }
+
+    public static int getTemp() {
+        tempNumber += 1;
+        return tempNumber;
     }
 
     public static String getImportedClassName(String basicClassName) {
@@ -60,6 +67,10 @@ public class JasminUtils {
             case DIV -> "idiv";
             case AND -> "iand";
             case OR -> "ior";
+            case LTH -> "iflt";
+            case GTE -> "ifge";
+            case LTE -> "ifle";
+            case GTH -> "ifgt";
             default -> throw new NotImplementedException(type);
         };
     }
