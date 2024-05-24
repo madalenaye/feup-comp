@@ -25,7 +25,9 @@ public class JasminOperandGenerator {
     }
 
     public String generate(TreeNode operand) {
-        return operandGenerator.apply(operand);
+        var x = operandGenerator.apply(operand);
+        System.out.println("\tCurrent stack size is " + instructionGenerator.getStackSize() + " (max: " + instructionGenerator.getMaxStackSize() + ") after executing " + operand);
+        return x;
     }
 
 

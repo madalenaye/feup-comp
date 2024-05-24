@@ -48,6 +48,10 @@ public class JasminInstructionGenerator {
         return maxStackSize;
     }
 
+    public int getStackSize() {
+        return stackSize;
+    }
+
     public void pushToStack(){
         stackSize++;
         if (stackSize > maxStackSize) maxStackSize = stackSize;
@@ -60,6 +64,7 @@ public class JasminInstructionGenerator {
 
     public String generate(Instruction instruction) {
         String code = instructionGenerator.apply(instruction);
+        System.out.println("Current stack size is " + stackSize + " (max: " + maxStackSize + ") after executing " + instruction);
         return StringLines.getLines(code).stream().collect(Collectors.joining(NL + TAB, TAB, NL));
     }
 
@@ -71,19 +76,26 @@ public class JasminInstructionGenerator {
         int reg = getVariableRegister(currentMethod, lhs.getName());
 
         if (rhs instanceof BinaryOpInstruction binaryOpInstruction){
-            var leftOp = binaryOpInstruction.getLeftOperand();
-            var rightOp = binaryOpInstruction.getRightOperand();
-            if (rightOp instanceof LiteralElement rightLiteral && leftOp instanceof Operand left){
-                int leftReg = getVariableRegister(currentMethod, left.getName());
-                int number = Integer.parseInt(rightLiteral.getLiteral());
-                if (leftReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
+            var op = binaryOpInstruction.getOperation().getOpType();
+            if (op.equals(OperationType.ADD) || op.equals(OperationType.SUB)){
+                var leftOp = binaryOpInstruction.getLeftOperand();
+                var rightOp = binaryOpInstruction.getRightOperand();
+                if (rightOp instanceof LiteralElement rightLiteral && leftOp instanceof Operand left) {
+                    int leftReg = getVariableRegister(currentMethod, left.getName());
+                    if (rightLiteral.isLiteral()) {
+                        int number = Integer.parseInt(rightLiteral.getLiteral());
+                        if (leftReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
+                    }
+                }
+                if (leftOp instanceof LiteralElement leftLiteral && rightOp instanceof Operand right){
+                    int rightReg = getVariableRegister(currentMethod, right.getName());
+                    if (leftLiteral.isLiteral()) {
+                        int number = Integer.parseInt(leftLiteral.getLiteral());
+                        if (rightReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
+                    }
+                }
             }
 
-            if (leftOp instanceof LiteralElement leftLiteral && rightOp instanceof Operand right){
-                int rightReg = getVariableRegister(currentMethod, right.getName());
-                int number = Integer.parseInt(leftLiteral.getLiteral());
-                if (rightReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
-            }
         }
         String assignedCode = instructionGenerator.apply(assign.getRhs());
 
@@ -138,15 +150,14 @@ public class JasminInstructionGenerator {
         code.append(leftCode).append(rightCode);
 
         popFromStack(1);
-
         var op = binaryOp.getOperation().getOpType();
         String opType = getBinaryOp(op);
         if (op == OperationType.LTH) {
 
+            popFromStack(1);
             int tmp = getTemp();
             String trueLabel = "compinchas_" + tmp + "_true";
             String endLabel = "compinchas_" + tmp + "_end";
-
             code.append("isub").append(NL)
                     .append("iflt ").append(trueLabel).append(NL)
                     .append("iconst_0").append(NL)
@@ -188,6 +199,8 @@ public class JasminInstructionGenerator {
     private String handleStaticCall(CallInstruction callInstruction) {
         StringBuilder code = new StringBuilder();
 
+        popFromStack(1);
+
         callInstruction.getArguments().forEach((arg) -> code.append(operandGenerator.generate(arg)));
         code.append("invokestatic ");
 
@@ -202,6 +215,8 @@ public class JasminInstructionGenerator {
         callInstruction.getArguments().forEach((arg) -> code.append(ollirTypeToJasmin(arg.getType())));
 
         code.append(")").append(ollirTypeToJasmin(callInstruction.getReturnType())).append(NL);
+
+        popFromStack(callInstruction.getArguments().size());
 
         return code.toString();
     }
@@ -334,10 +349,17 @@ public class JasminInstructionGenerator {
         var rightOp = binaryOpInstruction.getRightOperand();
         var leftOp = binaryOpInstruction.getLeftOperand();
 
-        if (type == OperationType.LTH)
+        popFromStack(1);
+
+
+        if (type == OperationType.LTH) {
+            popFromStack(1);
             code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("isub\n").append("iflt ");
-        else if (type == OperationType.GTE)
+        }
+        else if (type == OperationType.GTE) {
+            popFromStack(1);
             code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("isub\n").append("ifge ");
+        }
         else if (type == OperationType.ANDB)
             code.append(instructionGenerator.apply(binaryOpInstruction)).append("ifne ");
         else return null;

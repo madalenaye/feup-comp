@@ -197,6 +197,7 @@ public class Cpf5_Optimizations {
 
         JasminResult optimized = getJasminResultOpt(filename);
         JasminResult original = getJasminResult(filename);
+        System.out.println(original.getJasminCode());
 
         CpUtils.assertNotEquals("Expected code to change with -o flag\n\nOriginal code:\n" + original.getJasminCode(),
                 original.getJasminCode(), optimized.getJasminCode(),
