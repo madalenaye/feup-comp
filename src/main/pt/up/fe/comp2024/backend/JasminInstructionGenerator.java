@@ -68,9 +68,7 @@ public class JasminInstructionGenerator {
 
         Operand lhs = (Operand) assign.getDest();
         Instruction rhs = assign.getRhs();
-        String assignedCode = instructionGenerator.apply(assign.getRhs());
         int reg = getVariableRegister(currentMethod, lhs.getName());
-
 
         if (rhs instanceof BinaryOpInstruction binaryOpInstruction){
             var leftOp = binaryOpInstruction.getLeftOperand();
@@ -81,7 +79,6 @@ public class JasminInstructionGenerator {
                     int number = Integer.parseInt(rightLiteral.getLiteral());
                     if (leftReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
                 }
-                popFromStack(2);
             }
             if (leftOp instanceof LiteralElement leftLiteral && rightOp instanceof Operand right){
                 int rightReg = getVariableRegister(currentMethod, right.getName());
@@ -91,6 +88,8 @@ public class JasminInstructionGenerator {
                 }
             }
         }
+        String assignedCode = instructionGenerator.apply(assign.getRhs());
+
         if (lhs instanceof ArrayOperand arrayOperand) {
 
             pushToStack();
