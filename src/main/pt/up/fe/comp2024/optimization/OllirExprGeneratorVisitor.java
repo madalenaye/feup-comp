@@ -83,6 +83,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         String operator = node.get("op");
 
+
+
         String ollirType = switch (operator) {
             case "+", "*", "-", "/", "<" -> ".i32";
             case "&&" -> ".bool";
@@ -93,6 +95,15 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         OllirExprResult lhs = visit(left);
         OllirExprResult rhs = visit(right);
+
+        if(node.getParent().getKind().equals("AssignStmt"))
+            if(
+                    (left.getKind().equals("IntegerLiteral") && right.getKind().equals("IntegerLiteral"))
+                    ||(left.getKind().equals("BooleanLiteral") && right.getKind().equals("BooleanLiteral"))
+            ){
+                String code= lhs.getCode()+SPACE+operator+ollirType+SPACE+rhs.getCode();
+                return new OllirExprResult(code,"");
+            }
 
         StringBuilder computation = new StringBuilder();
 
