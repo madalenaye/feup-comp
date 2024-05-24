@@ -61,6 +61,7 @@ public class JmmOptimizationImpl implements JmmOptimization {
             return ollirResult;
         }
 
+
         ollirResult.getOllirClass().buildCFGs();
 
         List<Method> methods = ollirResult.getOllirClass().getMethods();

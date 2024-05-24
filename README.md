@@ -1,66 +1,25 @@
 # Comp2024 Project
 
-Contains a reference implementation for an initial version of the project that supports a small portion of Java--.
+## Group members 
 
-| test                                               | file                |
-| -------------------------------------------------- | ------------------- |
-| undeclared variable                                | DeclarationVerifier |
-| class not imported                                 | DeclarationVerifier |
-| undeclared method call                             | DeclarationVerifier |
-| method call in extends                             | DeclarationVerifier |
-| method call in imports                             | DeclarationVerifier |
-| int + object                                       | TypeVerifier        |
-| bool \* int                                        | TypeVerifier        |
-| array + int                                        | TypeVerifier        |
-| int = bool                                         | TypeVerifier        |
-| object assign fail                                 | TypeVerifier        |
-| object assign pass extends                         | TypeVerifier        |
-| object assign pass imports                         | TypeVerifier        |
-| neg expression                                     | TypeVerifier        |
-| if (123)                                           | TypeVerifier        |
-| while([1,2,3])                                     | TypeVerifier        |
-| incompatible arguments                             | TypeVerifier        |
-| incompatible return                                | TypeVerifier        |
-| in method expr first expr must be varRefrExp ?     | TypeVerifier        |
-| assume arguments                                   | TypeVerifier        |
-| array access on int                                | ArrayVerifier       |
-| array index not int                                | ArrayVerifier       |
-| array Init                                         | ArrayVerifier       |
-| this cannot be in static method                    | MethodVerifier      |
-| only main is static                                | MethodVerifier      |
-| superclass needs to be imported                    | MethodVerifier      |
-| varargs                                            | VarargsVerifier     |
-| variable, fields, method returns cannot be varargs | VarargsVerifier     |
+- João Figueiredo (up202108873@edu.fe.up.pt)
+- Luís Du (up202105385@edu.fe.up.pt)
+- Madalena Ye (up202108795@edu.fe.up.pt)
 
-## DeclarationVerifier
+## Work Distribution
 
-1. undeclared variables - VAR_REF_EXPR ✔
-2. class not imported - METHOD_EXPR ✔
-3. undeclared method call - METHOD_EXPR ✔
-4. method call in extends - METHOD_EXPR ✔
-5. method call in imports - METHOD_EXPR ✔
+- João Figueiredo - 33.33 %
+- Luís Du - 33.33 %
+- Madalena Ye - 33.33 %
 
-## TypeVerifier
+## Self-Assessment
 
-6. int + object - BINARY_EXPR ✔
-7. bool \* int - BINARY_EXPR ✔
-8. array + int - BINARY_EXPR ✔
-9. int = bool - ASSIGN_STMT ✔
-10. object assign fail - ASSIGN_STMT ✔
-11. object assign pass extends - ASSIGN_STMT ✔
-12. object assign pass imports - ASSIGN_STMT ✔
-13. if (123) - IF_STMT ✔
-14. while([1,2,3]) - WHILE_STMT ✔
-15. neg expr - NEG_EXPR ✔
-16. incompatible arguments ✔
-17. incompatible return ✔
+- We think our project deserves a ... out of 20.
 
-## ArrayVerifier
+## Optimizations
 
-18. array access on int - Array ✔
-19. array index not int ✔
-20. array init ✔
-
-## VarArgsVerifier
-
-21. variable, fields, method returns cannot be varargs ✔
+- We have implemented the following optimizations:
+  - Constant folding
+  - Constant propagation
+  - Register allocation
+  - Low cost instructions
