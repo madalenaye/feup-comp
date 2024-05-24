@@ -1,8 +1,17 @@
-import io;
+class A{
 
-class ArrayInitialization {
-    public static void main(String[] args) {
-        io.println((new int[5]));
+    public int testAnd(){
+        boolean b1;
+        boolean b2;
+        boolean b3;
+        int res;
+
+        if (b1 && b2 && b3) {
+            res = 1;
+        } else {
+            res = 0;
+        }
+
+        return res;
     }
-
 }

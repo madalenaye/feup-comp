@@ -136,6 +136,14 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
                     .append(exprCode);
             exprCode = newTmp;
         }
+
+        else if (exprNode.getKind().equals("NewArrayExpr")) {
+            String newTmp = OptUtils.getTemp() + ".array.i32";
+            code.append(newTmp)
+                .append(SPACE).append(ASSIGN).append(".array.32").append(SPACE)
+                .append(exprCode).append(END_STMT);
+            exprCode = newTmp;
+        }
             code.append("ret")
             .append(varOllirType)
             .append(SPACE)

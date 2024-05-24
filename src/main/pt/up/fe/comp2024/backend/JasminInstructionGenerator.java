@@ -317,8 +317,9 @@ public class JasminInstructionGenerator {
         var rightOp = binaryOpInstruction.getRightOperand();
         var leftOp = binaryOpInstruction.getLeftOperand();
 
-        if (type == OperationType.LTH)
-            code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("if_icmplt ");
+        if (type == OperationType.LTH) {
+            code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("isub\niflt ");
+        }
         else if (type == OperationType.GTE)
             code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("if_icmpge ");
         else if (type == OperationType.ANDB)
