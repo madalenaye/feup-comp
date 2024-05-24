@@ -90,6 +90,7 @@ public class VarargsConverter extends AJmmVisitor<SymbolTable, Void>  {
         JmmNode arrayType = new JmmNodeImpl("ArrayType");
         arrayType.put("name", "int");
         arrayType.putObject("isArray", true);
+        arrayType.putObject("isVararg", true);
         varargType.replace(arrayType);
         return null;
     }

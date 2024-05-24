@@ -139,7 +139,7 @@ public class JasminGenerator {
         }
 
         int stackSize = instructionGenerator.getMaxStackSize();
-        code.append(TAB).append(".limit stack 99").append(NL);
+        code.append(TAB).append(".limit stack ").append(stackSize).append(NL);
 
         int localSize = getLocalSize(method);
         code.append(TAB).append(".limit locals ").append(localSize).append(NL);

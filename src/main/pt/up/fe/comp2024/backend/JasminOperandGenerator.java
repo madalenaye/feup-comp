@@ -33,6 +33,7 @@ public class JasminOperandGenerator {
         var code = new StringBuilder();
         var literalString = literal.getLiteral();
 
+        instructionGenerator.pushToStack();
         if (literal.getType().getTypeOfElement().name().equals("STRING")) {
             code.append(literalString.replaceAll("\"", "")).append("(");
             return code.toString();
@@ -75,7 +76,6 @@ public class JasminOperandGenerator {
     }
 
     private String generateArrayOperand(ArrayOperand arrayOperand) {
-        instructionGenerator.pushToStack();
 
         StringBuilder code = new StringBuilder();
 

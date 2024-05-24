@@ -294,10 +294,12 @@ public class JasminInstructionGenerator {
     }
 
     private String generateBinaryOpCond(BinaryOpInstruction binaryOpInstruction){
+
         var code = new StringBuilder();
         var type = binaryOpInstruction.getOperation().getOpType();
         var rightOp = binaryOpInstruction.getRightOperand();
         var leftOp = binaryOpInstruction.getLeftOperand();
+
         if (type == OperationType.LTH)
             code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("if_icmplt ");
         else if (type == OperationType.GTE)
