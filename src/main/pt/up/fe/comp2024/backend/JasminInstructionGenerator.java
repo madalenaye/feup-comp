@@ -81,7 +81,7 @@ public class JasminInstructionGenerator {
                     int number = Integer.parseInt(rightLiteral.getLiteral());
                     if (leftReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
                 }
-                popFromStack(1);
+                popFromStack(2);
             }
             if (leftOp instanceof LiteralElement leftLiteral && rightOp instanceof Operand right){
                 int rightReg = getVariableRegister(currentMethod, right.getName());
