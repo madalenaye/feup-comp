@@ -30,8 +30,7 @@ public class JmmOptimizationImpl implements JmmOptimization {
 
     @Override
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
-        return semanticsResult;
-        /*
+
         if (!CompilerConfig.getOptimize(semanticsResult.getConfig())) {
             return semanticsResult;
         }
@@ -50,9 +49,7 @@ public class JmmOptimizationImpl implements JmmOptimization {
             canBeOptimized = hasFolded || hasPropagated;
         }
 
-        String res = semanticsResult.getRootNode().toTree();
-        System.out.println(res);
-        return semanticsResult;*/
+        return semanticsResult;
     }
 
     @Override
