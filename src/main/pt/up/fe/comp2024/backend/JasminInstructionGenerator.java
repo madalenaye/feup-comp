@@ -77,10 +77,18 @@ public class JasminInstructionGenerator {
             var rightOp = binaryOpInstruction.getRightOperand();
             if (rightOp instanceof LiteralElement rightLiteral && leftOp instanceof Operand left){
                 int leftReg = getVariableRegister(currentMethod, left.getName());
-                int number = Integer.parseInt(rightLiteral.getLiteral());
-                if (leftReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
+                if (rightLiteral.getType().getTypeOfElement().equals(ElementType.INT32)) {
+                    int number = Integer.parseInt(rightLiteral.getLiteral());
+                    if (leftReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
+                }
             }
-            
+            if (leftOp instanceof LiteralElement leftLiteral && rightOp instanceof Operand right){
+                int rightReg = getVariableRegister(currentMethod, right.getName());
+                if (leftLiteral.getType().getTypeOfElement().equals(ElementType.INT32)) {
+                    int number = Integer.parseInt(leftLiteral.getLiteral());
+                    if (rightReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
+                }
+            }
         }
         if (lhs instanceof ArrayOperand arrayOperand) {
 
