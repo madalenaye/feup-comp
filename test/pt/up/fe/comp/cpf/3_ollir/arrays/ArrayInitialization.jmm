@@ -1,17 +1,19 @@
-class A{
+import io;
 
-    public int testAnd(){
-        boolean b1;
-        boolean b2;
-        boolean b3;
-        int res;
+class ArrayInitialization {
 
-        if (b1 && b2 && b3) {
-            res = 1;
-        } else {
-            res = 0;
-        }
+    public static void main(String[] args) {
+        ArrayInitialization a;
+        a = new ArrayInitialization();
 
-        return res;
+        io.println(a.foo());
+    }
+
+    int foo() {
+        int[] a;
+
+        a = [1, 2, 3, 4];
+
+        return a[2];
     }
 }
