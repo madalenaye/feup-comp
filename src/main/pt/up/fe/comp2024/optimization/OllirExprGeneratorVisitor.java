@@ -374,9 +374,22 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
-        String temp = OptUtils.getTemp() + ".array.i32";
-        String varArgsNumber = OptUtils.getVarArgs();
+        int nrElements = node.getChildren().size();
 
+        String temp = OptUtils.getTemp() + ".array.i32";
+        computation.append(temp).append(SPACE).append(ASSIGN).append(".array.i32 ")
+                .append("new(array,").append(nrElements).append(".i32).array.i32;\n");
+
+        for (int i = 0; i < nrElements; i++) {
+            JmmNode child = node.getJmmChild(i);
+            OllirExprResult childResult = visit(child);
+            computation.append(childResult.getComputation());
+            computation.append(temp).append("[").append(i).append(".i32").append("].i32 ")
+                    .append(ASSIGN).append(".i32 ").append(childResult.getCode()).append(END_STMT);
+        }
+        //String varArgsNumber = OptUtils.getVarArgs();
+
+        /*
         code.append(temp).append(SPACE).append(ASSIGN).append(".array.i32 ")
                 .append("new(array,").append(node.getChildren().size()).append(".i32).array.i32;\n");
 
@@ -389,9 +402,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             code.append(varArgsNumber).append("[").append(count).append(".i32").append("].i32 ")
                     .append(ASSIGN).append(".i32 ").append(childResult.getCode()).append(END_STMT);
             count++;
-        }
+        }*/
 
-        return new OllirExprResult(code.toString(), "");
+        return new OllirExprResult(temp, computation.toString());
     }
 
     private OllirExprResult visitLenExpr(JmmNode node, Void unused){

@@ -247,6 +247,7 @@ public class Cpf3_Ollir {
                 .filter(call -> call.getInvocationType() == CallType.NEW)
                 .toList();
 
+        System.out.println(result.getOllirCode());
         CpUtils.assertTrue("Expected one call to new in method 'foo'", newCalls.size() == 1, result);
 
         var newCall = newCalls.get(0);

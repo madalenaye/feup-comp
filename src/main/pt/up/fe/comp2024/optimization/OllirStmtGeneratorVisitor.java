@@ -60,9 +60,6 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(expr.getComputation());
         String exprCode = expr.getCode();
 
-        if(node.getJmmChild(0).getKind().equals("ArrayExpr")){
-            return exprCode;
-        }
 
         while (exprNode.getKind().equals("ParensExpr")) exprNode = exprNode.getChild(0);
 
