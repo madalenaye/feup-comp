@@ -56,13 +56,12 @@ public class JmmOptimizationImpl implements JmmOptimization {
     @Override
     public OllirResult optimize(OllirResult ollirResult) {
 
+        ollirResult.getOllirClass().buildCFGs();
+
         int n = getRegisterAllocation(ollirResult.getConfig());
         if (n == -1)  {
             return ollirResult;
         }
-
-
-        ollirResult.getOllirClass().buildCFGs();
 
         List<Method> methods = ollirResult.getOllirClass().getMethods();
         for (Method method : methods) {
