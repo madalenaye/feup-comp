@@ -111,7 +111,7 @@ public class JmmOptimizationImpl implements JmmOptimization {
         var nodes = method.getInstructions();
 
         HashMap<Node, HashSet<String>> defs = defs(method, nodes);
-        HashMap<Node, HashSet<String>> uses = UseUtils.uses(nodes);
+        HashMap<Node, HashSet<String>> uses = UseUtils.uses(method, nodes);
         HashMap<Node, HashSet<String>> in = new HashMap<>();
         HashMap<Node, HashSet<String>> out = new HashMap<>();
 
