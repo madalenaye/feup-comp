@@ -1,20 +1,8 @@
 import io;
 
 class ArrayInitialization {
-    int[] c;
     public static void main(String[] args) {
-        int[] b;
-        ArrayInitialization a;
-        a = new ArrayInitialization();
-
-        io.println(a.foo(b));
+        io.println((new int[5]));
     }
 
-    int[] foo(int[] p) {
-        int[] a;
-
-        a = [1, 2, 3, 4];
-
-        return a;
-    }
 }

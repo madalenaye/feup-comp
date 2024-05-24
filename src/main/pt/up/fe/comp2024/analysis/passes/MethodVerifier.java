@@ -30,7 +30,6 @@ public class MethodVerifier extends AnalysisVisitor {
         addVisit(Kind.VOID_TYPE, this::visitVoidType);
         addVisit(Kind.VAR_REF_EXPR, this::visitIdentifier);
         addVisit(ASSIGN_STMT, this::visitIdentifier);
-        addVisit(NEW_ARRAY_EXPR, this::visitIdentifier);
     }
 
 
