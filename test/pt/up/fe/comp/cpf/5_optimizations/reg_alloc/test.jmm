@@ -1,0 +1,24 @@
+class RegAlloc {
+    public int soManyRegisters(){
+       int a;
+       int b;
+       int c;
+       int d;
+       int e;
+       int f;
+       int g;
+       e = d + a;
+       f = b + c;
+       f = f + b;
+       if (0 < f) {
+          d = e - f;
+       } else {
+          d = e + f;
+       }
+       g = d;
+       return 0;
+    }
+
+	public static void main(String[] args) {
+	}
+}
