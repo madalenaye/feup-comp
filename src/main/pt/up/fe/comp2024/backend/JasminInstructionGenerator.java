@@ -70,24 +70,20 @@ public class JasminInstructionGenerator {
         Instruction rhs = assign.getRhs();
         int reg = getVariableRegister(currentMethod, lhs.getName());
 
-        if (rhs instanceof BinaryOpInstruction binaryOpInstruction){
-
-            var operation = binaryOpInstruction.getOperation().getOpType();
-            if (operation == OperationType.ADD || operation == OperationType.SUB){
-                var leftOp = binaryOpInstruction.getLeftOperand();
-                var rightOp = binaryOpInstruction.getRightOperand();
-                if (rightOp instanceof LiteralElement rightLiteral && leftOp instanceof Operand left){
-                    int leftReg = getVariableRegister(currentMethod, left.getName());
-                    int number = Integer.parseInt(rightLiteral.getLiteral());
-                    if (leftReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
-                }
-                if (leftOp instanceof LiteralElement leftLiteral && rightOp instanceof Operand right){
-                    int rightReg = getVariableRegister(currentMethod, right.getName());
-                    int number = Integer.parseInt(leftLiteral.getLiteral());
-                    if (rightReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
-                }
+       /* if (rhs instanceof BinaryOpInstruction binaryOpInstruction){
+            var leftOp = binaryOpInstruction.getLeftOperand();
+            var rightOp = binaryOpInstruction.getRightOperand();
+            if (rightOp instanceof LiteralElement rightLiteral && leftOp instanceof Operand left){
+                int leftReg = getVariableRegister(currentMethod, left.getName());
+                int number = Integer.parseInt(rightLiteral.getLiteral());
+                if (leftReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
             }
-        }
+            if (leftOp instanceof LiteralElement leftLiteral && rightOp instanceof Operand right){
+                int rightReg = getVariableRegister(currentMethod, right.getName());
+                int number = Integer.parseInt(leftLiteral.getLiteral());
+                if (rightReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
+            }
+        }*/
         String assignedCode = instructionGenerator.apply(assign.getRhs());
 
         if (lhs instanceof ArrayOperand arrayOperand) {
