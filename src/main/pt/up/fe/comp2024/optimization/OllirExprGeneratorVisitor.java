@@ -313,6 +313,10 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     ollirType = OptUtils.toOllirType(argumentType);
                 }
 
+                if (ollirType.equals(".array.i32")) {
+                    invoke = invoke.substring(0, invoke.lastIndexOf("."));
+                }
+
                 invoke = invoke.substring(0, invoke.lastIndexOf(".")) + ollirType + ";\n";
 
                 computation.append(temp).append(ollirType).append(SPACE).append(ASSIGN)
