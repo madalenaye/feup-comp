@@ -62,12 +62,12 @@ public class OptUtils {
 
     public static String getWhileCond() {
 
-        return "whileLoop" + getNextWhileNum();
+        return "whileCond" + getNextWhileNum();
     }
 
     public static String getWhileLoop() {
 
-        return "whileCond" + whileNumber;
+        return "whileLoop" + whileNumber;
     }
 
     public static String getWhileEnd() {
