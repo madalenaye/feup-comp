@@ -70,20 +70,23 @@ public class JasminInstructionGenerator {
         Instruction rhs = assign.getRhs();
         int reg = getVariableRegister(currentMethod, lhs.getName());
 
-       /* if (rhs instanceof BinaryOpInstruction binaryOpInstruction){
+        if (rhs instanceof BinaryOpInstruction binaryOpInstruction){
             var leftOp = binaryOpInstruction.getLeftOperand();
             var rightOp = binaryOpInstruction.getRightOperand();
             if (rightOp instanceof LiteralElement rightLiteral && leftOp instanceof Operand left){
+                pushToStack();
                 int leftReg = getVariableRegister(currentMethod, left.getName());
                 int number = Integer.parseInt(rightLiteral.getLiteral());
                 if (leftReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
             }
+
             if (leftOp instanceof LiteralElement leftLiteral && rightOp instanceof Operand right){
+                pushToStack();
                 int rightReg = getVariableRegister(currentMethod, right.getName());
                 int number = Integer.parseInt(leftLiteral.getLiteral());
                 if (rightReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
             }
-        }*/
+        }
         String assignedCode = instructionGenerator.apply(assign.getRhs());
 
         if (lhs instanceof ArrayOperand arrayOperand) {
