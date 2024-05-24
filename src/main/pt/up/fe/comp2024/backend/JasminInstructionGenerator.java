@@ -123,7 +123,7 @@ public class JasminInstructionGenerator {
         popFromStack(1);
 
         var op = binaryOp.getOperation().getOpType();
-
+        String opType = getBinaryOp(op);
         if (op == OperationType.LTH) {
 
             int tmp = getTemp();
@@ -140,7 +140,7 @@ public class JasminInstructionGenerator {
             return code.toString();
         }
 
-        code.append(op).append(NL);
+        code.append(opType).append(NL);
         return code.toString();
     }
 
