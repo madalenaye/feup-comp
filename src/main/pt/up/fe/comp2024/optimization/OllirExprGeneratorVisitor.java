@@ -9,6 +9,7 @@ import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -83,8 +84,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         String operator = node.get("op");
 
-
-
         String ollirType = switch (operator) {
             case "+", "*", "-", "/", "<" -> ".i32";
             case "&&" -> ".bool";
@@ -96,14 +95,16 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         OllirExprResult lhs = visit(left);
         OllirExprResult rhs = visit(right);
 
-        if(node.getParent().getKind().equals("AssignStmt"))
-            if(
-                    (left.getKind().equals("IntegerLiteral") && right.getKind().equals("IntegerLiteral"))
-                    ||(left.getKind().equals("BooleanLiteral") && right.getKind().equals("BooleanLiteral"))
-            ){
-                String code= lhs.getCode()+SPACE+operator+ollirType+SPACE+rhs.getCode();
-                return new OllirExprResult(code,"");
+        if(node.getParent().getKind().equals("AssignStmt")) {
+            var leftKind = left.getKind();
+            var rightKind = right.getKind();
+
+            List<String> simple = Arrays.asList("IntegerLiteral", "BooleanLiteral", "VarRefExpr");
+            if (simple.contains(leftKind) && simple.contains(rightKind)) {
+                String code = lhs.getCode() + SPACE + operator + ollirType + SPACE + rhs.getCode();
+                return new OllirExprResult(code, "");
             }
+        }
 
         StringBuilder computation = new StringBuilder();
 
