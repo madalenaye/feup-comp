@@ -7,7 +7,7 @@ class IfWhileNested {
         int i;
         boolean flag;
 		
-        flag = 3 < 5;
+        flag = true;
         i = 0;
         while (i < a) {
             if(flag){
