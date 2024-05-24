@@ -74,14 +74,12 @@ public class JasminInstructionGenerator {
         if (rhs instanceof BinaryOpInstruction binaryOpInstruction){
             var leftOp = binaryOpInstruction.getLeftOperand();
             var rightOp = binaryOpInstruction.getRightOperand();
-            if (rightOp instanceof LiteralElement rightLiteral) {
-                var left = (Operand) leftOp;
+            if (rightOp instanceof LiteralElement rightLiteral && leftOp instanceof Operand left){
                 int leftReg = getVariableRegister(currentMethod, left.getName());
                 int number = Integer.parseInt(rightLiteral.getLiteral());
                 if (leftReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
             }
-            if (leftOp instanceof LiteralElement leftLiteral) {
-                var right = (Operand) rightOp;
+            if (leftOp instanceof LiteralElement leftLiteral && rightOp instanceof Operand right){
                 int rightReg = getVariableRegister(currentMethod, right.getName());
                 int number = Integer.parseInt(leftLiteral.getLiteral());
                 if (rightReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
