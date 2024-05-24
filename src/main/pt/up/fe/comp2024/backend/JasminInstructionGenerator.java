@@ -80,13 +80,14 @@ public class JasminInstructionGenerator {
             if (op.equals(OperationType.ADD) || op.equals(OperationType.SUB)){
                 var leftOp = binaryOpInstruction.getLeftOperand();
                 var rightOp = binaryOpInstruction.getRightOperand();
+                /*
                 if (rightOp instanceof LiteralElement rightLiteral && leftOp instanceof Operand left) {
                     int leftReg = getVariableRegister(currentMethod, left.getName());
                     if (rightLiteral.isLiteral()) {
                         int number = Integer.parseInt(rightLiteral.getLiteral());
                         if (leftReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
                     }
-                }
+                }*/
                 if (leftOp instanceof LiteralElement leftLiteral && rightOp instanceof Operand right){
                     int rightReg = getVariableRegister(currentMethod, right.getName());
                     if (leftLiteral.isLiteral()) {
