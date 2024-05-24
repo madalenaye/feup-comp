@@ -300,6 +300,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         for (int i = 0; i < arguments.size(); i++) {
             JmmNode argument = arguments.get(i);
+
+            while (argument.getKind().equals("ParensExpr")) argument = argument.getJmmChild(0);
+
             OllirExprResult argumentCode = visit(argument);
             computation.append(argumentCode.getComputation());
 
@@ -323,6 +326,13 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                         .append(ollirType).append(SPACE).append(invoke);
 
                 argCode.append(", ").append(temp).append(ollirType);
+            }
+            else if (argument.getKind().equals("NewArrayExpr")) {
+                String temp = OptUtils.getTemp();
+                String invoke = argumentCode.getCode();
+                computation.append(temp).append(".array.i32").append(SPACE).append(ASSIGN)
+                        .append(".array.i32").append(SPACE).append(invoke).append(END_STMT);
+                argCode.append(", ").append(temp).append(".array.i32");
             }
             else {
                 argCode.append(", ").append(argumentCode.getCode());
@@ -364,12 +374,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
-        Type varType= TypeUtils.getVariableType(node.getParent().get("name"), table, currMethod);
-        String varOllirType = OptUtils.toOllirType(varType);
-
-        var expr= visit(node.getJmmChild(0));
-
-        code.append(NEW).append("(array, ").append(expr.getCode()).append(")").append(varOllirType);
+        var expr = visit(node.getJmmChild(0));
+        computation.append(expr.getComputation());
+        code.append(NEW).append("(array, ").append(expr.getCode()).append(")").append(".array.i32");
 
         return new OllirExprResult(code.toString(), expr.getComputation());
     }
