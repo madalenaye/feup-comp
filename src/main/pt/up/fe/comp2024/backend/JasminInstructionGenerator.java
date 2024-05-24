@@ -146,6 +146,7 @@ public class JasminInstructionGenerator {
             case NEW -> handleNewCall(callInstruction);
             case invokespecial -> handleSpecialCall(callInstruction);
             case invokevirtual -> handleVirtualCall(callInstruction);
+            case arraylength -> handleArrayLengthCall(callInstruction);
             default -> throw new NotImplementedException("Invocation type not supported: " + callInstruction.getInvocationType());
         };
     }
@@ -231,6 +232,12 @@ public class JasminInstructionGenerator {
 
         return code.toString();
     }
+    private String handleArrayLengthCall(CallInstruction callInstruction){
+        var code = new StringBuilder();
+        callInstruction.getOperands().forEach((op) -> code.append(operandGenerator.generate(op)));
+        code.append("arraylength").append(NL);
+        return code.toString();
+    }
 
     private String generatePutFieldInstruction(PutFieldInstruction instruction){
         StringBuilder code = new StringBuilder();
@@ -280,7 +287,10 @@ public class JasminInstructionGenerator {
         return code.toString();
     }
     private String generateGotoInst(GotoInstruction gotoInstruction){
-        return "goto " + gotoInstruction.getLabel() + "\n";
+        var code = new StringBuilder();
+        var label = gotoInstruction.getLabel();
+        code.append("goto ").append(label).append(NL);
+        return code.toString();
     }
 
     private String generateBinaryOpCond(BinaryOpInstruction binaryOpInstruction){
