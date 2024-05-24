@@ -132,10 +132,10 @@ public class JasminInstructionGenerator {
 
             code.append("isub").append(NL)
                     .append("iflt ").append(trueLabel).append(NL)
-                    .append("\ticonst_0").append(NL)
-                    .append("\tgoto ").append(endLabel).append(NL)
+                    .append("iconst_0").append(NL)
+                    .append("goto ").append(endLabel).append(NL)
                     .append(trueLabel).append(":").append(NL)
-                    .append("\ticonst_1").append(NL)
+                    .append("iconst_1").append(NL)
                     .append(endLabel).append(":").append(NL);
             return code.toString();
         }
@@ -317,10 +317,11 @@ public class JasminInstructionGenerator {
         var rightOp = binaryOpInstruction.getRightOperand();
         var leftOp = binaryOpInstruction.getLeftOperand();
 
-        if (type == OperationType.LTH)
-            code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("if_icmplt ");
+        if (type == OperationType.LTH){
+            code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("isub\n").append("iflt ");
+        }
         else if (type == OperationType.GTE)
-            code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("if_icmpge ");
+            code.append(operandGenerator.generate(leftOp)).append(operandGenerator.generate(rightOp)).append("isub\n").append("ifge ");
         else if (type == OperationType.ANDB)
             code.append(instructionGenerator.apply(binaryOpInstruction)).append("ifne ");
         else return null;
