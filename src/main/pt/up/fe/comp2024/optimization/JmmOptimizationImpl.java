@@ -57,12 +57,10 @@ public class JmmOptimizationImpl implements JmmOptimization {
 
         ollirResult.getOllirClass().buildCFGs();
 
-        return ollirResult;
-/*        int n = getRegisterAllocation(ollirResult.getConfig());
+        int n = getRegisterAllocation(ollirResult.getConfig());
         if (n == -1)  {
             return ollirResult;
         }
-
 
         List<Method> methods = ollirResult.getOllirClass().getMethods();
         for (Method method : methods) {
@@ -84,7 +82,7 @@ public class JmmOptimizationImpl implements JmmOptimization {
 
         }
 
-        return ollirResult;*/
+        return ollirResult;
     }
 
     private HashMap<Node, HashSet<String>> defs(List<Instruction> instructions) {
