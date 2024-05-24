@@ -194,8 +194,6 @@ public class JasminInstructionGenerator {
     private String handleStaticCall(CallInstruction callInstruction) {
         StringBuilder code = new StringBuilder();
 
-        popFromStack(1);
-
         callInstruction.getArguments().forEach((arg) -> code.append(operandGenerator.generate(arg)));
         code.append("invokestatic ");
 
@@ -365,7 +363,10 @@ public class JasminInstructionGenerator {
         StringBuilder code = new StringBuilder();
         var op = unaryOpInstruction.getOperation();
         var type = op.getOpType();
-        if (type == OperationType.NOTB) code.append(operandGenerator.generate(unaryOpInstruction.getOperand())).append("ifeq ");
+        if (type == OperationType.NOTB)  {
+            code.append(operandGenerator.generate(unaryOpInstruction.getOperand())).append("ifeq ");
+            popFromStack(1);
+        }
         return code.toString();
     }
 
@@ -373,8 +374,9 @@ public class JasminInstructionGenerator {
         StringBuilder code = new StringBuilder();
         var condition = singleOpCondInstruction.getCondition();
         var type = condition.getInstType();
-        if (type == InstructionType.NOPER){
+        if (type == InstructionType.NOPER) {
             code.append(operandGenerator.generate(condition.getSingleOperand())).append("ifne ").append(singleOpCondInstruction.getLabel());
+            popFromStack(1);
         }
         return code.toString();
     }
@@ -383,8 +385,9 @@ public class JasminInstructionGenerator {
         StringBuilder code = new StringBuilder();
         var operation = unaryOpInstruction.getOperation();
         unaryOpInstruction.getOperands().forEach((op) -> code.append(operandGenerator.generate(op)));
-        if (operation.getOpType() == OperationType.NOTB)
+        if (operation.getOpType() == OperationType.NOTB) {
             code.append("iconst_1").append(NL).append("ixor").append(NL);
+        }
         return code.toString();
     }
 }
