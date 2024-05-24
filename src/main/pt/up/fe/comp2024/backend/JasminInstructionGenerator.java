@@ -48,10 +48,6 @@ public class JasminInstructionGenerator {
         return maxStackSize;
     }
 
-    public int getStackSize() {
-        return stackSize;
-    }
-
     public void pushToStack(){
         stackSize++;
         if (stackSize > maxStackSize) maxStackSize = stackSize;
@@ -64,7 +60,6 @@ public class JasminInstructionGenerator {
 
     public String generate(Instruction instruction) {
         String code = instructionGenerator.apply(instruction);
-        System.out.println("Current stack size is " + stackSize + " (max: " + maxStackSize + ") after executing " + instruction);
         return StringLines.getLines(code).stream().collect(Collectors.joining(NL + TAB, TAB, NL));
     }
 
@@ -80,14 +75,13 @@ public class JasminInstructionGenerator {
             if (op.equals(OperationType.ADD) || op.equals(OperationType.SUB)){
                 var leftOp = binaryOpInstruction.getLeftOperand();
                 var rightOp = binaryOpInstruction.getRightOperand();
-                /*
                 if (rightOp instanceof LiteralElement rightLiteral && leftOp instanceof Operand left) {
                     int leftReg = getVariableRegister(currentMethod, left.getName());
                     if (rightLiteral.isLiteral()) {
                         int number = Integer.parseInt(rightLiteral.getLiteral());
                         if (leftReg == reg && (number >= -128 && number < 128)) return "iinc " + reg + " " + number + NL;
                     }
-                }*/
+                }
                 if (leftOp instanceof LiteralElement leftLiteral && rightOp instanceof Operand right){
                     int rightReg = getVariableRegister(currentMethod, right.getName());
                     if (leftLiteral.isLiteral()) {

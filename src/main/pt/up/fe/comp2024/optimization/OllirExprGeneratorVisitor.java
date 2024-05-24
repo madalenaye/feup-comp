@@ -27,12 +27,11 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
     private static final String INVOKEVIRTUAL = "invokevirtual";
     private static final String INVOKESTATIC = "invokestatic";
 
-
-
     private final String END_STMT = ";\n";
 
     private final SymbolTable table;
     private String currMethod;
+
     public void setCurrMethod(String methodName) {
         this.currMethod = methodName;
     }
@@ -56,12 +55,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(ARRAY_EXPR, this::visitArrayExpr);
         addVisit(ARRAY_ELEM_EXPR, this::visitArrayElemExpr);
         addVisit(LEN_EXPR, this::visitLenExpr);
-
         setDefaultVisit(this::defaultVisit);
     }
-
-
-
+    
     private OllirExprResult visitInteger(JmmNode node, Void unused) {
         Type intType = new Type(TypeUtils.getIntTypeName(), false);
         String ollirIntType = OptUtils.toOllirType(intType);
@@ -383,7 +379,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
     }
 
     private OllirExprResult visitArrayExpr(JmmNode node, Void unused){
-        StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
         int nrElements = node.getChildren().size();
