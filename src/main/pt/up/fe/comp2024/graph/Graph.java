@@ -23,7 +23,6 @@ public class Graph {
         addEdges(interferences);
     }
 
-
     private void createVertices(HashMap<String, Descriptor> varTable) {
         this.localRegisters = new ArrayList<>();
         this.fixedRegisters  = new ArrayList<>();
@@ -84,7 +83,6 @@ public class Graph {
         return null;
     }
 
-
     private void removeVertex(Vertex vertex) {
         for (Edge edge : vertex.getCurrentEdges()) {
             edge.getDest().removeCurrentEdge(vertex);
@@ -117,7 +115,6 @@ public class Graph {
         localRegisters = vertexes;
         return stack.size() == localRegisters.size();
     }
-
 
     public void allocateRegisters(int k) {
 

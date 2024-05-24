@@ -12,9 +12,6 @@ import pt.up.fe.comp2024.ast.TypeUtils;
 
 import java.util.List;
 
-import static pt.up.fe.comp2024.ast.Kind.*;
-
-
 public class VarargsVerifier extends AnalysisVisitor {
 
     private String currentMethod;
@@ -98,6 +95,4 @@ public class VarargsVerifier extends AnalysisVisitor {
 
         return null;
     }
-
-
 }

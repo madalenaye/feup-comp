@@ -216,6 +216,7 @@ public class TypeVerifier extends AnalysisVisitor {
 
         return null;
     }
+
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
         currentMethod = method.get("name");
         return null;

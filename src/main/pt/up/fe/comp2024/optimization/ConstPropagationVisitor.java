@@ -7,7 +7,6 @@ import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
 import pt.up.fe.comp2024.ast.Kind;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  {
@@ -19,6 +18,7 @@ public class ConstPropagationVisitor extends AJmmVisitor<SymbolTable, Boolean>  
     private String currentMethod;
     private boolean inWhile;
     private boolean processingWhile;
+
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);

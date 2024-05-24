@@ -1,15 +1,11 @@
 package pt.up.fe.comp2024.optimization;
 
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
-import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2024.ast.NodeUtils;
-import pt.up.fe.comp2024.ast.TypeUtils;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static pt.up.fe.comp2024.ast.Kind.*;
 
@@ -35,27 +31,19 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     @Override
     protected void buildVisitor() {
-
         addVisit(PROGRAM, this::visitProgram);
         addVisit(IMPORT_DECL, this::visitImport);
         addVisit(CLASS_DECL, this::visitClass);
         addVisit(VAR_DECL,this::visitVarDecl);
         addVisit(METHOD_DECL, this::visitMethodDecl);
         addVisit(PARAM, this::visitParam);
-
         setDefaultVisit(this::defaultVisit);
     }
 
-
-
     private String visitParam(JmmNode node, Void unused) {
-
         var typeCode = OptUtils.toOllirType(node.getJmmChild(0));
         var id = node.get("name");
-
-        String code = id + typeCode;
-
-        return code;
+        return id + typeCode;
     }
 
     private String visitVarDecl(JmmNode node, Void unused) {
@@ -67,12 +55,10 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         code.append(id);
         code.append(typeCode);
-
         code.append(END_STMT);
 
         return code.toString();
     }
-
 
     private String visitMethodDecl(JmmNode node, Void unused) {
 
@@ -160,7 +146,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     }
 
     private String buildConstructor() {
-
         return ".construct " + table.getClassName() + "().V {\n" +
                 "invokespecial(this, \"<init>\").V;\n" +
                 "}\n";
@@ -178,15 +163,11 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     }
 
     private String visitProgram(JmmNode node, Void unused) {
-
-
         StringBuilder code = new StringBuilder();
 
         node.getChildren().stream()
                 .map(this::visit)
                 .forEach(code::append);
-
-
 
         return code.toString();
     }
@@ -199,11 +180,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
      * @return
      */
     private String defaultVisit(JmmNode node, Void unused) {
-
         for (JmmNode child : node.getChildren()) {
             visit(child);
         }
-
         return "";
     }
 }

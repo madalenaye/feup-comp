@@ -9,13 +9,11 @@ import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
-import pt.up.fe.comp2024.ast.TypeUtils;
 
 import java.util.List;
 import java.util.Optional;
 
 import static pt.up.fe.comp2024.ast.Kind.*;
-
 
 public class MethodVerifier extends AnalysisVisitor {
 
@@ -31,7 +29,6 @@ public class MethodVerifier extends AnalysisVisitor {
         addVisit(Kind.VAR_REF_EXPR, this::visitIdentifier);
         addVisit(ASSIGN_STMT, this::visitIdentifier);
     }
-
 
     private Void visitIdentifier(JmmNode varRefExpr, SymbolTable table) {
 
@@ -74,7 +71,6 @@ public class MethodVerifier extends AnalysisVisitor {
             );
         }
 
-
         return null;
     }
 
@@ -116,7 +112,6 @@ public class MethodVerifier extends AnalysisVisitor {
                         null)
                 );
             }
-
             return null;
         }
 

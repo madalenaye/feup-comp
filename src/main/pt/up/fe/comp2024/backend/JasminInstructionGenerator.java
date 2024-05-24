@@ -320,7 +320,7 @@ public class JasminInstructionGenerator {
     }
 
     private String generateOpCondInst(OpCondInstruction opCondInstruction){
-        var code = new StringBuilder();
+        StringBuilder code = new StringBuilder();
         var condition = opCondInstruction.getCondition();
         var type = condition.getInstType();
         switch (type){
@@ -331,7 +331,7 @@ public class JasminInstructionGenerator {
         return code.toString();
     }
     private String generateGotoInst(GotoInstruction gotoInstruction){
-        var code = new StringBuilder();
+        StringBuilder code = new StringBuilder();
         var label = gotoInstruction.getLabel();
         code.append("goto ").append(label).append(NL);
         return code.toString();
@@ -339,13 +339,12 @@ public class JasminInstructionGenerator {
 
     private String generateBinaryOpCond(BinaryOpInstruction binaryOpInstruction){
 
-        var code = new StringBuilder();
+        StringBuilder code = new StringBuilder();
         var type = binaryOpInstruction.getOperation().getOpType();
         var rightOp = binaryOpInstruction.getRightOperand();
         var leftOp = binaryOpInstruction.getLeftOperand();
 
         popFromStack(1);
-
 
         if (type == OperationType.LTH) {
             popFromStack(1);
@@ -358,10 +357,12 @@ public class JasminInstructionGenerator {
         else if (type == OperationType.ANDB)
             code.append(instructionGenerator.apply(binaryOpInstruction)).append("ifne ");
         else return null;
+
         return code.toString();
     }
+
     private String generateUnaryOpCond(UnaryOpInstruction unaryOpInstruction){
-        var code = new StringBuilder();
+        StringBuilder code = new StringBuilder();
         var op = unaryOpInstruction.getOperation();
         var type = op.getOpType();
         if (type == OperationType.NOTB) code.append(operandGenerator.generate(unaryOpInstruction.getOperand())).append("ifeq ");
@@ -369,7 +370,7 @@ public class JasminInstructionGenerator {
     }
 
     private String generateSingleOpCondInst(SingleOpCondInstruction singleOpCondInstruction){
-        var code = new StringBuilder();
+        StringBuilder code = new StringBuilder();
         var condition = singleOpCondInstruction.getCondition();
         var type = condition.getInstType();
         if (type == InstructionType.NOPER){
@@ -379,7 +380,7 @@ public class JasminInstructionGenerator {
     }
 
     private String generateUnaryOpInst(UnaryOpInstruction unaryOpInstruction){
-        var code = new StringBuilder();
+        StringBuilder code = new StringBuilder();
         var operation = unaryOpInstruction.getOperation();
         unaryOpInstruction.getOperands().forEach((op) -> code.append(operandGenerator.generate(op)));
         if (operation.getOpType() == OperationType.NOTB)

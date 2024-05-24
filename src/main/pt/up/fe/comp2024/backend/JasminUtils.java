@@ -106,6 +106,4 @@ public class JasminUtils {
         return "L" + getImportedClassName(((ClassType) type).getName()) + ";";
     }
 
-
-
 }

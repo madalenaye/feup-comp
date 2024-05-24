@@ -45,7 +45,6 @@ public class ConstFoldVisitor extends AJmmVisitor<Void, Boolean>  {
             int leftVal = Integer.parseInt(left.get("value"));
             int rightVal = Integer.parseInt(right.get("value"));
 
-            // what if rightVal = 0 in a division?
             int val = switch (operator) {
                 case "+" -> leftVal + rightVal;
                 case "*" -> leftVal * rightVal;

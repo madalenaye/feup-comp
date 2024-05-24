@@ -1,29 +1,25 @@
 package pt.up.fe.comp2024.optimization;
 
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
-import pt.up.fe.comp.jmm.analysis.table.Type;
-import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
-import pt.up.fe.comp.jmm.ollir.OllirUtils;
-import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class BinExprUtils {
     private static final String SPACE = " ";
     private static final String ASSIGN = ":=";
     private final SymbolTable table;
-    private String currMethod;
 
+    private String currMethod;
     private String ollirType;
+
     public BinExprUtils(SymbolTable table,String currMethod,String ollirType) {
         this.table = table;
         this.currMethod=currMethod;
         this.ollirType=ollirType;
     }
+
     public OllirExprResult exprHandler(JmmNode node,String code)  {
         if (node.getKind().equals("MethodExpr")) {
             return methodExprHandler(node,code);
@@ -32,7 +28,6 @@ public class BinExprUtils {
         } else {
             return new OllirExprResult("","");
         }
-
     }
 
     public OllirExprResult methodExprHandler(JmmNode node,String code) {
@@ -85,8 +80,6 @@ public class BinExprUtils {
 
         computation.append(endIfNumber).append(":\n");
 
-        String code= temp;
-
-        return new OllirExprResult(code,computation.toString());
+        return new OllirExprResult(temp,computation.toString());
     }
 }

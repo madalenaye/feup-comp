@@ -8,7 +8,6 @@ import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
 import java.util.List;
-import java.util.Objects;
 
 import static pt.up.fe.comp2024.ast.Kind.*;
 
@@ -43,7 +42,6 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(WHILE_STMT, this::visitWhileStmt);
         addVisit(STMTS, this::visitStmts);
         addVisit(ARRAY_ASSIGN_STMT,this::visitArrayAssignStmt);
-
         setDefaultVisit(this::defaultVisit);
     }
 
@@ -106,7 +104,6 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         return code.toString();
     }
 
-
     private String visitReturn(JmmNode node, Void unused) {
 
         StringBuilder code = new StringBuilder();
@@ -159,14 +156,12 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
     }
 
     private String visitIfStmt(JmmNode node, Void unused) {
-        StringBuilder computation = new StringBuilder();
         StringBuilder code = new StringBuilder();
 
         var condition = exprVisitor.visit(node.getJmmChild(0));
 
-        String ifNumber= OptUtils.getIf();
-        String endIfNumber= OptUtils.getEndIf();
-
+        String ifNumber = OptUtils.getIf();
+        String endIfNumber = OptUtils.getEndIf();
 
         code.append(condition.getComputation());
         code.append("if (").append(condition.getCode()).append(") ").append("goto ").append(ifNumber).append(END_STMT);
@@ -192,17 +187,15 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
             String stmtCode = this.visit(stmt);
             code.append(stmtCode);
         }
-
         return code.toString();
     }
 
     private String visitWhileStmt(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
 
-        String whileCond= OptUtils.getWhileCond();
-        String whileLoop= OptUtils.getWhileLoop();
-        String whileEnd= OptUtils.getWhileEnd();
-
+        String whileCond = OptUtils.getWhileCond();
+        String whileLoop = OptUtils.getWhileLoop();
+        String whileEnd = OptUtils.getWhileEnd();
 
         code.append(whileCond).append(":\n");
 
@@ -215,7 +208,6 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         var statement = this.visit(node.getJmmChild(1));
 
         code.append(whileLoop).append(":\n").append(statement);
-
         code.append("goto ").append(whileCond).append(END_STMT);
         code.append(whileEnd).append(":\n");
 
@@ -240,7 +232,7 @@ public class OllirStmtGeneratorVisitor extends AJmmVisitor<Void, String> {
         String rightCode = rhs.getCode();
 
         while (left.getKind().equals("ParensExpr")) left = left.getChild(0);
-        while (left.getKind().equals("ParensExpr")) left = left.getChild(1);
+        while (right.getKind().equals("ParensExpr")) right = right.getChild(1);
 
         if (left.getKind().equals("MethodExpr")) {
             Type type = TypeUtils.getExprType(left, table, currMethod);

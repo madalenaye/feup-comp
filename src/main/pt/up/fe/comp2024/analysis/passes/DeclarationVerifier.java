@@ -11,7 +11,6 @@ import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.comp2024.ast.TypeUtils;
 import pt.up.fe.specs.util.SpecsCheck;
 
-
 /**
  * Verifies if there are undeclared variables, methods or classes.
  *

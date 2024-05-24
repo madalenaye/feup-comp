@@ -98,7 +98,6 @@ public class ArrayVerifier extends AnalysisVisitor {
                 null)
         );
 
-
         return null;
     }
 
@@ -122,7 +121,6 @@ public class ArrayVerifier extends AnalysisVisitor {
         }
 
         return null;
-
     }
 
     private Void arrayIndexCheck(JmmNode expr, SymbolTable table) {

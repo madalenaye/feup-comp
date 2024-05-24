@@ -28,9 +28,8 @@ public class JasminOperandGenerator {
         return operandGenerator.apply(operand);
     }
 
-
     private String generateLiteral(LiteralElement literal) {
-        var code = new StringBuilder();
+        StringBuilder code = new StringBuilder();
         var literalString = literal.getLiteral();
 
         instructionGenerator.pushToStack();
@@ -39,7 +38,7 @@ public class JasminOperandGenerator {
             return code.toString();
         }
 
-        var value = Integer.parseInt(literalString);
+        int value = Integer.parseInt(literalString);
         if (value > -2 && value < 6) return "iconst_" + value + NL;
         else if (value > -129 && value < 128) return "bipush " + value + NL;
         else if (value >= -32768 && value <= 32767) return "sipush " + value + NL;
